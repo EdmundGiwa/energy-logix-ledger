@@ -1,0 +1,933 @@
+"use client";
+
+import Image from "next/image";
+import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
+import { Icon } from "./icons";
+import { seeded } from "./charts";
+import { CountUp } from "./primitives";
+
+/* ------------------------------------------------------------------ */
+/* Scene data                                                          */
+/* ------------------------------------------------------------------ */
+
+type IconC = ComponentType<{ size?: number; className?: string }>;
+type Tone = "ok" | "warn" | "crit" | "info";
+
+type Tile =
+  | {
+      kind: "spark";
+      label: string;
+      icon: IconC;
+      value: number;
+      decimals?: number;
+      prefix?: string;
+      unit?: string;
+      note: string;
+      tone: Tone;
+      seed: number;
+      color?: string;
+    }
+  | { kind: "progress"; label: string; icon: IconC; display: string; note: string; pct: number }
+  | { kind: "bars"; label: string; icon: IconC; display: string; note: string; seed: number };
+
+type Exception = {
+  icon: IconC;
+  name: string;
+  status: { text: string; tone: Tone };
+  sub: string;
+  action: string;
+  metric: string;
+  fill: number;
+};
+
+type Scene = {
+  key: string;
+  module: string;
+  railIcon: IconC;
+  image: string;
+  alt: string;
+  position: string;
+  scene: string;
+  place: string;
+  coords: string;
+  weather: string;
+  wind: string;
+  watching: string;
+  schematic: "bunker" | "pig" | "permit";
+  rec: string;
+  actions: [string, string];
+  tiles: [Tile, Tile, Tile, Tile];
+  exceptionsTitle: string;
+  exceptions: Exception[];
+  site: string;
+  trend: { title: string; label: string; value: number; decimals?: number; unit: string; tabs: [string, string, string]; seed: number };
+};
+
+const scenes: Scene[] = [
+  {
+    key: "bunker",
+    module: "BunkerFlow",
+    railIcon: Icon.Ship,
+    image: "/images/rig-vessel.jpg",
+    alt: "Offshore supply vessel alongside a production platform",
+    position: "object-[62%_50%]",
+    scene: "Lagos Offshore Anchorage",
+    place: "STS transfer · MV Atlantic Grace",
+    coords: "6.3812° N, 3.3726° E",
+    weather: "29 °C · Partly cloudy",
+    wind: "14 km/h · SW",
+    watching: "Watching 8 stems · 3 barges",
+    schematic: "bunker",
+    rec: "Hold the e-BDN for MV Atlantic Grace. Aft soundings corrected with ASTM Table 54B show 4.1 MT short of the nominated stem (0.41%). Re-sound both tanks before the Chief Engineer signs.",
+    actions: ["Re-sound tanks", "Open e-BDN"],
+    tiles: [
+      { kind: "spark", label: "Delivered today", icon: Icon.Fuel, value: 3420, unit: "MT", note: "+6.2% vs. plan", tone: "ok", seed: 4 },
+      { kind: "spark", label: "Stem variance", icon: Icon.Scale, value: 0.41, decimals: 2, unit: "%", note: "Limit 0.50%", tone: "warn", seed: 9, color: "#38bdf8" },
+      { kind: "progress", label: "e-BDNs dual-signed", icon: Icon.Pen, display: "14/15", note: "1 awaiting Chief Engineer", pct: 0.93 },
+      { kind: "bars", label: "Stems completed", icon: Icon.Anchor, display: "6/8", note: "2 barges alongside", seed: 5 },
+    ],
+    exceptionsTitle: "Exception feed",
+    exceptions: [
+      { icon: Icon.Ship, name: "MV Atlantic Grace", status: { text: "Variance", tone: "warn" }, sub: "Aft sounding 0.41% under nomination", action: "Re-sound before sign-off", metric: "0.41%", fill: 0.82 },
+      { icon: Icon.Flask, name: "Sample seal S-2291", status: { text: "Pending", tone: "info" }, sub: "Retained sample photo missing", action: "MARPOL Annex VI record open", metric: "2/3", fill: 0.66 },
+      { icon: Icon.Anchor, name: "STS ledger · Barge PB-04", status: { text: "Clear", tone: "ok" }, sub: "Fender and mooring checks signed", action: "Pump rate 310 m³/h, steady", metric: "100%", fill: 1 },
+    ],
+    site: "Lagos",
+    trend: { title: "Bunker deliveries", label: "Delivered at 12:00", value: 412, unit: "MT", tabs: ["VLSFO", "MGO", "Combined"], seed: 14 },
+  },
+  {
+    key: "pipe",
+    module: "PipeIntegrity",
+    railIcon: Icon.Pipe,
+    image: "/images/rig-aerial.jpg",
+    alt: "Aerial view of an offshore platform with a support vessel",
+    position: "object-[40%_50%]",
+    scene: "Trunkline TL-04 · Delta corridor",
+    place: "Intelligent pigging run PG-17",
+    coords: "5.5160° N, 5.7500° E",
+    weather: "31 °C · Hazy",
+    wind: "9 km/h · W",
+    watching: "Tracking 2 pig runs · 1 hydrotest",
+    schematic: "pig",
+    rec: "Intelligent pig PG-17 is 38 minutes behind schedule at marker KP-46. Transit velocity fell to 0.9 m/s. Alert the receiver crew at KP-71 and hold the TL-05 launcher until PG-17 arrives.",
+    actions: ["Alert receiver crew", "View run log"],
+    tiles: [
+      { kind: "spark", label: "Line pressure", icon: Icon.Gauge, value: 148.6, decimals: 1, unit: "bar", note: "Stable ±0.4 bar", tone: "ok", seed: 12 },
+      { kind: "progress", label: "Hydrotest hold", icon: Icon.Clock, display: "22h 14m", note: "24 h hold · API 1110", pct: 0.93 },
+      { kind: "spark", label: "CP potential", icon: Icon.Bolt, value: 0.92, decimals: 2, prefix: "−", unit: "V", note: "Criterion −0.85 V CSE", tone: "ok", seed: 17, color: "#38bdf8" },
+      { kind: "bars", label: "Inspections due · 30d", icon: Icon.Calendar, display: "11", note: "3 NDT · 8 valve stations", seed: 8 },
+    ],
+    exceptionsTitle: "Asset integrity",
+    exceptions: [
+      { icon: Icon.Pipe, name: "Pig PG-17 · KP-46", status: { text: "Behind", tone: "warn" }, sub: "Transit velocity 0.9 m/s", action: "Receiver ETA 16:05", metric: "65%", fill: 0.65 },
+      { icon: Icon.Gauge, name: "Valve station VS-07", status: { text: "Leak alarm", tone: "crit" }, sub: "Acoustic leak detection triggered", action: "Isolate and dispatch crew", metric: "Alarm", fill: 0.9 },
+      { icon: Icon.Bolt, name: "Rectifier R-12", status: { text: "Low output", tone: "warn" }, sub: "4.1 A against 6.0 A set point", action: "Schedule CIPS re-survey", metric: "68%", fill: 0.68 },
+    ],
+    site: "Warri",
+    trend: { title: "Launcher pressure", label: "Pressure at 12:00", value: 148.6, decimals: 1, unit: "bar", tabs: ["Pressure", "Velocity", "Temp."], seed: 31 },
+  },
+  {
+    key: "safe",
+    module: "SafePass",
+    railIcon: Icon.Shield,
+    image: "/images/rig-dusk.jpg",
+    alt: "Offshore production platform lit up at dusk",
+    position: "object-[60%_40%]",
+    scene: "Platform A · Offshore Bonny",
+    place: "Crew change · Day shift",
+    coords: "4.4167° N, 7.1500° E",
+    weather: "27 °C · Clear dusk",
+    wind: "18 km/h · SW",
+    watching: "Watching 86 POB · 14 permits",
+    schematic: "permit",
+    rec: "Three technicians on tomorrow's crew-change manifest hold BOSIET certificates that expire within 30 days. SafePass has blocked them from the manifest. Standby crew at Onne base are cleared to mobilize.",
+    actions: ["Swap in standby crew", "View manifest"],
+    tiles: [
+      { kind: "progress", label: "Crew readiness", icon: Icon.Users, display: "97.8%", note: "Target 98.5%", pct: 0.978 },
+      { kind: "bars", label: "Persons on board", icon: Icon.Anchor, display: "86/120", note: "Rotation 28/28", seed: 21 },
+      { kind: "spark", label: "Active permits", icon: Icon.FileText, value: 14, unit: "PTW", note: "2 hot work · 1 confined", tone: "info", seed: 23 },
+      { kind: "spark", label: "Expiring · 30 days", icon: Icon.IdCard, value: 17, unit: "certs", note: "BOSIET · HUET · OSP", tone: "warn", seed: 27, color: "#38bdf8" },
+    ],
+    exceptionsTitle: "HSE gate",
+    exceptions: [
+      { icon: Icon.Flame, name: "PTW-0412 · Hot work", status: { text: "Blocked", tone: "crit" }, sub: "Gas test failed: LEL 12%", action: "Permit locked until retest", metric: "12%", fill: 0.6 },
+      { icon: Icon.IdCard, name: "Rotation 28/28 · Crew B", status: { text: "Expiring", tone: "warn" }, sub: "4 BOSIET certificates < 30 days", action: "Renewals booked for 2 of 4", metric: "50%", fill: 0.5 },
+      { icon: Icon.Clipboard, name: "CAPA-118 · Dropped object", status: { text: "Open", tone: "info" }, sub: "Near-miss on Deck 2, 08 Oct", action: "Close-out due Friday", metric: "3/5", fill: 0.6 },
+    ],
+    site: "Bonny",
+    trend: { title: "Persons on board", label: "POB at 12:00", value: 86, unit: "POB", tabs: ["POB", "Permits", "Near-miss"], seed: 41 },
+  },
+];
+
+const DURATION = 9000;
+
+/* ------------------------------------------------------------------ */
+/* Small building blocks                                               */
+/* ------------------------------------------------------------------ */
+
+const toneText: Record<Tone, string> = {
+  ok: "text-emerald-300",
+  warn: "text-amber-300",
+  crit: "text-red-300",
+  info: "text-sky-300",
+};
+const toneBg: Record<Tone, string> = {
+  ok: "bg-ok/20 text-emerald-200",
+  warn: "bg-amber/20 text-amber-200",
+  crit: "bg-crit/25 text-red-200",
+  info: "bg-sky/20 text-sky-200",
+};
+const toneBar: Record<Tone, string> = {
+  ok: "from-emerald-400 to-ok",
+  warn: "from-gold to-amber",
+  crit: "from-red-400 to-crit",
+  info: "from-sky to-azure",
+};
+
+function Chip({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={`glass flex h-11 shrink-0 items-center gap-2 rounded-2xl px-3.5 text-[12.5px] font-medium text-white/90 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function CardHeader({ title, href = "#modules" }: { title: string; href?: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <p className="text-[17px] font-bold tracking-tight text-white">{title}</p>
+      <a
+        href={href}
+        aria-label={`Open ${title}`}
+        className="grid h-10 w-10 place-items-center rounded-xl bg-white/10 text-white ring-1 ring-white/15 transition hover:bg-white/20"
+      >
+        <Icon.ArrowUpRight size={18} />
+      </a>
+    </div>
+  );
+}
+
+function Spark({ data, color, id }: { data: number[]; color: string; id: string }) {
+  const w = 160;
+  const h = 44;
+  const step = w / (data.length - 1);
+  const pts = data.map((v, i) => [i * step, h - v * (h - 6) - 3] as const);
+  // Smooth with simple quadratic midpoints
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 1; i < pts.length; i++) {
+    const [x0, y0] = pts[i - 1];
+    const [x1, y1] = pts[i];
+    const mx = (x0 + x1) / 2;
+    d += ` Q${x0.toFixed(1)},${y0.toFixed(1)} ${mx.toFixed(1)},${((y0 + y1) / 2).toFixed(1)}`;
+  }
+  d += ` T${pts[pts.length - 1][0]},${pts[pts.length - 1][1]}`;
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="h-full w-full overflow-visible" aria-hidden>
+      <defs>
+        <linearGradient id={`hs-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={color} stopOpacity="0.4" />
+          <stop offset="1" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={`${d} L${w},${h} L0,${h} Z`} fill={`url(#hs-${id})`} className="fade-in" style={{ animationDelay: "0.6s" }} />
+      <path
+        d={d}
+        pathLength={1}
+        fill="none"
+        stroke={color}
+        strokeWidth="2"
+        vectorEffect="non-scaling-stroke"
+        className="draw-line"
+      />
+    </svg>
+  );
+}
+
+function MiniBars({ seed }: { seed: number }) {
+  const data = useMemo(() => seeded(12, seed, 0.25, 1), [seed]);
+  const peak = data.indexOf(Math.max(...data));
+  return (
+    <div className="flex h-10 items-end gap-[5px]">
+      {data.map((v, i) => (
+        <span
+          key={i}
+          className={`bar-anim w-full rounded-full ${i === peak ? "bg-gold" : "bg-gold/55"}`}
+          style={{ height: `${v * 100}%`, animationDelay: `${0.25 + i * 0.045}s` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ProgressPill({ pct }: { pct: number }) {
+  return (
+    <div className="relative mt-3 flex h-9 items-center rounded-full bg-black/25 p-1 ring-1 ring-white/10">
+      <div
+        className="bar-anim-x relative h-full rounded-full bg-gradient-to-r from-amber to-gold shadow-[0_0_24px_-4px_rgba(251,191,36,0.9)]"
+        style={{ width: `${Math.max(18, pct * 62)}%`, animationDelay: "0.3s" }}
+      >
+        <span className="absolute right-2 top-1/2 h-3.5 w-1 -translate-y-1/2 rounded-full bg-white/90" />
+      </div>
+      <div className="flex flex-1 justify-evenly">
+        {[0, 1, 2, 3].map((i) => (
+          <span key={i} className="h-1 w-1 rounded-full bg-white/30" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TileCard({ tile, sceneKey, index }: { tile: Tile; sceneKey: string; index: number }) {
+  const I = tile.icon;
+  return (
+    <div className="glass-tile rise relative overflow-hidden rounded-[20px] p-3.5" style={{ animationDelay: `${0.08 * index}s` }}>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[12.5px] font-medium leading-tight text-white/80">{tile.label}</p>
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-white/90 text-navy">
+          <I size={13} />
+        </span>
+      </div>
+
+      {tile.kind === "spark" && (
+        <>
+          <p className={`mt-1 text-[10.5px] font-semibold ${toneText[tile.tone]}`}>{tile.note}</p>
+          <p className="mt-1.5 text-[26px] font-extrabold leading-none tracking-tight text-white">
+            <CountUp key={sceneKey} to={tile.value} decimals={tile.decimals ?? 0} prefix={tile.prefix} />
+            {tile.unit && <span className="ml-1 text-[12px] font-semibold text-white/45">{tile.unit}</span>}
+          </p>
+          <div className="-mx-3.5 -mb-3.5 mt-2 h-12">
+            <Spark id={`${sceneKey}-${index}`} data={seeded(16, tile.seed, 0.15, 0.95)} color={tile.color ?? "#fbbf24"} />
+          </div>
+        </>
+      )}
+
+      {tile.kind === "progress" && (
+        <>
+          <p className="mt-3 text-[26px] font-extrabold leading-none tracking-tight text-white">{tile.display}</p>
+          <p className="mt-1.5 truncate text-[11.5px] text-white/50">{tile.note}</p>
+          <ProgressPill pct={tile.pct} />
+        </>
+      )}
+
+      {tile.kind === "bars" && (
+        <>
+          <p className="mt-3 text-[26px] font-extrabold leading-none tracking-tight text-white">{tile.display}</p>
+          <p className="mt-1.5 truncate text-[11.5px] text-white/50">{tile.note}</p>
+          <div className="mt-3">
+            <MiniBars seed={tile.seed} />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** Line-art equipment drawings for the recommendation card, in the spirit of an engineering schematic. */
+function Schematic({ kind }: { kind: Scene["schematic"] }) {
+  const common = {
+    fill: "none",
+    stroke: "rgba(255,255,255,0.55)",
+    strokeWidth: 1.4,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  return (
+    <svg viewBox="0 0 260 200" className="h-full w-full" aria-hidden>
+      {kind === "bunker" && (
+        <g {...common}>
+          <ellipse cx="80" cy="60" rx="52" ry="14" />
+          <path d="M28 60v86c0 8 23 14 52 14s52-6 52-14V60" />
+          <path d="M28 100c0 8 23 14 52 14s52-6 52-14" opacity="0.6" />
+          <path d="M28 128c0 8 23 14 52 14s52-6 52-14" opacity="0.4" />
+          <path d="M66 46V30h28v16M80 30V18" />
+          <path d="M132 120h40c14 0 22 8 22 22v34" />
+          <path d="M132 132h34c8 0 14 6 14 14v30" />
+          <rect x="182" y="90" width="38" height="24" rx="5" />
+          <circle cx="201" cy="102" r="7" />
+          <path d="M201 102l4-4" />
+          <path d="M150 112v16M156 112v16" />
+          <path d="M100 18h46v40" strokeDasharray="3 4" />
+          <path d="M146 58l-4 6h8z" />
+          <path d="M176 176h44M170 186h56" opacity="0.6" />
+        </g>
+      )}
+      {kind === "pig" && (
+        <g {...common}>
+          <path d="M14 120h44M14 140h44" />
+          <rect x="58" y="104" width="96" height="52" rx="10" />
+          <path d="M154 116h18v28h-18" />
+          <path d="M172 124h74M172 136h74" />
+          <circle cx="76" cy="130" r="14" />
+          <path d="M70 130h12M76 124v12" opacity="0.6" />
+          <path d="M96 104V78h22v26M107 78V58" />
+          <circle cx="107" cy="50" r="10" />
+          <path d="M101 50h12" />
+          <path d="M132 104V86h14v18" />
+          <path d="M139 86V70" />
+          <rect x="128" y="58" width="22" height="12" rx="3" />
+          <path d="M66 156v20M146 156v20M58 176h96" />
+          <path d="M196 124v-30h20v30M206 94V80" />
+          <circle cx="206" cy="72" r="8" />
+          <path d="M30 98c10-14 22-14 32 0" strokeDasharray="3 4" opacity="0.6" />
+        </g>
+      )}
+      {kind === "permit" && (
+        <g {...common}>
+          <rect x="34" y="30" width="96" height="140" rx="12" />
+          <rect x="48" y="46" width="68" height="44" rx="6" />
+          <path d="M56 78l10-14 10 8 10-16 14 22" />
+          <circle cx="62" cy="112" r="8" />
+          <circle cx="102" cy="112" r="8" />
+          <path d="M50 136h64M50 150h40" />
+          <path d="M82 30V14h0" />
+          <path d="M150 60h70a10 10 0 0 1 10 10v90a10 10 0 0 1-10 10h-70a10 10 0 0 1-10-10V70a10 10 0 0 1 10-10z" />
+          <path d="M156 84h52M156 100h60M156 116h44" opacity="0.7" />
+          <path d="M160 140l10 10 20-22" />
+          <circle cx="210" cy="60" r="12" />
+          <path d="M205 60l4 4 7-8" />
+        </g>
+      )}
+    </svg>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Bottom-row panels                                                   */
+/* ------------------------------------------------------------------ */
+
+const sites: { id: string; x: number; y: number; label: string; tone: Tone; below?: boolean }[] = [
+  { id: "Lagos", x: 52, y: 92, label: "Lagos Anchorage", tone: "ok" as Tone },
+  { id: "Lekki", x: 104, y: 97, label: "Lekki gantry", tone: "warn" as Tone, below: true },
+  { id: "Warri", x: 222, y: 92, label: "Warri", tone: "ok" as Tone },
+  { id: "Escravos", x: 196, y: 128, label: "Escravos", tone: "ok" as Tone },
+  { id: "PH", x: 326, y: 112, label: "Port Harcourt", tone: "ok" as Tone },
+  { id: "Onne", x: 344, y: 138, label: "Onne", tone: "ok" as Tone },
+  { id: "Bonny", x: 318, y: 160, label: "Bonny", tone: "crit" as Tone },
+];
+const siteColor: Record<Tone, string> = { ok: "#fbbf24", warn: "#f59e0b", crit: "#ef4444", info: "#38bdf8" };
+
+function CoastMap({ active }: { active: string }) {
+  const coast =
+    "M0,104 C30,100 50,100 80,104 C120,108 150,110 176,116 C192,120 198,134 206,148 C214,162 232,172 256,176 C276,180 292,178 306,172 C318,168 330,164 346,156 C366,146 384,140 400,138";
+  return (
+    <svg viewBox="0 0 400 220" className="h-full w-full" aria-label="Operations map of the Nigerian coast">
+      <defs>
+        <linearGradient id="land" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#f59e0b" stopOpacity="0.55" />
+          <stop offset="1" stopColor="#d97706" stopOpacity="0.85" />
+        </linearGradient>
+        <pattern id="landDots" width="6" height="6" patternUnits="userSpaceOnUse">
+          <circle cx="3" cy="3" r="1.1" fill="rgba(255,255,255,0.35)" />
+        </pattern>
+        <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#0284c7" stopOpacity="0.35" />
+          <stop offset="1" stopColor="#0b1f33" stopOpacity="0.2" />
+        </linearGradient>
+        <radialGradient id="siteGlow">
+          <stop offset="0" stopColor="#fbbf24" stopOpacity="0.8" />
+          <stop offset="1" stopColor="#fbbf24" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <path d={`${coast} L400,220 L0,220 Z`} fill="url(#sea)" />
+      {/* Land */}
+      <path d={`${coast} L400,0 L0,0 Z`} fill="url(#land)" opacity="0.75" />
+      <path d={`${coast} L400,0 L0,0 Z`} fill="url(#landDots)" opacity="0.5" />
+      {/* Niger delta creeks */}
+      <g stroke="rgba(6,17,29,0.35)" strokeWidth="1.2" fill="none">
+        <path d="M230,60 C226,90 214,110 206,146" />
+        <path d="M236,70 C246,110 252,140 256,172" />
+        <path d="M240,80 C268,110 288,140 300,170" />
+      </g>
+      {/* Coastline */}
+      <path d={coast} fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.4" />
+      {/* Sea texture */}
+      {[0, 1, 2].map((i) => (
+        <path
+          key={i}
+          d={coast}
+          fill="none"
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth="1"
+          transform={`translate(0 ${14 + i * 12})`}
+        />
+      ))}
+      {/* Routes */}
+      <path d="M52,92 C70,96 84,96 100,96" stroke="#fbbf24" strokeWidth="2" strokeDasharray="4 4" fill="none" className="animate-dash" />
+      <path d="M52,118 C140,150 230,200 318,174" stroke="rgba(255,255,255,0.6)" strokeWidth="1.2" strokeDasharray="2 5" fill="none" className="animate-dash" />
+      <path d="M196,128 C206,112 214,100 222,92" stroke="#38bdf8" strokeWidth="2" fill="none" />
+      <path d="M326,112 L344,138 L318,160" stroke="#38bdf8" strokeWidth="1.6" fill="none" opacity="0.8" />
+      {/* Sites */}
+      {sites.map((s) => {
+        const on = s.id === active;
+        return (
+          <g key={s.id}>
+            {on && <circle cx={s.x} cy={s.y} r="22" fill="url(#siteGlow)" className="animate-glow" />}
+            <circle cx={s.x} cy={s.y} r={on ? 6 : 4} fill="#0b1f33" stroke={siteColor[s.tone]} strokeWidth="2.2" />
+            {on && <circle cx={s.x} cy={s.y} r="2" fill={siteColor[s.tone]} />}
+            {(on || s.tone !== "ok") && (
+              <g className="fade-in" transform={s.below ? "translate(-6 30)" : undefined}>
+                <rect x={s.x + 8} y={s.y - 19} width={s.label.length * 5.4 + 12} height="16" rx="8" fill="rgba(6,17,29,0.8)" />
+                <text x={s.x + 14} y={s.y - 8} fontSize="9" fontWeight="700" fill="#fff" fontFamily="var(--font-manrope)">
+                  {s.label}
+                </text>
+              </g>
+            )}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function TrendBars({ seed, tab }: { seed: number; tab: number }) {
+  const actual = useMemo(() => seeded(10, seed + tab * 7, 0.3, 0.85), [seed, tab]);
+  const plan = useMemo(() => seeded(10, seed + 100 + tab * 3, 0.55, 1), [seed, tab]);
+  return (
+    <div className="flex h-full items-end gap-2 sm:gap-2.5">
+      {actual.map((v, i) => (
+        <div key={`${seed}-${tab}-${i}`} className="relative flex h-full flex-1 items-end">
+          <span
+            className="bar-anim absolute inset-x-0 bottom-0 rounded-full bg-gold/25"
+            style={{ height: `${Math.max(v, plan[i]) * 100}%`, animationDelay: `${i * 0.05}s` }}
+          />
+          <span
+            className="bar-anim relative w-full rounded-full bg-gradient-to-t from-amber to-gold shadow-[0_0_20px_-6px_rgba(251,191,36,0.9)]"
+            style={{ height: `${v * 100}%`, animationDelay: `${0.15 + i * 0.05}s` }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const bubbles = [
+  { label: "NCFCC", x: 34, y: 42, r: 15.1, c: "gold" },
+  { label: "NUPRC", x: 60, y: 35, r: 12.2, c: "azure" },
+  { label: "NIMASA", x: 82, y: 52, r: 10.8, c: "azure" },
+  { label: "ISO 45001", x: 50, y: 70, r: 10.1, c: "gold" },
+  { label: "NCEC", x: 16, y: 64, r: 7.2, c: "azure" },
+  { label: "NMDPRA", x: 73, y: 76, r: 7.9, c: "gold" },
+  { label: "", x: 13, y: 33, r: 2.9, c: "azure" },
+  { label: "", x: 92, y: 26, r: 3.6, c: "gold" },
+  { label: "NPA", x: 31, y: 84, r: 5.4, c: "azure" },
+  { label: "", x: 90, y: 82, r: 3.2, c: "gold" },
+  { label: "", x: 44, y: 18, r: 2.5, c: "gold" },
+];
+
+function RenewalBubbles() {
+  return (
+    <div className="relative h-full w-full">
+      {bubbles.map((b, i) => (
+        <span
+          key={i}
+          className={`animate-bob absolute grid place-items-center rounded-full text-center font-bold leading-none ${
+            b.c === "gold"
+              ? "bg-gradient-to-br from-gold to-amber text-[#2a1800] shadow-[0_10px_30px_-10px_rgba(251,191,36,0.8)]"
+              : "bg-gradient-to-br from-sky/90 to-azure text-white shadow-[0_10px_30px_-10px_rgba(2,132,199,0.9)]"
+          }`}
+          style={{
+            left: `${b.x}%`,
+            top: `${b.y}%`,
+            width: `${b.r * 2}%`,
+            aspectRatio: "1",
+            translate: "-50% -50%",
+            animationDelay: `${-i * 0.7}s`,
+            fontSize: b.r > 10 ? 10.5 : 9,
+          }}
+        >
+          {b.label}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero                                                                */
+/* ------------------------------------------------------------------ */
+
+const railExtras = [Icon.Truck, Icon.Tank, Icon.Calendar, Icon.Receipt];
+
+export function Hero() {
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [tab, setTab] = useState(0);
+  const [clock, setClock] = useState("--:--");
+  const [mounted, setMounted] = useState(false);
+  const reduced = useRef(false);
+  const s = scenes[index];
+
+  useEffect(() => {
+    reduced.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduced.current) setPaused(true);
+    requestAnimationFrame(() => setMounted(true));
+    const tick = () =>
+      setClock(
+        new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Africa/Lagos" }).format(new Date())
+      );
+    tick();
+    const id = setInterval(tick, 15000);
+    return () => clearInterval(id);
+  }, []);
+
+  const go = (i: number) => {
+    setIndex((i + scenes.length) % scenes.length);
+    setTab(0);
+  };
+  const onCycleEnd = () => {
+    if (reduced.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    go(index + 1);
+  };
+
+  return (
+    <section id="top" className="relative isolate overflow-hidden" aria-roledescription="carousel" aria-label="PetroLedger live operations">
+      {/* ---------- Background slideshow ---------- */}
+      <div className="absolute inset-0 -z-10 bg-ink">
+        {scenes.map((sc, i) => (
+          <div
+            key={sc.key}
+            className={`absolute inset-0 transition-opacity duration-[1400ms] ease-out ${i === index ? "opacity-100" : "opacity-0"}`}
+            aria-hidden={i !== index}
+          >
+            <Image
+              src={sc.image}
+              alt={sc.alt}
+              fill
+              preload={i === 0}
+              sizes="100vw"
+              className={`object-cover ${sc.position} transition-transform duration-[11000ms] ease-out ${
+                mounted && i === index ? "scale-100" : "scale-[1.12]"
+              }`}
+            />
+          </div>
+        ))}
+        <div className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/35 to-ink/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/10 to-ink/60" />
+        <div className="absolute -bottom-40 left-1/3 h-[520px] w-[820px] rounded-full bg-amber/25 blur-[140px]" />
+        <div className="absolute -left-40 top-1/4 h-[480px] w-[480px] rounded-full bg-azure/25 blur-[130px]" />
+        <div className="noise absolute inset-0" />
+      </div>
+
+      <div className="mx-auto max-w-[1440px] px-3 pb-10 pt-24 sm:px-5 lg:pt-28">
+        <div className="grid gap-3 xl:grid-cols-[68px_minmax(0,1fr)]">
+          {/* ---------- Left rail ---------- */}
+          <aside className="glass hidden flex-col items-center justify-between rounded-[26px] py-4 xl:flex">
+            <div className="flex flex-col items-center gap-2">
+              {scenes.map((sc, i) => {
+                const RI = sc.railIcon;
+                const on = i === index;
+                return (
+                  <button
+                    key={sc.key}
+                    type="button"
+                    onClick={() => go(i)}
+                    aria-label={`Show ${sc.module}`}
+                    aria-current={on}
+                    className={`group relative grid h-12 w-12 place-items-center rounded-2xl transition ${
+                      on ? "bg-gradient-to-b from-gold to-amber text-[#2a1800] shadow-[0_8px_24px_-8px_rgba(251,191,36,0.9)]" : "text-white/75 hover:bg-white/10"
+                    }`}
+                  >
+                    <RI size={21} />
+                    <span className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-ink/90 px-2.5 py-1 text-[11.5px] font-semibold text-white opacity-0 ring-1 ring-white/10 transition group-hover:opacity-100">
+                      {sc.module}
+                    </span>
+                  </button>
+                );
+              })}
+              <span className="my-2 h-px w-8 bg-white/15" />
+              {railExtras.map((RI, i) => (
+                <a key={i} href="#modules" aria-label="Explore modules" className="grid h-12 w-12 place-items-center rounded-2xl text-white/60 transition hover:bg-white/10 hover:text-white">
+                  <RI size={20} />
+                </a>
+              ))}
+            </div>
+            <div className="flex flex-col items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setPaused((p) => !p)}
+                aria-label={paused ? "Play slideshow" : "Pause slideshow"}
+                className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition hover:bg-white/20"
+              >
+                {paused ? <Icon.Play size={16} /> : <Icon.Pause size={16} />}
+              </button>
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-azure to-navy-2 text-[13px] font-extrabold text-white ring-2 ring-gold/70">
+                AO
+              </span>
+            </div>
+          </aside>
+
+          {/* ---------- Main canvas ---------- */}
+          <div className="min-w-0">
+            <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,380px)_minmax(0,1fr)_minmax(0,400px)] xl:grid-rows-[auto_1fr]">
+              {/* Assistant + recommendation */}
+              <div className="order-3 flex flex-col gap-3 xl:order-none">
+                <div className="glass flex items-center gap-3 rounded-[22px] p-3 pr-4">
+                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-b from-gold to-amber text-[#2a1800]">
+                    <Icon.Sparkle size={22} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[16px] font-bold tracking-tight text-white">AI Operations Assistant</p>
+                    <p key={s.key} className="fade-in truncate text-[12px] text-white/60">
+                      {s.watching}
+                    </p>
+                  </div>
+                  <span className="ml-auto inline-flex items-center gap-1.5 rounded-full bg-black/20 px-2.5 py-1 text-[10.5px] font-bold text-emerald-300">
+                    <span className="pulse-dot h-1.5 w-1.5 rounded-full bg-emerald-400 text-emerald-400" /> Live
+                  </span>
+                </div>
+
+                <div className="glass-amber relative min-h-[340px] flex-1 overflow-hidden rounded-[26px] p-4 shadow-[0_40px_80px_-30px_rgba(245,158,11,0.55)]">
+                  <div key={`sch-${s.key}`} className="fade-in pointer-events-none absolute -right-2 top-2 h-[200px] w-[270px] opacity-80">
+                    <Schematic kind={s.schematic} />
+                  </div>
+                  <div className="relative flex w-12 flex-col gap-2">
+                    {[Icon.Mic, Icon.Monitor, Icon.Help].map((I, i) => (
+                      <span key={i} className="grid h-12 w-12 place-items-center rounded-2xl bg-white/15 text-white ring-1 ring-white/20 backdrop-blur">
+                        <I size={20} />
+                      </span>
+                    ))}
+                  </div>
+                  <div className="relative mt-8">
+                    <p className="text-[22px] font-bold tracking-tight text-white">Primary recommendation</p>
+                    <p key={`rec-${s.key}`} className="mt-2.5 text-[14.5px] font-medium leading-relaxed text-white/95">
+                      {s.rec.split(" ").map((w, i) => (
+                        <span key={i} className="rise inline-block" style={{ animationDelay: `${0.15 + i * 0.022}s` }}>
+                          {w}&nbsp;
+                        </span>
+                      ))}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <a href="#modules" className="rounded-xl bg-white px-3.5 py-2.5 text-[12.5px] font-bold text-navy shadow-lg transition hover:bg-canvas">
+                        {s.actions[0]}
+                      </a>
+                      <a href="#modules" className="rounded-xl bg-black/20 px-3.5 py-2.5 text-[12.5px] font-semibold text-white ring-1 ring-white/25 transition hover:bg-black/30">
+                        {s.actions[1]}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chips */}
+              <div className="order-2 flex flex-wrap items-start gap-2 lg:col-span-2 xl:order-none xl:col-span-1 xl:content-start xl:justify-center">
+                <Chip className="min-w-0">
+                  <Icon.Pin size={17} />
+                  <span className="text-white/50 xl:hidden">Coordinates</span>
+                  <span className="h-4 w-px bg-white/30 xl:hidden" />
+                  <span key={s.coords} className="fade-in font-semibold">
+                    {s.coords}
+                  </span>
+                </Chip>
+                <Chip>
+                  <Icon.Cloud size={18} />
+                  <span key={s.weather} className="fade-in">
+                    {s.weather}
+                  </span>
+                </Chip>
+                <Chip>
+                  <Icon.Wind size={18} />
+                  <span key={s.wind} className="fade-in">
+                    {s.wind}
+                  </span>
+                </Chip>
+              </div>
+
+              {/* Right column: live status + exceptions */}
+              <div className="order-4 flex flex-col gap-3 xl:order-none xl:row-span-2 xl:self-start">
+                <div className="glass rounded-[26px] p-3">
+                  <div className="px-1.5 pt-1">
+                    <CardHeader title="Live Status" />
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-2.5">
+                    {s.tiles.map((t, i) => (
+                      <TileCard key={`${s.key}-${i}`} tile={t} sceneKey={s.key} index={i} />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="glass rounded-[26px] p-3">
+                  <div className="px-1.5 pt-1">
+                    <CardHeader title={s.exceptionsTitle} />
+                  </div>
+                  <div className="mt-3 space-y-2">
+                    {s.exceptions.map((e, i) => {
+                      const EI = e.icon;
+                      return (
+                        <div
+                          key={`${s.key}-${i}`}
+                          className="glass-tile rise flex gap-3 rounded-[18px] p-2.5"
+                          style={{ animationDelay: `${0.12 + i * 0.1}s` }}
+                        >
+                          <span className="grid h-[68px] w-[68px] shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-white/90 to-white/60 text-navy">
+                            <EI size={30} />
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="truncate text-[14px] font-bold text-white">{e.name}</p>
+                              <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${toneBg[e.status.tone]}`}>
+                                {e.status.text}
+                              </span>
+                            </div>
+                            <p className="truncate text-[12px] text-white/55">{e.sub}</p>
+                            <div className="mt-1 flex items-end justify-between gap-2">
+                              <p className="truncate text-[11.5px] text-white/75">{e.action}</p>
+                              <p className="shrink-0 text-[15px] font-extrabold leading-none text-white">{e.metric}</p>
+                            </div>
+                            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-black/30">
+                              <div
+                                className={`bar-anim-x h-full rounded-full bg-gradient-to-r ${toneBar[e.status.tone]}`}
+                                style={{ width: `${e.fill * 100}%`, animationDelay: `${0.3 + i * 0.1}s` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Headline block */}
+              <div className="order-1 flex flex-col justify-end pb-1 pt-4 lg:col-span-2 xl:order-none xl:pt-6">
+                {/* Scene tabs with progress */}
+                <div className="grid max-w-lg grid-cols-3 gap-2" role="tablist" aria-label="Scenes">
+                  {scenes.map((sc, i) => (
+                    <button
+                      key={sc.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={i === index}
+                      onClick={() => go(i)}
+                      className="group text-left"
+                    >
+                      <span className={`block truncate text-[10.5px] font-bold uppercase tracking-[0.1em] transition sm:text-[11px] sm:tracking-[0.14em] ${i === index ? "text-white" : "text-white/45 group-hover:text-white/80"}`}>
+                        <span className={`hidden sm:inline ${i === index ? "text-gold" : ""}`}>0{i + 1} · </span>
+                        {sc.module}
+                      </span>
+                      <span className="mt-2 block h-[3px] overflow-hidden rounded-full bg-white/20">
+                        {i === index ? (
+                          <span
+                            key={`p-${index}`}
+                            onAnimationEnd={onCycleEnd}
+                            className="block h-full origin-left rounded-full bg-gold shadow-[0_0_10px_#fbbf24]"
+                            style={{
+                              animation: `progress ${DURATION}ms linear forwards`,
+                              animationPlayState: paused ? "paused" : "running",
+                            }}
+                          />
+                        ) : (
+                          <span className={`block h-full rounded-full ${i < index ? "bg-white/60" : ""}`} />
+                        )}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+
+                <h1 className="mt-6 max-w-[16ch] text-[2.7rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-white sm:text-6xl xl:text-[4.1rem] 2xl:text-[4.6rem]">
+                  Every litre, every line, <span className="text-gradient">on record.</span>
+                </h1>
+
+                <p className="mt-5 max-w-[62ch] text-[15.5px] leading-relaxed text-white/75 sm:text-[16.5px]">
+                  One operating system for Nigerian energy service contractors: bunkering and e-BDN, pipeline integrity, depots,
+                  bulk haulage, NCDMB local content and HSE permits. It works offline, and every action is on the audit trail.
+                </p>
+
+                <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13.5px] text-white/70">
+                  <span className="inline-flex items-center gap-1.5">
+                    <Icon.Clock size={17} /> <span className="font-semibold text-white">{clock} WAT</span>
+                  </span>
+                  <span className="h-4 w-px bg-white/30" />
+                  <span key={s.scene} className="fade-in">
+                    <span className="font-semibold text-white">{s.scene}</span> · {s.place}
+                  </span>
+                </div>
+
+                <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                  <a href="#contact" className="btn-amber inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-4 text-[15px] font-bold">
+                    Start a 60-day pilot <Icon.Arrow size={18} />
+                  </a>
+                  <a href="#modules" className="btn-ghost inline-flex items-center justify-center gap-2 rounded-2xl px-6 py-4 text-[15px] font-semibold text-white">
+                    Explore the 12 modules
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            {/* ---------- Bottom row ---------- */}
+            <div className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <div className="glass overflow-hidden rounded-[26px] p-3">
+                <div className="px-1.5 pt-1">
+                  <CardHeader title="Operations map" href="#corridor" />
+                </div>
+                <div className="relative mt-3 h-[230px] overflow-hidden rounded-[20px] bg-gradient-to-b from-white/10 to-white/[0.03] ring-1 ring-white/10">
+                  <CoastMap active={s.site} />
+                  <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-black/30 px-2.5 py-1 text-[10.5px] font-semibold text-gold">
+                    <span className="h-1.5 w-1.5 rounded-full bg-gold" /> Online 7/7
+                  </span>
+                  <div className="absolute bottom-3 left-3 space-y-1 text-[10px] font-medium text-white/80">
+                    {[
+                      ["bg-gold", "Normal"],
+                      ["bg-amber", "Warning"],
+                      ["bg-red-500", "Critical"],
+                    ].map(([c, l]) => (
+                      <p key={l} className="flex items-center gap-1.5">
+                        <span className={`h-2.5 w-[3px] rounded-full ${c}`} /> {l}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass overflow-hidden rounded-[26px] p-3">
+                <div className="px-1.5 pt-1">
+                  <CardHeader title={s.trend.title} />
+                </div>
+                <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-1 px-1.5 text-[12px]">
+                  <span className="inline-flex items-center gap-1.5 text-white/60">
+                    <span className="h-1.5 w-1.5 rounded-full bg-gold" /> Updated 3 min ago
+                  </span>
+                  <span className="text-white/50">{s.trend.label}</span>
+                </div>
+                <div className="mt-2 flex items-end justify-between gap-3 px-1.5">
+                  <p className="text-[34px] font-extrabold leading-none tracking-tight text-white">
+                    <CountUp key={`${s.key}-${tab}`} to={s.trend.value * (1 - tab * 0.07)} decimals={s.trend.decimals ?? 0} />
+                    <span className="ml-1.5 text-[14px] font-semibold text-white/45">{s.trend.unit}</span>
+                  </p>
+                  <div className="flex gap-3 text-[12.5px] font-semibold">
+                    {s.trend.tabs.map((t, i) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setTab(i)}
+                        className={`border-b-2 pb-0.5 transition ${i === tab ? "border-gold text-white" : "border-transparent text-white/45 hover:text-white/80"}`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-4 h-[150px] px-1.5">
+                  <TrendBars seed={s.trend.seed} tab={tab} />
+                </div>
+              </div>
+
+              <div className="glass relative overflow-hidden rounded-[26px] p-3 md:col-span-2 xl:col-span-1">
+                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-transparent via-transparent to-amber/20" />
+                <div className="px-1.5 pt-1">
+                  <CardHeader title="Compliance Shield" href="#compliance" />
+                </div>
+                <p className="mt-2 inline-flex items-center gap-1.5 px-1.5 text-[12px] text-white/60">
+                  <span className="h-1.5 w-1.5 rounded-full bg-gold" /> Renewals in the next 90 days ·{" "}
+                  <span className="font-semibold text-white">NCFCC due in 23 days</span>
+                </p>
+                <div className="mt-2 h-[214px]">
+                  <RenewalBubbles />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
