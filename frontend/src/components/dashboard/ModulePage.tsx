@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { SeismicBand } from "./Patterns";
 
 /* ------------------------------------------------------------------ */
@@ -31,12 +31,17 @@ export function ModulePage({
   sections,
   quickActions,
   initialRecords,
+  extra,
 }: {
   color: string;
   name: string;
   fullName: string;
   desc: string;
   stats: Stat[];
+  /** Optional module-specific content rendered between the stats row and
+   * Operational Workflows (e.g. BunkerFlow's live stem fill gauges). Absent
+   * everywhere else, so no other module page is affected. */
+  extra?: ReactNode;
   sections: { title: string; items: string[] }[];
   quickActions: QuickAction[];
   initialRecords?: OperationalRecord[];
@@ -174,6 +179,8 @@ export function ModulePage({
           </div>
         ))}
       </div>
+
+      {extra}
 
       {/* Quick Actions */}
       <div className="rounded-[28px] bg-white p-5">

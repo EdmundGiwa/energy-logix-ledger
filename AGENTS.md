@@ -1,13 +1,3 @@
-<!-- BEGIN:nextjs-agent-rules -->
-
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
-
 # AGENTS.md
 
 Canonical, vendor-neutral instructions for every AI coding agent working in this repository. Read this file first for every task. Vendor-specific files such as `CLAUDE.md` are thin adapters and must not duplicate or contradict these rules.
@@ -27,7 +17,7 @@ Read only what the task requires, in this order:
 1. `AGENTS.md`
 2. `SECURITY.md` for authentication, authorization, tenancy, personal data, uploads, offline data, integrations, infrastructure, or deployment
 3. `GLOSSARY.md` when a task uses an unfamiliar industry term, acronym, measurement, regulator, standard, or workflow
-4. The relevant guide under `node_modules/next/dist/docs/` before changing Next.js code
+4. `frontend/AGENTS.md` and the relevant guide under `frontend/node_modules/next/dist/docs/` before changing Next.js code
 5. The relevant product-specification section when product behaviour is in question
 6. Feature documentation, source, migrations, and tests; these are the implementation truth once they exist
 
@@ -91,6 +81,27 @@ Admin registrations must be useful and safe, not bare `admin.site.register(Model
 - External integrations require explicit timeouts, bounded retries with backoff, idempotency, signature or credential validation, rate-limit handling, and observable failure states.
 - Do not claim an integration exists until access and behaviour have been verified against the provider.
 - Never mock away important production integration behaviour in the implementation.
+
+## UI component work (Living UI)
+
+For any task that designs, builds, or refines a UI component, layout, or micro-interaction in
+`frontend/`, read and follow `.agents/skills/living-ui/SKILL.md` before writing component code.
+It is a four-step workflow, not a suggestion:
+
+1. Check `.agents/skills/living-ui/references/catalog.md` for an existing, already-adapted
+   component before building one from scratch or reaching for a generic implementation.
+2. If nothing fits, query 21st.dev for a real component (`bash
+   .agents/skills/living-ui/scripts/fetch_21st.sh search "<query>"`, or the `21st` CLI directly).
+   This requires `API_KEY_21ST` to be supplied through the current process environment. Never
+   read credentials from another project, print the key's value, or commit it.
+3. De-slop the fetched component against `.agents/skills/living-ui/references/design-tokens.md`
+   and this project's own conventions (its actual palette, spacing, and existing patterns in
+   `frontend/src/components/dashboard/`) before using it — never ship a raw third-party
+   component with its original placeholder copy or a competing design system's tokens.
+4. Ingest the de-slopped component with `python3
+   .agents/skills/living-ui/scripts/ingest_component.py` so neither this agent nor any other
+   has to re-fetch or re-adapt it. This keeps the catalog specific to PetroLedger; do not copy
+   another project's catalog entries or `resources/components/` into this one.
 
 ## Task execution
 

@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PetroLedger Energy OS
 
-## Getting Started
+PetroLedger is a multi-tenant operating platform for energy-service contractors. This repository contains an independently deployable Next.js frontend and Django REST API.
 
-First, run the development server:
+## Repository layout
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```text
+frontend/   Next.js 16 application
+backend/    Django 5.2 LTS and Django REST Framework API
+docs/       Architecture and delivery plans
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Read `AGENTS.md`, `SECURITY.md`, and the relevant application instructions before changing code.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Local development with Docker
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Requirements:
 
-## Learn More
+- Docker Engine
+- Docker Compose
 
-To learn more about Next.js, take a look at the following resources:
+Start the complete development stack:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+docker compose up --build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Services:
 
-## Deploy on Vercel
+- Frontend: <http://localhost:3000>
+- Backend health: <http://localhost:8001/api/v1/health/>
+- Django admin: <http://localhost:8001/admin/>
+- PostgreSQL: `localhost:5432`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The first build downloads application dependencies. The backend container applies committed migrations before starting the development server.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To create a local Django administrator:
+
+```bash
+docker compose exec backend python manage.py createsuperuser
+```
+
+Stop the services without deleting database data:
+
+```bash
+docker compose down
+```
+
+Copy `.env.example` to `.env` only when overriding the safe local-development defaults. Never commit `.env`.
+
+## Checks
+
+```bash
+docker compose run --rm backend python manage.py test
+docker compose run --rm backend python manage.py check
+docker compose run --rm frontend npm run lint
+docker compose run --rm frontend npm run typecheck
+```
+
+See `docs/BACKEND_ROADMAP.md` for the screen-driven backend delivery plan.

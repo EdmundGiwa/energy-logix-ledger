@@ -1,4 +1,5 @@
 import { ModulePage } from "@/components/dashboard/ModulePage";
+import { StemGauge } from "@/components/dashboard/StemGauge";
 
 export default function BunkerFlowPage() {
   return (
@@ -7,6 +8,33 @@ export default function BunkerFlowPage() {
       name="BunkerFlow"
       fullName="Marine Fuel & Port Services"
       desc="Nomination intake, tank soundings with ASTM 54B/56 conversion, e-BDN with dual signatures, sample seal tracking, STS transfer ledger, and port husbandry — all in one flow."
+      extra={
+        <div className="rounded-[28px] bg-white p-5">
+          <h2 className="mb-3.5 text-[14px] font-bold text-slate-900">
+            Active Stems — Live Fill
+          </h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <StemGauge
+              label="MT Sea Venture — VLSFO 0.5%"
+              sublabel="Apapa SPM Anchorage"
+              deliveredMt={1250}
+              nominatedMt={1270}
+            />
+            <StemGauge
+              label="Barge Edflo Pioneer — Sounding #3"
+              sublabel="Forward/Aft trim corrected"
+              deliveredMt={4180}
+              nominatedMt={4600}
+            />
+            <StemGauge
+              label="MT Ocean Star STS Receipt"
+              sublabel="Lagos Offshore Fairway Buoy"
+              deliveredMt={2860}
+              nominatedMt={3500}
+            />
+          </div>
+        </div>
+      }
       stats={[
         { label: "Delivered Today", value: "3,420 MT", sub: "+6.2% vs. plan" },
         { label: "Active Stems", value: "8", sub: "Across 3 anchorages" },

@@ -119,6 +119,10 @@ A measure of a fluid's resistance to flow. Petroleum-product viscosity depends o
 
 ## Petroleum measurement and reconciliation
 
+### AGO — Automotive Gas Oil
+
+A petroleum middle-distillate product commonly referred to as diesel in Nigerian commercial operations. Product specifications and permitted use depend on the applicable contract and regulation.
+
 ### API MPMS
 
 American Petroleum Institute Manual of Petroleum Measurement Standards. A collection of standards covering petroleum measurement. Always identify the applicable chapter, edition, units, and calculation procedure.
@@ -134,6 +138,10 @@ Mass per unit volume at stated conditions. Petroleum density varies with tempera
 ### GOV — Gross Observed Volume
 
 The measured petroleum volume at the observed temperature before standard temperature correction and relevant deductions. **Verify before implementation:** terminology and calculation sequence under the applicable API MPMS procedure.
+
+### GSV — Gross Standard Volume
+
+Gross petroleum volume corrected from observed conditions to the specified reference temperature before applicable sediment-and-water deductions. **Verify before implementation:** the governing standard, inputs, units, and calculation sequence.
 
 ### Gross and tare weight
 
@@ -167,6 +175,14 @@ A historical petroleum measurement table designation commonly associated with we
 
 A factor used to convert a petroleum volume observed at one temperature to its equivalent at a specified reference temperature under an applicable measurement standard.
 
+### VLSFO — Very Low Sulphur Fuel Oil
+
+A marine residual or blended fuel marketed to meet an applicable sulphur limit, commonly associated with the global 0.50% mass-by-mass MARPOL limit. The delivered product still requires specification and compliance evidence.
+
+### Water cut
+
+The proportion or detected presence of water in a petroleum stream, cargo, or tank measurement. The term and method can vary by operation; software must record the test or measurement basis.
+
 ## Pipeline integrity and field services
 
 ### Anode
@@ -189,6 +205,10 @@ A corrosion-control technique that makes the protected metal structure act as th
 
 A field survey that records pipe-to-soil potential measurements at close intervals to assess cathodic-protection performance along a buried pipeline.
 
+### CSE — Copper/Copper Sulphate Electrode
+
+A reference electrode commonly used when measuring pipe-to-soil potentials for buried steel pipeline cathodic-protection surveys.
+
 ### Corrosion
 
 Degradation of a material through chemical or electrochemical interaction with its environment. Corrosion assessment depends on material, environment, geometry, measurements, and an applicable engineering method.
@@ -208,6 +228,10 @@ A pressure test, commonly using water, performed to evaluate the integrity or le
 ### ILI — In-line inspection
 
 Inspection performed by an instrument travelling inside a pipeline to collect condition data. Tools may detect metal loss, geometry changes, cracks, or other features depending on their technology.
+
+### KP — Kilometre Point
+
+A distance reference along a pipeline or route, normally measured from an agreed origin. Project conventions determine the precise origin and formatting.
 
 ### MFL — Magnetic Flux Leakage
 
@@ -299,6 +323,10 @@ A vehicle movement outside an authorized or expected route or corridor. Alert th
 
 A large scale used to weigh a vehicle. A loaded and empty measurement can be used to calculate net payload, subject to calibration and operating controls.
 
+### FRSC
+
+Federal Road Safety Corps, the Nigerian federal body with road-safety and motor-vehicle administration responsibilities under its mandate.
+
 ## HSE, permits, and workforce
 
 ### BOSIET
@@ -348,6 +376,14 @@ Oxygen. Atmospheric testing commonly checks oxygen percentage because deficient 
 ### OSP
 
 Offshore Safety Permit in the Nigerian offshore context. **Verify before implementation:** issuing authority, current categories, validity, and verification mechanism.
+
+### OIM — Offshore Installation Manager
+
+The person with overall authority and responsibility for an offshore installation during operations. Exact authority and approval duties depend on the installation and governing procedures.
+
+### POB — Personnel on Board
+
+The count and identity roster of people currently present on a vessel, offshore installation, or controlled site, used for operational and emergency accountability.
 
 ### PTW — Permit to Work
 
@@ -403,7 +439,15 @@ Nigerian Ports Authority. The federal authority responsible for Nigerian port ad
 
 Nigerian Upstream Petroleum Regulatory Commission. The regulator for upstream petroleum operations under the Petroleum Industry Act.
 
+### NESREA
+
+National Environmental Standards and Regulations Enforcement Agency. A Nigerian federal agency responsible for enforcing environmental standards and regulations within its statutory mandate. Confirm the responsible authority for each waste stream and operation.
+
 ## Commercial and project controls
+
+### BOQ — Bill of Quantities
+
+A structured list of work items, descriptions, quantities, and often rates used for tendering, valuation, and progress payments in construction and EPC contracts.
 
 ### Day rate
 
@@ -440,6 +484,24 @@ A contractually withheld portion of payment held until specified completion or d
 ### Variation
 
 An approved change to contracted scope, quantity, specification, schedule, or price. Requirements for instruction, valuation, approval, and evidence depend on the contract.
+
+## Procurement and marine-supply terms
+
+### AOG — Aircraft on Ground
+
+An urgent logistics designation indicating that an aircraft cannot operate until a required part or service is supplied. When used for non-aviation deliveries, confirm whether it is literal or informal shorthand for urgency.
+
+### IMPA catalogue
+
+A widely used marine stores coding and reference catalogue published by the International Marine Purchasing Association. Product codes aid identification but do not replace specification and compatibility checks.
+
+### OCTG — Oil Country Tubular Goods
+
+Steel tubular products used in oil and gas wells, such as casing, tubing, and drill pipe. Do not apply the term automatically to all line pipe or yard stock.
+
+### WAT — West Africa Time
+
+The UTC+1 civil time zone used in Nigeria. Backend timestamps should remain timezone-aware; WAT is a presentation format, not a reason to store naive local timestamps.
 
 ## Software and security terms used in this project
 
