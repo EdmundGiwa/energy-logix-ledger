@@ -5,6 +5,7 @@ Check here first before querying external sources.
 
 | Name | Category | Path | Dependencies | Origin | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| PetroLedgerLabeledSidebar | `navigation` | `resources/components/navigation/petroledger-labeled-sidebar.tsx` | react,next | 21st.dev/wensity/sidebar#31454 | Compact grouped PetroLedger desktop icon rail that reveals module labels on hover or keyboard focus, with active-route emphasis and quick tools |
 | WorkflowActionDialog | `overlays` | `resources/components/overlays/workflow-action-dialog.tsx` | react | 21st.dev/shadcn/alert-dialog#705 | Accessible native-dialog confirmation form for audited workflow transitions with stage-specific context and required reasons |
 | StemGauge | `data-display` | `resources/components/data-display/stem-gauge.tsx` | react | 21st.dev/thegridcn/energy-meter#24473 | Segmented animated fill gauge for a bunker stem's delivered-vs-nominated MT, dark HUD readout matching this app's AstmCalculatorModal/e-BDN panels |
 | PromptBentoGrid | `data-display` | `resources/components/data-display/prompt-bento-grid.jsx` | react,lucide-react | 21st.dev/0xUrvish/bento-card#10457 | Interactive question starters & operational audit bento cards |

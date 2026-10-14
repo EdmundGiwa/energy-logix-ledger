@@ -509,6 +509,13 @@ The UTC+1 civil time zone used in Nigeria. Backend timestamps should remain time
 
 ## Software and security terms used in this project
 
+### Fleet draft
+
+A resumable HaulTrac setup record that groups one customer, a loading origin
+and delivery destination, one truck, one trailer, and one driver. It is not an
+active trip. After all five stages are complete, the ready fleet can be used to
+create a dispatch.
+
 ### Idempotency
 
 The property that safely repeating the same operation produces no additional unintended effect. It is essential for retried payments, sync operations, webhooks, imports, and background jobs.

@@ -25,3 +25,17 @@ behaviour, security controls, implementation, and tests are complete.
   enabling OTP-based MFA for owners, administrators, or support users.
 - Add focused expiry, reuse, brute-force, resend, enumeration, concurrency, and
   tenant-isolation tests.
+
+## HaulTrac integrations
+
+### External weighbridge providers
+
+**Status:** Pending confirmed provider contracts and API access.
+
+- External weighbridge integrations will remain clearly marked as unavailable
+  until provider contracts and API access have been confirmed.
+- HaulTrac must identify manually entered readings as manual and must not imply
+  that they came directly from a weighbridge.
+- Each future provider integration requires a documented payload contract,
+  credential and signature validation, timeouts, bounded retries, idempotency,
+  observable failures, and tenant-isolation tests before it can be enabled.

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "identity",
     "organizations",
     "bunkering",
+    "haulage",
 ]
 
 MIDDLEWARE = [

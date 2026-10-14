@@ -49,11 +49,18 @@ async function csrfToken() {
   return cookie("petroledger_csrftoken") || body.csrf_token;
 }
 
+function errorFields(body: unknown): Record<string, string[]> {
+  if (!body || typeof body !== "object") return {};
+  return Object.fromEntries(Object.entries(body as Record<string, unknown>).flatMap(([key, value]) => {
+    const messages = (Array.isArray(value) ? value : [value]).filter((item): item is string => typeof item === "string");
+    return messages.length ? [[key, messages]] : [];
+  }));
+}
+
 function errorMessage(body: unknown) {
   if (!body || typeof body !== "object") return "The request could not be completed.";
-  const fields = body as Record<string, unknown>;
-  const first = Object.values(fields).flatMap((value) => (Array.isArray(value) ? value : [value]))[0];
-  return typeof first === "string" ? first : "The request could not be completed.";
+  const fields = errorFields(body);
+  return fields.detail?.[0] ?? Object.values(fields)[0]?.[0] ?? "The request could not be completed.";
 }
 
 export async function apiRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -67,7 +74,7 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
   if (response.status === 204) return undefined as T;
   const body = await response.json().catch(() => null);
   if (!response.ok) {
-    throw new ApiError(errorMessage(body), response.status, (body ?? {}) as Record<string, string[]>);
+    throw new ApiError(errorMessage(body), response.status, errorFields(body));
   }
   return body as T;
 }
@@ -197,6 +204,71 @@ export const bunkerApi = {
 export async function downloadBdn(id: string, filename: string) {
   const response = await fetch(`${API_URL}/bunkerflow/nominations/${id}/bdn/export/`, { credentials: "include" });
   if (!response.ok) throw new ApiError("The BDN could not be exported.", response.status);
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${filename}.pdf`;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+export type HaulStatus = "draft" | "dispatched" | "in_transit" | "arrived" | "discharging" | "delivered" | "closed" | "cancelled";
+export type HaulCustomer = { id: string; name: string; contact_name: string; contact_phone: string; is_active: boolean; created_at: string };
+export type HaulLocation = { id: string; name: string; address: string; contact_name: string; contact_phone: string; is_active: boolean; created_at: string };
+export type HaulTruck = { id: string; registration_number: string; fleet_number: string; make_model: string; capacity_litres: string; is_active: boolean; created_at: string };
+export type HaulTrailer = { id: string; registration_number: string; fleet_number: string; capacity_litres: string; calibration_expires_on: string | null; is_active: boolean; created_at: string };
+export type HaulDriver = { id: string; full_name: string; phone_number: string; licence_number: string; licence_expires_on: string; is_active: boolean; created_at: string };
+export type WeighbridgeReading = { id: string; kind: "tare" | "gross"; weight_kg: string; captured_at: string; weighbridge_name: string; ticket_number: string; source: "manual" | "integration"; recorded_by: string; created_at: string };
+export type ElectronicWaybill = { id: string; number: string; verification_code: string; issued_at: string };
+export type ProofOfDelivery = { id: string; delivered_quantity_litres: string; ullage_mm: string; observed_temperature_c: string; water_paste_result: "clear" | "water_detected"; receiver_name: string; receiver_title: string; receiver_acknowledged_at: string; notes: string; recorded_by: string; created_at: string };
+export type HaulAuditEvent = { id: string; request_id: string; actor: string; action: string; outcome: "success" | "failure"; reason: string; from_status: string; to_status: string; metadata: Record<string, unknown>; created_at: string };
+export type HaulFleet = {
+  id: string; reference: string; status: "draft" | "ready"; version: number;
+  completed_steps: number; next_step: "customer" | "route" | "truck" | "trailer" | "driver" | "complete";
+  customer: HaulCustomer | null; origin: HaulLocation | null; destination: HaulLocation | null;
+  truck: HaulTruck | null; trailer: HaulTrailer | null; driver: HaulDriver | null;
+  created_at: string; updated_at: string;
+};
+export type HaulDispatch = {
+  id: string; reference: string; customer_name: string; origin_name: string; destination_name: string;
+  truck_registration: string; trailer_registration: string; driver_name: string; product: string;
+  planned_quantity_litres: string; scheduled_departure_at: string; status: HaulStatus; version: number;
+  waybill_number: string | null; created_at: string; updated_at: string;
+  customer?: HaulCustomer; origin?: HaulLocation; destination?: HaulLocation; truck?: HaulTruck;
+  trailer?: HaulTrailer; driver?: HaulDriver; notes?: string; weighbridge_readings?: WeighbridgeReading[];
+  waybill?: ElectronicWaybill | null; proof_of_delivery?: ProofOfDelivery | null;
+  audit_events?: HaulAuditEvent[]; allowed_actions?: string[];
+};
+export type HaulSummary = { active_trips: number; draft_dispatches: number; closed_trips: number; planned_quantity_litres: string };
+export type HaulReferences = { customers: HaulCustomer[]; locations: HaulLocation[]; trucks: HaulTruck[]; trailers: HaulTrailer[]; drivers: HaulDriver[] };
+
+export const haulApi = {
+  summary: () => apiRequest<HaulSummary>("/haultrac/summary/"),
+  fleets: (params = "") => apiRequest<HaulFleet[]>(`/haultrac/fleets/${params ? `?${params}` : ""}`),
+  createFleet: () => apiRequest<HaulFleet>("/haultrac/fleets/", { method: "POST", body: JSON.stringify({}) }),
+  fleet: (id: string) => apiRequest<HaulFleet>(`/haultrac/fleets/${id}/`),
+  saveFleetStage: (id: string, stage: string, version: number, data: Record<string, unknown>) =>
+    apiRequest<HaulFleet>(`/haultrac/fleets/${id}/stage/`, { method: "POST", body: JSON.stringify({ stage, version, data }) }),
+  list: (params = "") => apiRequest<Paginated<HaulDispatch>>(`/haultrac/dispatches/${params ? `?${params}` : ""}`),
+  detail: (id: string) => apiRequest<HaulDispatch>(`/haultrac/dispatches/${id}/`),
+  create: (payload: Record<string, unknown>) => apiRequest<HaulDispatch>("/haultrac/dispatches/", { method: "POST", body: JSON.stringify(payload) }),
+  transition: (id: string, action: string, version: number, reason: string) => apiRequest<HaulDispatch>(`/haultrac/dispatches/${id}/actions/${action}/`, { method: "POST", body: JSON.stringify({ version, reason }) }),
+  recordWeighbridge: (id: string, payload: Record<string, unknown>) => apiRequest<HaulDispatch>(`/haultrac/dispatches/${id}/weighbridge/`, { method: "POST", body: JSON.stringify(payload) }),
+  generateWaybill: (id: string, version: number, number = "") => apiRequest<HaulDispatch>(`/haultrac/dispatches/${id}/waybill/`, { method: "POST", body: JSON.stringify({ version, number }) }),
+  recordPod: (id: string, payload: Record<string, unknown>) => apiRequest<HaulDispatch>(`/haultrac/dispatches/${id}/proof-of-delivery/`, { method: "POST", body: JSON.stringify(payload) }),
+  customers: () => apiRequest<HaulCustomer[]>("/haultrac/customers/"),
+  locations: () => apiRequest<HaulLocation[]>("/haultrac/locations/"),
+  trucks: () => apiRequest<HaulTruck[]>("/haultrac/trucks/"),
+  trailers: () => apiRequest<HaulTrailer[]>("/haultrac/trailers/"),
+  drivers: () => apiRequest<HaulDriver[]>("/haultrac/drivers/"),
+  createReference: (kind: "customers" | "locations" | "trucks" | "trailers" | "drivers", payload: Record<string, unknown>) => apiRequest<unknown>(`/haultrac/${kind}/`, { method: "POST", body: JSON.stringify(payload) }),
+};
+
+export const haulQrUrl = (id: string) => `${API_URL}/haultrac/dispatches/${id}/waybill/qr/`;
+
+export async function downloadDeliveryDocument(id: string, filename: string) {
+  const response = await fetch(`${API_URL}/haultrac/dispatches/${id}/export/`, { credentials: "include" });
+  if (!response.ok) throw new ApiError("The delivery document could not be exported.", response.status);
   const url = URL.createObjectURL(await response.blob());
   const link = document.createElement("a");
   link.href = url;

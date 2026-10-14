@@ -41,10 +41,7 @@ export function isNavActive(pathname: string, item: { href: string; exact?: bool
   return item.exact ? pathname === item.href : pathname.startsWith(item.href);
 }
 
-/* ------------------------------------------------------------------ */
-/* Rail button                                                         */
-/* ------------------------------------------------------------------ */
-function RailItem({
+function SidebarItem({
   label,
   active,
   children,
@@ -57,71 +54,59 @@ function RailItem({
   href?: string;
   onClick?: () => void;
 }) {
-  const cls = `group relative grid h-11 w-11 place-items-center rounded-full transition duration-200 ${
-    active ? "bg-[#0b1523] text-white shadow-[0_8px_20px_-8px_rgba(11,21,35,0.6)]" : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+  const cls = `group flex min-h-10 w-full items-center gap-3 rounded-xl px-1.5 py-2 text-left text-[13px] font-medium transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 group-hover/sidebar:px-3 group-focus-within/sidebar:px-3 ${
+    active ? "bg-[#0b1523] font-semibold text-white shadow-[0_8px_20px_-12px_rgba(11,21,35,0.65)]" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
   }`;
-  const tip = (
-    <span className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#0b1523] px-2.5 py-1 text-[11.5px] font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
-      {label}
-    </span>
-  );
+  const content = <><span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${active ? "bg-white/10" : "bg-slate-50 group-hover:bg-white"}`}>{children}</span><span className="invisible min-w-0 flex-1 truncate opacity-0 transition-opacity duration-150 group-hover/sidebar:visible group-hover/sidebar:opacity-100 group-focus-within/sidebar:visible group-focus-within/sidebar:opacity-100">{label}</span></>;
   return href ? (
-    <Link href={href} aria-label={label} aria-current={active ? "page" : undefined} className={cls}>
-      {children}
-      {tip}
-    </Link>
+    <Link href={href} title={label} aria-current={active ? "page" : undefined} className={cls}>{content}</Link>
   ) : (
-    <button type="button" aria-label={label} onClick={onClick} className={cls}>
-      {children}
-      {tip}
-    </button>
+    <button type="button" title={label} aria-label={label} onClick={onClick} className={cls}>{content}</button>
   );
 }
 
-/* ------------------------------------------------------------------ */
-/* Floating icon rail                                                  */
-/* ------------------------------------------------------------------ */
 export function Sidebar({ onOpenSearch, onOpenAstm }: { onOpenSearch?: () => void; onOpenAstm?: () => void }) {
   const pathname = usePathname();
+  const groupedModules = navGroups.slice(1).map((group) => ({
+    label: group.label,
+    items: moduleNav.filter((item) => item.group === group.label),
+  }));
 
   return (
-    <aside className="fixed bottom-4 left-4 top-[96px] z-40 flex w-[60px] flex-col items-center justify-between gap-3">
-      <div className="flex w-full flex-col items-center gap-3 overflow-y-auto no-scrollbar">
-        {/* Quick tools */}
-        <div className="flex flex-col items-center gap-1 rounded-full bg-white p-1.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-          <RailItem label="Search records (⌘K)" onClick={onOpenSearch}>
+    <aside aria-label="Primary navigation" className="group/sidebar fixed bottom-[72px] left-4 top-[96px] z-40 flex w-[60px] flex-col overflow-hidden rounded-[24px] border border-white/80 bg-white/95 shadow-[0_10px_35px_-20px_rgba(15,23,42,0.28)] backdrop-blur transition-[width] duration-200 ease-out hover:w-[220px] focus-within:w-[220px] motion-reduce:transition-none">
+      <div className="border-b border-slate-100 p-2.5">
+        <p className="invisible h-0 overflow-hidden whitespace-nowrap px-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 opacity-0 transition-opacity group-hover/sidebar:visible group-hover/sidebar:h-auto group-hover/sidebar:pb-1.5 group-hover/sidebar:pt-1 group-hover/sidebar:opacity-100 group-focus-within/sidebar:visible group-focus-within/sidebar:h-auto group-focus-within/sidebar:pb-1.5 group-focus-within/sidebar:pt-1 group-focus-within/sidebar:opacity-100">Quick tools</p>
+        <div className="space-y-1">
+          <SidebarItem label="Search records" onClick={onOpenSearch}>
             <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round">
               <circle cx="11" cy="11" r="7" />
               <path d="m20 20-3.5-3.5" />
             </svg>
-          </RailItem>
-          <RailItem label="ASTM 54B / 56 calculator" onClick={onOpenAstm}>
+          </SidebarItem>
+          <SidebarItem label="ASTM calculator" onClick={onOpenAstm}>
             <Icon.Scale size={18} />
-          </RailItem>
+          </SidebarItem>
         </div>
-
-        {/* Modules */}
-        <nav aria-label="Modules" className="flex flex-col items-center gap-1 rounded-full bg-white p-1.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-          {moduleNav.map((m) => {
-            const I = m.icon;
-            return (
-              <RailItem key={m.href} href={m.href} label={m.label} active={isNavActive(pathname, m)}>
-                <I size={18} />
-              </RailItem>
-            );
-          })}
-        </nav>
       </div>
 
-      {/* Bottom */}
-      <div className="flex flex-col items-center gap-1 rounded-full bg-white p-1.5 shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
-        <RailItem label="Settings" href="/dashboard/settings" active={pathname.startsWith("/dashboard/settings")}>
+      <nav aria-label="Product modules" className="min-h-0 flex-1 overflow-y-auto p-2.5 no-scrollbar">
+        <div className="space-y-1">
+          {moduleNav.slice(0, 1).map((item) => { const I = item.icon; return <SidebarItem key={item.href} href={item.href} label={item.label} active={isNavActive(pathname, item)}><I size={17} /></SidebarItem>; })}
+        </div>
+        {groupedModules.map((group) => <section key={group.label} aria-labelledby={`sidebar-${group.label.replaceAll(" ", "-").toLowerCase()}`} className="mt-4">
+          <h2 id={`sidebar-${group.label.replaceAll(" ", "-").toLowerCase()}`} className="invisible h-0 overflow-hidden whitespace-nowrap px-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 opacity-0 transition-opacity group-hover/sidebar:visible group-hover/sidebar:h-auto group-hover/sidebar:pb-1.5 group-hover/sidebar:opacity-100 group-focus-within/sidebar:visible group-focus-within/sidebar:h-auto group-focus-within/sidebar:pb-1.5 group-focus-within/sidebar:opacity-100">{group.label}</h2>
+          <div className="space-y-1">{group.items.map((item) => { const I = item.icon; return <SidebarItem key={item.href} href={item.href} label={item.label} active={isNavActive(pathname, item)}><I size={17} /></SidebarItem>; })}</div>
+        </section>)}
+      </nav>
+
+      <div className="space-y-1 border-t border-slate-100 p-2.5">
+        <SidebarItem label="Settings" href="/dashboard/settings" active={pathname.startsWith("/dashboard/settings")}>
           <Icon.Settings size={18} />
-        </RailItem>
-        <SignOutButton className="group relative grid h-11 w-11 place-items-center rounded-full text-slate-500 transition duration-200 hover:bg-slate-100 hover:text-slate-900">
-          <><svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+        </SidebarItem>
+        <SignOutButton className="group flex min-h-10 w-full items-center gap-3 rounded-xl px-1.5 py-2 text-left text-[13px] font-medium text-rose-700 transition hover:bg-rose-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500 group-hover/sidebar:px-3 group-focus-within/sidebar:px-3">
+          <><span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-rose-50"><svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-          </svg><span className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#0b1523] px-2.5 py-1 text-[11.5px] font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">Sign out</span></>
+          </svg></span><span className="invisible min-w-0 flex-1 truncate opacity-0 transition-opacity duration-150 group-hover/sidebar:visible group-hover/sidebar:opacity-100 group-focus-within/sidebar:visible group-focus-within/sidebar:opacity-100">Sign out</span></>
         </SignOutButton>
       </div>
     </aside>

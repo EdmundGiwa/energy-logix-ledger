@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { ApiError, BunkerNomination, BunkerSummary, bunkerApi } from "@/lib/api";
@@ -142,8 +141,21 @@ export function BunkerFlowList() {
             <thead className="bg-slate-50 text-xs text-slate-500"><tr><th className="px-5 py-3">Reference</th><th className="px-5 py-3">Vessel / customer</th><th className="px-5 py-3">Product</th><th className="px-5 py-3">Quantity</th><th className="px-5 py-3">Window</th><th className="px-5 py-3">Status</th></tr></thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-500">Loading BunkerFlow records…</td></tr> : records.length === 0 ? <tr><td colSpan={6} className="px-5 py-12 text-center text-slate-500">No nominations match this view.</td></tr> : records.map((record) => (
-                <tr key={record.id} className="hover:bg-slate-50">
-                  <td className="px-5 py-4"><Link className="font-mono font-bold text-sky-800 hover:underline" href={`/dashboard/bunkerflow/${record.id}`}>{record.reference}</Link></td>
+                <tr
+                  key={record.id}
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`Open nomination ${record.reference}`}
+                  onClick={() => router.push(`/dashboard/bunkerflow/${record.id}`)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      router.push(`/dashboard/bunkerflow/${record.id}`);
+                    }
+                  }}
+                  className="group cursor-pointer hover:bg-sky-50/60 focus-visible:bg-sky-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-sky-500"
+                >
+                  <td className="px-5 py-4"><span className="font-mono font-bold text-sky-800 group-hover:underline">{record.reference}</span></td>
                   <td className="px-5 py-4"><p className="font-semibold text-slate-900">{record.vessel_name}</p><p className="text-xs text-slate-500">{record.customer_name}</p></td>
                   <td className="px-5 py-4 text-slate-700">{record.product_grade}</td>
                   <td className="px-5 py-4 font-mono text-slate-800">{Number(record.nominated_quantity_mt).toLocaleString()} MT</td>

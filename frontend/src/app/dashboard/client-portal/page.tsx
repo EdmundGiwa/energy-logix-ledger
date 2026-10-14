@@ -106,7 +106,7 @@ export default function ClientPortalPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-[1400px]">
+    <div className="mx-auto max-w-[1400px] space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>

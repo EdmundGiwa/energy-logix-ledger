@@ -124,7 +124,7 @@ export function ModulePage({
   };
 
   return (
-    <div className="space-y-6 max-w-[1400px]">
+    <div className="mx-auto max-w-[1400px] space-y-6">
       {/* Toast Notification */}
       {toastMsg && (
         <div className="fixed top-5 right-5 z-50 rounded-2xl bg-slate-900 border border-slate-800 text-white px-5 py-3 shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-200">
