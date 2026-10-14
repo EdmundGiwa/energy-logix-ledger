@@ -1,10 +1,7 @@
 "use client";
 
-import { type ComponentType } from "react";
-import { Icon, LogoMark } from "./icons";
+import { LogoMark } from "./icons";
 import { Reveal, SectionHeading, Spotlight, useInView } from "./primitives";
-
-type IconC = ComponentType<{ size?: number; className?: string }>;
 
 const sources: { t: string; risk: string }[] = [
   { t: "Paper BDNs", risk: "Lost or altered" },

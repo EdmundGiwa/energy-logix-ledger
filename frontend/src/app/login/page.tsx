@@ -2,10 +2,35 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LogoMark } from "@/components/landing/icons";
+import { ApiError, authApi } from "@/lib/api";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const router = useRouter();
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setSubmitting(true);
+    const data = new FormData(event.currentTarget);
+    try {
+      await authApi.login({
+        email: String(data.get("email") ?? ""),
+        password: String(data.get("password") ?? ""),
+        remember_me: data.get("remember_me") === "on",
+      });
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (requestError) {
+      setError(requestError instanceof ApiError ? requestError.message : "Unable to sign in. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -107,14 +132,21 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form className="mt-8 space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
+            {error && (
+              <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] text-rose-700">
+                {error}
+              </div>
+            )}
             <div>
               <label htmlFor="login-email" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
                 Email address
               </label>
               <input
                 id="login-email"
+                name="email"
                 type="email"
+                required
                 autoComplete="email"
                 placeholder="you@company.com"
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
@@ -128,7 +160,9 @@ export default function LoginPage() {
               <div className="relative">
                 <input
                   id="login-password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
+                  required
                   autoComplete="current-password"
                   placeholder="••••••••"
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-14 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
@@ -147,6 +181,7 @@ export default function LoginPage() {
               <label className="flex items-center gap-2.5 cursor-pointer select-none">
                 <input
                   type="checkbox"
+                  name="remember_me"
                   className="h-[18px] w-[18px] rounded-md border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
                 />
                 <span className="text-[13px] text-slate-600">Remember me</span>
@@ -159,12 +194,13 @@ export default function LoginPage() {
               </a>
             </div>
 
-            <Link
-              href="/dashboard"
+            <button
+              type="submit"
+              disabled={submitting}
               className="btn-green flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-[14px] font-semibold"
             >
-              Sign in
-            </Link>
+              {submitting ? "Signing in…" : "Sign in"}
+            </button>
           </form>
 
           {/* Divider */}

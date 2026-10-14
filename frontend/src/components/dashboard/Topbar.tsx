@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoMark } from "@/components/landing/icons";
 import { moduleNav, navGroups } from "./Sidebar";
+import { SignOutButton } from "@/components/auth/SignOutButton";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 const notifications = [
   { id: 1, title: "Certificate expiry alert", desc: "3 crew BOSIET certificates expire within 30 days", time: "12 min ago", tone: "crit" as const },
@@ -26,6 +28,9 @@ export function Topbar({
   const [showNotif, setShowNotif] = useState(false);
   const [showUser, setShowUser] = useState(false);
   const [unread, setUnread] = useState(notifications.length);
+  const { user } = useAuth();
+  const membership = user.memberships[0];
+  const initials = `${user.first_name[0] ?? ""}${user.last_name[0] ?? ""}`.toUpperCase() || user.email[0].toUpperCase();
 
   const current = moduleNav.find((m) => (m.exact ? pathname === m.href : pathname.startsWith(m.href)));
   const activeGroup = current?.group ?? null;
@@ -155,11 +160,11 @@ export function Topbar({
             className={`${pill} flex h-[60px] items-center gap-3 pl-2 pr-4`}
           >
             <span className="grid h-11 w-11 place-items-center rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 text-[13px] font-bold text-white">
-              EO
+              {initials}
             </span>
             <span className="hidden text-left lg:block">
-              <span className="block text-[14px] font-medium text-slate-900">Emeka Okafor</span>
-              <span className="block text-[12px] text-slate-500">Edflo Energy · MD</span>
+              <span className="block text-[14px] font-medium text-slate-900">{user.name}</span>
+              <span className="block text-[12px] text-slate-500">{membership?.organization.name} · {membership?.job_title || membership?.role}</span>
             </span>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" className="hidden text-slate-400 lg:block">
               <path d="m6 9 6 6 6-6" />
@@ -170,9 +175,9 @@ export function Topbar({
               <div className="fixed inset-0 z-40" onClick={() => setShowUser(false)} />
               <div className="modal-in absolute right-0 top-[calc(100%+12px)] z-50 w-[240px] overflow-hidden rounded-3xl bg-white p-2 shadow-[0_24px_60px_-20px_rgba(15,23,42,0.35)]">
                 <div className="mb-1 px-3 py-2.5">
-                  <p className="text-[13px] font-semibold text-slate-900">Emeka Okafor</p>
-                  <p className="text-[12px] text-slate-500">emeka@edfloenergy.com</p>
-                  <span className="mt-1.5 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[10.5px] font-semibold text-emerald-700">Enterprise tier</span>
+                  <p className="text-[13px] font-semibold text-slate-900">{user.name}</p>
+                  <p className="text-[12px] text-slate-500">{user.email}</p>
+                  <span className="mt-1.5 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[10.5px] font-semibold capitalize text-emerald-700">{membership?.organization.requested_plan} tier · {membership?.role}</span>
                 </div>
                 {[
                   { label: "Roles & access", href: "/dashboard/settings#roles" },
@@ -189,9 +194,9 @@ export function Topbar({
                   </Link>
                 ))}
                 <div className="my-1 border-t border-slate-100" />
-                <Link href="/login" className="flex items-center rounded-2xl px-3 py-2.5 text-[13px] font-medium text-rose-600 transition hover:bg-rose-50">
+                <SignOutButton className="flex w-full items-center rounded-2xl px-3 py-2.5 text-left text-[13px] font-medium text-rose-600 transition hover:bg-rose-50">
                   Sign out
-                </Link>
+                </SignOutButton>
               </div>
             </>
           )}

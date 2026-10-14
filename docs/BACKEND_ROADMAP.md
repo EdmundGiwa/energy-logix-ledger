@@ -640,6 +640,10 @@ Do not build all modules before these decisions.
 
 ### Phase 1 — Secure core platform
 
+Deferred identity controls are tracked in
+[`PENDING_TODO.md`](PENDING_TODO.md) and must be completed before a production or
+real-customer pilot.
+
 Build:
 
 - organizations, users, invitations, memberships, and roles;

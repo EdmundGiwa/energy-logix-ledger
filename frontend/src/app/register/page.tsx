@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LogoMark } from "@/components/landing/icons";
+import { ApiError, authApi } from "@/lib/api";
 
 const roles = [
   "Managing Director",
@@ -27,6 +29,34 @@ const tiers = [
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [selectedTier, setSelectedTier] = useState("starter");
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const router = useRouter();
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setSubmitting(true);
+    const data = new FormData(event.currentTarget);
+    try {
+      await authApi.register({
+        first_name: String(data.get("first_name") ?? ""),
+        last_name: String(data.get("last_name") ?? ""),
+        email: String(data.get("email") ?? ""),
+        organization_name: String(data.get("organization_name") ?? ""),
+        job_title: String(data.get("job_title") ?? ""),
+        requested_plan: selectedTier,
+        password: String(data.get("password") ?? ""),
+        terms_accepted: data.get("terms_accepted") === "on",
+      });
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (requestError) {
+      setError(requestError instanceof ApiError ? requestError.message : "Unable to create your account. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <div className="min-h-screen flex">
@@ -123,7 +153,12 @@ export default function RegisterPage() {
           </div>
 
           {/* Form */}
-          <form className="mt-7 space-y-5" onSubmit={(e) => e.preventDefault()}>
+          <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
+            {error && (
+              <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] text-rose-700">
+                {error}
+              </div>
+            )}
             {/* Name row */}
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -132,7 +167,9 @@ export default function RegisterPage() {
                 </label>
                 <input
                   id="reg-first"
+                  name="first_name"
                   type="text"
+                  required
                   placeholder="Emeka"
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
                 />
@@ -143,7 +180,9 @@ export default function RegisterPage() {
                 </label>
                 <input
                   id="reg-last"
+                  name="last_name"
                   type="text"
+                  required
                   placeholder="Okafor"
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
                 />
@@ -156,7 +195,9 @@ export default function RegisterPage() {
               </label>
               <input
                 id="reg-email"
+                name="email"
                 type="email"
+                required
                 autoComplete="email"
                 placeholder="you@company.com"
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
@@ -169,7 +210,9 @@ export default function RegisterPage() {
               </label>
               <input
                 id="reg-company"
+                name="organization_name"
                 type="text"
+                required
                 placeholder="Edflo Energy Services"
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
               />
@@ -181,6 +224,8 @@ export default function RegisterPage() {
               </label>
               <select
                 id="reg-role"
+                name="job_title"
+                required
                 className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100 appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 fill=%22%2394a3b8%22 viewBox=%220 0 16 16%22><path d=%22M4 6l4 4 4-4%22 stroke=%22%2394a3b8%22 stroke-width=%221.5%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>')] bg-no-repeat bg-[right_12px_center]"
               >
                 <option value="">Select your role</option>
@@ -226,7 +271,10 @@ export default function RegisterPage() {
               <div className="relative">
                 <input
                   id="reg-password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
+                  required
+                  minLength={8}
                   autoComplete="new-password"
                   placeholder="Min. 8 characters"
                   className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-14 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
@@ -244,6 +292,8 @@ export default function RegisterPage() {
             <label className="flex items-start gap-2.5 cursor-pointer select-none">
               <input
                 type="checkbox"
+                name="terms_accepted"
+                required
                 className="mt-0.5 h-[18px] w-[18px] rounded-md border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
               />
               <span className="text-[13px] text-slate-500 leading-snug">
@@ -254,12 +304,13 @@ export default function RegisterPage() {
               </span>
             </label>
 
-            <Link
-              href="/dashboard"
+            <button
+              type="submit"
+              disabled={submitting}
               className="btn-green flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-[14px] font-semibold"
             >
-              Create account
-            </Link>
+              {submitting ? "Creating account…" : "Create account"}
+            </button>
           </form>
 
           <div className="mt-7 flex items-center gap-4">

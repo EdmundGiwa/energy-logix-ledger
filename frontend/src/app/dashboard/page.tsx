@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from
 import { Icon } from "@/components/landing/icons";
 import { CountUp } from "@/components/landing/primitives";
 import { CardContours, SeismicBand } from "@/components/dashboard/Patterns";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 type IconC = ComponentType<{ size?: number; className?: string }>;
 type Tone = "ok" | "warn" | "crit" | "info";
@@ -655,10 +656,14 @@ function Devices() {
 
 export default function DashboardPage() {
   const [greeting, setGreeting] = useState("Welcome back");
+  const { user } = useAuth();
 
   useEffect(() => {
-    const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Africa/Lagos" }).format(new Date()));
-    setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
+    const timer = window.setTimeout(() => {
+      const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Africa/Lagos" }).format(new Date()));
+      setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
 
   return (
@@ -666,7 +671,7 @@ export default function DashboardPage() {
       <header className="relative flex flex-wrap items-end justify-between gap-4 px-1 pb-2 pt-3">
         <SeismicBand className="absolute -top-6 right-[8%] hidden h-[150px] w-[58%] lg:block" />
         <div className="relative">
-          <h1 className="text-[2rem] font-semibold tracking-tight text-slate-900 sm:text-[2.4rem]">{greeting}, Emeka</h1>
+          <h1 className="text-[2rem] font-semibold tracking-tight text-slate-900 sm:text-[2.4rem]">{greeting}, {user.first_name || user.name}</h1>
           <p className="mt-1 text-[15px] text-slate-500">Here is what is moving across your vessels, lines and trucks today.</p>
         </div>
         <div className="relative flex gap-2">

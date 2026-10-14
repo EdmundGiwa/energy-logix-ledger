@@ -27,12 +27,17 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-petroledger}
       POSTGRES_USER: ${POSTGRES_USER:-petroledger}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-petroledger}
+      POSTGRES_ADMIN_USER: ${POSTGRES_USER:-petroledger}
+      POSTGRES_ADMIN_PASSWORD: ${POSTGRES_PASSWORD:-petroledger}
+      POSTGRES_APP_USER: ${POSTGRES_APP_USER:-petroledger_app}
+      POSTGRES_APP_PASSWORD: ${POSTGRES_APP_PASSWORD:-petroledger_app}
       POSTGRES_HOST: db
       POSTGRES_PORT: "5432"
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-insecure-local-development-key-change-me}
       DJANGO_DEBUG: ${DJANGO_DEBUG:-true}
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-http://localhost:3000,http://localhost:8001}
+      DJANGO_CORS_ALLOWED_ORIGINS: ${DJANGO_CORS_ALLOWED_ORIGINS:-http://localhost:3000}
     ports:
       - "8001:8000"
     volumes:

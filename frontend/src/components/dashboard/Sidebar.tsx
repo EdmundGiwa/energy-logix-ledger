@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 import { Icon } from "@/components/landing/icons";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 /* ------------------------------------------------------------------ */
 /* Navigation data                                                     */
@@ -117,11 +118,11 @@ export function Sidebar({ onOpenSearch, onOpenAstm }: { onOpenSearch?: () => voi
         <RailItem label="Settings" href="/dashboard/settings" active={pathname.startsWith("/dashboard/settings")}>
           <Icon.Settings size={18} />
         </RailItem>
-        <RailItem label="Sign out" href="/login">
-          <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+        <SignOutButton className="group relative grid h-11 w-11 place-items-center rounded-full text-slate-500 transition duration-200 hover:bg-slate-100 hover:text-slate-900">
+          <><svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-          </svg>
-        </RailItem>
+          </svg><span className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 z-50 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#0b1523] px-2.5 py-1 text-[11.5px] font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">Sign out</span></>
+        </SignOutButton>
       </div>
     </aside>
   );

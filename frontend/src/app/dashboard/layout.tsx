@@ -8,6 +8,7 @@ import { StatusBar } from "@/components/dashboard/StatusBar";
 import { AstmCalculatorModal } from "@/components/dashboard/AstmCalculatorModal";
 import { CommandPalette } from "@/components/dashboard/CommandPalette";
 import { DashboardBackdrop } from "@/components/dashboard/Patterns";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -27,6 +28,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, []);
 
   return (
+    <AuthProvider>
     <div className="relative isolate flex min-h-screen flex-col bg-[#f2f3f5] text-slate-900">
       <DashboardBackdrop />
       <AstmCalculatorModal open={astmOpen} onClose={() => setAstmOpen(false)} />
@@ -44,5 +46,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <StatusBar onOpenAstm={() => setAstmOpen(true)} />
       </div>
     </div>
+    </AuthProvider>
   );
 }

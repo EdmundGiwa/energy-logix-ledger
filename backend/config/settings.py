@@ -37,16 +37,20 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "corsheaders",
     "core",
     "identity",
+    "organizations",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "organizations.middleware.TenantDatabaseContextMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -75,14 +79,15 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("POSTGRES_DB", "petroledger"),
-        "USER": os.getenv("POSTGRES_USER", "petroledger"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "petroledger"),
+        "USER": os.getenv("DATABASE_USER", os.getenv("POSTGRES_APP_USER", os.getenv("POSTGRES_USER", "petroledger"))),
+        "PASSWORD": os.getenv("DATABASE_PASSWORD", os.getenv("POSTGRES_APP_PASSWORD", os.getenv("POSTGRES_PASSWORD", "petroledger"))),
         "HOST": os.getenv("POSTGRES_HOST", "localhost"),
         "PORT": os.getenv("POSTGRES_PORT", "5432"),
         "CONN_MAX_AGE": 60,
         "CONN_HEALTH_CHECKS": True,
     }
 }
+DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
@@ -104,12 +109,31 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",
+        "login": "10/minute",
+        "registration": "5/hour",
+        "session_refresh": "30/hour",
+    },
 }
+
+CORS_ALLOWED_ORIGINS = env_list("DJANGO_CORS_ALLOWED_ORIGINS", "http://localhost:3000")
+CORS_ALLOW_CREDENTIALS = True
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_NAME = "petroledger_session"
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
 CSRF_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_NAME = "petroledger_csrftoken"

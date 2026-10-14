@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { moduleNav } from "./Sidebar";
 import { LogoMark } from "@/components/landing/icons";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 
 export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
@@ -105,12 +106,12 @@ export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () =>
 
         {/* Bottom */}
         <div className="border-t border-slate-100 px-4 py-3">
-          <Link
-            href="/login"
+          <SignOutButton
+            onComplete={onClose}
             className="flex items-center rounded-xl px-3 py-2.5 text-[13px] font-medium text-rose-600 hover:bg-rose-50 transition"
           >
             Sign out
-          </Link>
+          </SignOutButton>
         </div>
       </aside>
     </>

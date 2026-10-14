@@ -54,10 +54,7 @@ export function StemGauge({
 
   const [visibleCount, setVisibleCount] = React.useState(0);
   React.useEffect(() => {
-    if (filledCount === 0) {
-      setVisibleCount(0);
-      return;
-    }
+    if (filledCount === 0) return;
     let current = 0;
     const id = setInterval(() => {
       current += 1;
