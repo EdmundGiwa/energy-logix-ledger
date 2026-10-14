@@ -73,6 +73,10 @@ The senior engineering officer responsible for a ship's machinery and engineerin
 
 A digital form of the Bunker Delivery Note. Electronic validity, signatures, format, exchange, and acceptance depend on the applicable authority and counterparties. **Verify before implementation.**
 
+### Electronic acknowledgement
+
+A recorded action showing that an identified person accepted or confirmed a record at a particular time. It is not automatically a cryptographic digital signature and does not, by itself, establish legal signature validity.
+
 ### Flashpoint
 
 The lowest temperature, under a specified test method, at which a liquid gives off enough vapour to ignite momentarily. The result is method-dependent and safety-critical.

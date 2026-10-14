@@ -7,4 +7,5 @@ urlpatterns = [
     path("api/v1/", include("core.urls")),
     path("api/v1/auth/", include("identity.urls")),
     path("api/v1/organizations/", include("organizations.urls")),
+    path("api/v1/bunkerflow/", include("bunkering.urls")),
 ]

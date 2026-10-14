@@ -41,10 +41,12 @@ INSTALLED_APPS = [
     "core",
     "identity",
     "organizations",
+    "bunkering",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "core.middleware.RequestCorrelationMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
