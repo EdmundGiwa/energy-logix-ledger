@@ -5,11 +5,12 @@ import { Icon } from "./icons";
 import { Reveal, SectionHeading, Spotlight } from "./primitives";
 
 const segments = [
-  { n: "01", t: "Multi-service contractors", d: "Pipeline, marine services and procurement in one integrated firm.", icon: Icon.Layers },
-  { n: "02", t: "Bulk haulage operators", d: "Lekki-Epe and Delta corridor fleets moving PMS, AGO and Jet A1.", icon: Icon.Truck },
-  { n: "03", t: "Marine fuel & lube suppliers", d: "Lagos, Port Harcourt, Onne and Warri bunker stems with e-BDN.", icon: Icon.Ship },
-  { n: "04", t: "Pipeline integrity & NDT", d: "Contractors serving IOCs requiring NCDMB-compliant audit packs.", icon: Icon.Pipe },
-  { n: "05", t: "Depots & terminal yards", d: "Tank farm, weighbridge and gantry owners managing ATG balances.", icon: Icon.Tank },
+  { n: "01", t: "Offshore logistics & supply", d: "PSV owners, supply bases, rig suppliers and chandlers serving rigs, FPSOs and platforms.", icon: Icon.Anchor },
+  { n: "02", t: "Multi-service contractors", d: "Pipeline, marine services and procurement in one integrated firm.", icon: Icon.Layers },
+  { n: "03", t: "Bulk haulage operators", d: "Lekki-Epe and Delta corridor fleets moving PMS, AGO and Jet A1.", icon: Icon.Truck },
+  { n: "04", t: "Marine fuel & lube suppliers", d: "Lagos, Port Harcourt, Onne and Warri bunker stems with e-BDN.", icon: Icon.Ship },
+  { n: "05", t: "Pipeline integrity & NDT", d: "Contractors serving IOCs requiring NCDMB-compliant audit packs.", icon: Icon.Pipe },
+  { n: "06", t: "Depots & terminal yards", d: "Tank farm, weighbridge and gantry owners managing ATG balances.", icon: Icon.Tank },
 ];
 
 const phases = [
@@ -34,6 +35,7 @@ const phases = [
       "EPC-Link: NCDMB reporting and NCFCC gap checker",
       "Compliance Shield regulatory dashboard",
       "Client Verification Portal with cryptographic seals",
+      "Offshore suite: OffshoreLink, RigSupply, CrewTransit and VesselOps",
     ],
   },
   {
@@ -45,6 +47,7 @@ const phases = [
       "MarineStores and TankWorks inventory costing",
       "Commercial dual-currency billing (NGN / USD)",
       "Native SAP, Oracle and Odoo ERP connectors",
+      "EquipTrack rentals, MarineGuard security and EnviroLedger waste",
     ],
   },
   {
@@ -75,7 +78,7 @@ export function Roadmap() {
             </>
           }
         />
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {segments.map((s, i) => {
             const I = s.icon;
             return (

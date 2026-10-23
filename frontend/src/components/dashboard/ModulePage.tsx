@@ -1,7 +1,10 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import { SeismicBand } from "./Patterns";
+import { isNewModule } from "./Sidebar";
+import { NewBadge } from "@/components/ui/NewBadge";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -80,6 +83,7 @@ export function ModulePage({
     },
   ];
 
+  const pathname = usePathname();
   const [records, setRecords] = useState<OperationalRecord[]>(defaultRecords);
   const [search, setSearch] = useState("");
   const [filterTab, setFilterTab] = useState<"all" | "Verified" | "Active" | "Pending" | "Flagged">("all");
@@ -106,7 +110,7 @@ export function ModulePage({
     const newRec: OperationalRecord = {
       id: `${name.substring(0, 3).toUpperCase()}-2026-${Math.floor(Math.random() * 900 + 100)}`,
       title: newTitle,
-      subtitle: newSubtitle || "Manual field entry via PetroLedger OS",
+      subtitle: newSubtitle || "Manual field entry via Offshora",
       metric: newMetric || "Verified Entry",
       status: "Active",
       date: "Just now",
@@ -143,6 +147,7 @@ export function ModulePage({
           >
             <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
             {name}
+            {isNewModule(pathname) && <NewBadge />}
           </span>
           <h1 className="mt-2 text-[2rem] font-semibold tracking-tight text-slate-900 sm:text-[2.4rem]">
             {fullName}

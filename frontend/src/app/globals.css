@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* PetroLedger — Clean modern enterprise design system
+/* Offshora — Clean modern enterprise design system
    Outfit typography, pristine white background, deep slate contrast,
    and vibrant emerald green accents. */
 :root {
@@ -515,4 +515,38 @@ input[type="range"]::-moz-range-thumb {
 }
 @media (prefers-reduced-motion: reduce) {
   .dash-bloom, .dash-drift { animation: none !important; }
+}
+
+/* "New" tag for recently added modules: emerald-to-teal pill with a slow sheen */
+.new-badge {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(135deg, #10b981 0%, #0d9488 55%, #0e7490 100%);
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.35), 0 4px 12px -4px rgba(13, 148, 136, 0.55);
+}
+.new-badge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  background-size: 250% 100%;
+  animation: shimmer 3.2s ease-in-out infinite;
+}
+.new-dot {
+  background: #10b981;
+  box-shadow: 0 0 0 2px #fff, 0 0 10px 1px rgba(16, 185, 129, 0.7);
+}
+.new-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: #10b981;
+  animation: pulse-ring 2s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .new-badge::after,
+  .new-dot::after { animation: none; }
 }

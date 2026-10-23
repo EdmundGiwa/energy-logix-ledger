@@ -1,4 +1,4 @@
-# PetroLedger Energy OS
+# Offshora Energy OS
 ## Product Specification v2.0
 
 Expanded from PetroLogix Core (PRD-ENG-2026-EXP). Status: working draft. Pricing is a proposal and has not been validated with customers.
@@ -7,23 +7,23 @@ Expanded from PetroLogix Core (PRD-ENG-2026-EXP). Status: working draft. Pricing
 
 ## 0. Brand
 
-**Recommended name: PetroLedger**
-Tagline: *Every litre, every line, on record.*
+**Name: Offshora** (renamed from Offshora, October 2026)
+Tagline: *Every hand-off, on record.*
 
-Why it fits: the product's core promise is an audit trail (fuel reconciliation, hydrotest records, PTW sign-offs, e-waybills), and "line" covers both pipelines and transit lines.
+Why it fits: the product now leads with offshore logistics (supply base, rig supply, crew transfers, vessel charters), but also covers onshore depots, haulage and pipelines. "Offshora" signals offshore without tying the brand to one product such as petrol, and it reads as a name rather than a description, which helps registration.
 
-| Option | Reasoning | Risk |
-|---|---|---|
-| **PetroLedger** (recommended) | Audit trail + pipeline line | Common word in fintech; check trademarks |
-| TankRoute | Clear for depot/haulage | Narrow, sounds like routing only |
-| Corelink Energy | Good for enterprise | Generic, likely taken |
-| PetroLogix Core | Already in your PDF | Name collision risk with existing firms |
+| Option considered | Outcome |
+|---|---|
+| **Offshora** (chosen) | No company found under this exact name in a web search (Oct 2026) |
+| Offshora | Dropped: too tied to petrol |
+| Keelstone | Dropped: already in use |
+| OffshoreOS, Offshorix | Possible, but descriptive or more technical |
+| Offsure, Offshorly, Offsoar, Offshorable | Already used by other companies |
+| "Offshore Ledger" style names | Avoid: "offshore" plus finance words reads as tax havens (search results are dominated by the Offshore Leaks database) |
 
-**Before you commit to any name, check:** Nigerian CAC business name search, the Nigerian Trademarks Registry, WIPO Global Brand Database, domain availability (.com, .ng), and social handles. I could not verify trademark availability with the tools available here.
+**Before launch, check:** Nigerian CAC business name search, the Nigerian Trademarks Registry, WIPO Global Brand Database, domain availability (.com, .ng, .io) and social handles. A web search is not a trademark clearance.
 
-**Relationship to PetroLogix:** PetroLedger keeps the "Petro" family name from your PetroLogix PRD. PetroLogix Core can stay as the internal product code, or become the platform name under the PetroLedger brand. Check that "PetroLogix" itself is not already registered before using it publicly.
-
-**Logo:** provided as `petroledger_logo.svg`. It follows the PetroLogix design system: Petro Navy (#0B1F33) for the tile and wordmark, Industrial Azure (#0284C7) for the pipeline elbow and the section-bar accent that matches the PDF headers, Canvas Slate (#F8FAFC) for the ledger lines, and Safety Amber (#D97706) for the single status dot. Wordmark is bold uppercase, matching the H1 style in the PDF.
+**Logo:** the "O" of the name frames an offshore platform (derrick, deck, accommodation block, legs) standing on open water. Files are in `frontend/public/brand/`: `offshora-mark.svg` (icon and favicon), `offshora-logo.svg` (light backgrounds) and `offshora-logo-dark.svg` (dark backgrounds). Colours: tile #0B1523 to #0A3D3A, ring #E2E8F0, platform #A7F3D0, sea #10B981 to #065F46. The wordmark is bold uppercase, with OFF in ink and SHORA in emerald (#059669, or #34D399 on dark). The name, tagline and wordmark split are defined once in `frontend/src/lib/brand.ts`.
 
 **Design claims to correct:** the PDF says "WCAG 2.1 AA Certified" and "ISO 11064 Control Room Compliant." WCAG has no certification. ISO 11064 is a design standard, not a certificate. Use "designed to WCAG 2.1 AA" and "designed in line with ISO 11064." Overclaiming in a tender pack can cost you the bid.
 
@@ -51,7 +51,7 @@ Research on Edflo Energy's public site and Dangote/Lagos e-call-up coverage surf
 - Reports describe five designated holding parks, RFID tagging for articulated trucks, and peak-hour truck bans (5–9am and 6–10pm). These are real product requirements: holding-park queue management, driver accreditation, RFID reads, and fee ledgers.
 
 **Compliance corrections:**
-- NCDMB operates its services electronically through the **NOGIC-JQS** portal. PetroLedger should **integrate with and export to** NOGIC-JQS, not replace it.
+- NCDMB operates its services electronically through the **NOGIC-JQS** portal. Offshora should **integrate with and export to** NOGIC-JQS, not replace it.
 - NCDMB requires a valid **NCDF Compliance Certificate (NCFCC)** before it will issue NCEC equipment certificates and approvals. An NCFCC readiness checker is a strong entry feature because it solves an immediate pain point.
 - NCDMB has also launched a digital training-provider certification (NCTRC, July 2026). Relevant if you add a training module later.
 
@@ -65,7 +65,7 @@ Research on Edflo Energy's public site and Dangote/Lagos e-call-up coverage surf
 
 ## 2. Competitive Landscape
 
-| Competitor / Reference | What they do | Implication for PetroLedger |
+| Competitor / Reference | What they do | Implication for Offshora |
 |---|---|---|
 | **Edflo Energy** (Lagos) | Pipeline services, pigging, NDT, cathodic protection, marine fuel/lube/provision supply across West African ports | Your first target and a model. Multi-service in one firm is the sales story. |
 | **Lagos State e-Call-Up** (mycallup.com) | Government truck scheduling for Lekki-Epe / Dangote corridor | Integration opportunity; access and fee politics are a risk. |
@@ -75,11 +75,11 @@ Research on Edflo Energy's public site and Dangote/Lagos e-call-up coverage surf
 | **Bunker Suite / Vertom / Bunkerlink** | eBDN platform trials (Rotterdam 2025) | Shows eBDN is moving into real operations. |
 | **Vortex E-BDN** | Paper-to-digital BDN conversion | Low-cost reference point for eBDN pricing. |
 | **Coretec** (Kenya) | Oil depot management: inventory, orders, safety, maintenance | Depot-side competitor. Lacks Nigerian content, haulage, and marine. |
-| **SAP / Oracle / Odoo partners** in Nigeria and Gulf markets | Enterprise ERP with oil-and-gas modules | Large-client competitors. PetroLedger should connect to them, not compete head-on. |
+| **SAP / Oracle / Odoo partners** in Nigeria and Gulf markets | Enterprise ERP with oil-and-gas modules | Large-client competitors. Offshora should connect to them, not compete head-on. |
 | **Amaiden Energy** (Port Harcourt) | Established Nigerian oilfield services firm with in-house software roles | Shows large local firms build in-house. A white-label option appeals to them. |
 | **Enertia** (Houston) | Upstream oil and gas SaaS | Upstream-focused. Not a direct competitor. |
 
-**Positioning:** Global bunker tools cover one step well. Dangote-era logistics, NCDMB compliance, offline field work in Nigerian conditions, and multi-service contractor workflows are underserved. PetroLedger is one system for a firm that does all of these.
+**Positioning:** Global bunker tools cover one step well. Dangote-era logistics, NCDMB compliance, offline field work in Nigerian conditions, and multi-service contractor workflows are underserved. Offshora is one system for a firm that does all of these.
 
 ---
 
@@ -222,7 +222,7 @@ Keep the PDF's architecture with these changes:
 
 ## 6. Compliance Matrix
 
-| Regulator / Standard | Requirement | PetroLedger feature |
+| Regulator / Standard | Requirement | Offshora feature |
 |---|---|---|
 | NCDMB / NOGICD Act 2010 | Nigerian content spend, NCFCC, NCEC, JQS registration | EPC-Link, Compliance Shield |
 | NUPRC | Permits, pipeline integrity | PipeIntegrity, Compliance Shield |

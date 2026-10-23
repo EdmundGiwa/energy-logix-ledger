@@ -38,6 +38,8 @@ const margin = [12, 23, 19, 17, 23, 18, 16, 17];
 
 type Row = { id: string; activity: string; module: string; icon: IconC; value: string; status: string; tone: Tone; date: string };
 const rows: Row[] = [
+  { id: "VOY-2026-0611", activity: "PSV voyage · Onne → Bonga FPSO", module: "OffshoreLink", icon: Icon.Cube, value: "46 lifts", status: "Sailing", tone: "info", date: "11 Oct 2026, 11:05" },
+  { id: "BLK-2026-0731", activity: "MGO transfer · Rig Okoro-2", module: "RigSupply", icon: Icon.Barrel, value: "420 m³", status: "Sealed", tone: "ok", date: "11 Oct 2026, 10:12" },
   { id: "BDN-2026-0419", activity: "e-BDN · MT Sea Venture", module: "BunkerFlow", icon: Icon.Ship, value: "1,250 MT", status: "Sealed", tone: "ok", date: "11 Oct 2026, 10:42" },
   { id: "WB-2026-104882", activity: "e-Waybill POD · Lekki depot", module: "HaulTrac", icon: Icon.Truck, value: "45,000 L", status: "Completed", tone: "ok", date: "11 Oct 2026, 10:31" },
   { id: "PTW-2026-0412", activity: "Hot work permit · Tank TK-09", module: "SafePass", icon: Icon.Flame, value: "LEL 12%", status: "Blocked", tone: "crit", date: "11 Oct 2026, 10:24" },
@@ -48,6 +50,8 @@ const rows: Row[] = [
 ];
 
 const exceptions: { tone: Tone; title: string; desc: string; time: string; href: string }[] = [
+  { tone: "crit", title: "DG segregation conflict", desc: "Class 8 totes stowed beside Class 5.1 · load-out blocked on VOY-0611", time: "9 min", href: "/dashboard/offshore-link" },
+  { tone: "warn", title: "Low days of supply", desc: "Drill water at Platform EA-3 · 2.5 days left", time: "20 min", href: "/dashboard/rig-supply" },
   { tone: "crit", title: "Variance over 0.5%", desc: "Depot BK-07 discharge · 0.72% loss on truck NG-LAG-4412", time: "14 min", href: "/dashboard/refinery-link" },
   { tone: "crit", title: "Failed gas test", desc: "H₂S 12 ppm · confined-space entry blocked at TK-09", time: "28 min", href: "/dashboard/safe-pass" },
   { tone: "warn", title: "BOSIET expiring", desc: "3 crew within 21 days · removed from offshore manifest", time: "1 h", href: "/dashboard/safe-pass" },

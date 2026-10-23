@@ -4,7 +4,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoMark } from "@/components/landing/icons";
-import { moduleNav, navGroups } from "./Sidebar";
+import { BRAND } from "@/lib/brand";
+import { moduleNav, navGroups, newGroups } from "./Sidebar";
+import { NewBadge } from "@/components/ui/NewBadge";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { useAuth } from "@/components/auth/AuthProvider";
 
@@ -42,7 +44,7 @@ export function Topbar({
         <Link href="/dashboard" className={`${pill} flex h-[60px] shrink-0 items-center gap-2.5 pl-2.5 pr-5`}>
           <LogoMark size={40} />
           <span className="hidden text-[15px] font-bold tracking-tight text-slate-900 sm:block">
-            Petro<span className="text-emerald-600">Ledger</span>
+            {BRAND.lead}<span className="text-emerald-600">{BRAND.accent}</span>
           </span>
         </Link>
 
@@ -67,11 +69,12 @@ export function Topbar({
                 key={g.label}
                 href={g.href}
                 aria-current={on ? "page" : undefined}
-                className={`whitespace-nowrap rounded-full px-4 py-2.5 text-[14px] transition ${
+                className={`inline-flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-[14px] transition ${
                   on ? "bg-[#0b1523] font-medium text-white" : "text-slate-500 hover:text-slate-900"
                 }`}
               >
                 {g.label}
+                {newGroups.has(g.label) && <NewBadge size="xs" />}
               </Link>
             );
           })}

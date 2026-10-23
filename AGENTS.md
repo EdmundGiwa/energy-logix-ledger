@@ -4,7 +4,7 @@ Canonical, vendor-neutral instructions for every AI coding agent working in this
 
 ## Product and current state
 
-PetroLedger Energy OS is a multi-tenant operating platform for energy-service contractors. The product specification is `PetroLedger_Product_Specification_v3.md`.
+Offshora Energy OS is a multi-tenant operating platform for energy-service contractors. The product specification is `Offshora_Product_Specification_v3.md`.
 
 The repository currently contains a Next.js 16 prototype with mock data. Authentication, APIs, persistence, background jobs, offline synchronization, tenant isolation, and third-party integrations are not implemented yet. Do not describe prototype screens as working backend features.
 
@@ -100,7 +100,7 @@ It is a four-step workflow, not a suggestion:
    component with its original placeholder copy or a competing design system's tokens.
 4. Ingest the de-slopped component with `python3
    .agents/skills/living-ui/scripts/ingest_component.py` so neither this agent nor any other
-   has to re-fetch or re-adapt it. This keeps the catalog specific to PetroLedger; do not copy
+   has to re-fetch or re-adapt it. This keeps the catalog specific to Offshora; do not copy
    another project's catalog entries or `resources/components/` into this one.
 
 ## Task execution

@@ -87,10 +87,10 @@ class AuthenticationApiTests(APITestCase):
         self.assertEqual(login_response.status_code, status.HTTP_200_OK)
         self.assertEqual(login_response.data["email"], "owner@example.com")
         self.assertEqual(client.get(reverse("auth-me")).status_code, status.HTTP_200_OK)
-        old_session = client.cookies["petroledger_session"].value
+        old_session = client.cookies["offshora_session"].value
         self.refresh_csrf_header(client)
         self.assertEqual(client.post(reverse("auth-session-refresh"), format="json").status_code, status.HTTP_200_OK)
-        self.assertNotEqual(client.cookies["petroledger_session"].value, old_session)
+        self.assertNotEqual(client.cookies["offshora_session"].value, old_session)
         self.refresh_csrf_header(client)
         self.assertEqual(client.post(reverse("auth-logout"), format="json").status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(client.get(reverse("auth-me")).status_code, status.HTTP_403_FORBIDDEN)

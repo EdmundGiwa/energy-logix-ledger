@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import { BRAND } from "@/lib/brand";
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number };
 
@@ -408,33 +409,72 @@ export const Icon = {
   ),
 };
 
-/** PetroLedger mark: deep slate tile, emerald pipeline elbow, crisp ledger lines, emerald status dot. */
+/**
+ * Offshora mark: the "O" of the name framing an offshore platform on open water.
+ * Navy-to-teal tile, slate ring, mint platform, emerald sea.
+ */
 export function LogoMark({ size = 36, className = "" }: { size?: number; className?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" className={className} aria-hidden>
       <defs>
-        <linearGradient id="pl-tile" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#0f172a" />
-          <stop offset="1" stopColor="#064e3b" />
+        <linearGradient id="os-tile" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#0b1523" />
+          <stop offset="1" stopColor="#0a3d3a" />
         </linearGradient>
+        <linearGradient id="os-sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#10b981" />
+          <stop offset="1" stopColor="#065f46" />
+        </linearGradient>
+        <clipPath id="os-ring">
+          <circle cx="24" cy="24" r="11.8" />
+        </clipPath>
       </defs>
-      <rect x="1" y="1" width="46" height="46" rx="12" fill="url(#pl-tile)" stroke="rgba(15,23,42,0.12)" />
-      <path d="M11 13h11a9 9 0 0 1 9 9v15" fill="none" stroke="#059669" strokeWidth="5.5" strokeLinecap="round" />
-      <path d="M11 13h11a9 9 0 0 1 9 9v15" fill="none" stroke="#34d399" strokeWidth="1.4" strokeLinecap="round" opacity="0.8" />
-      <path d="M11 24h9M11 30h9M11 36h9" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" opacity="0.95" />
-      <circle cx="37.5" cy="12" r="3.6" fill="#059669" />
-      <circle cx="37.5" cy="12" r="1.6" fill="#34d399" />
+      <rect x="1" y="1" width="46" height="46" rx="12" fill="url(#os-tile)" stroke="rgba(15,23,42,0.12)" />
+      <g clipPath="url(#os-ring)">
+        <path d="M19 24v6M23 24v6M27 24v6" stroke="#a7f3d0" strokeWidth="1.7" />
+        <path d="M16.5 22.2h15v2.2h-15z" fill="#a7f3d0" />
+        <path d="M18 22.2l2.9-7.4 2.9 7.4z" fill="#a7f3d0" />
+        <path d="M25.6 18.4h5v3.8h-5z" fill="#a7f3d0" />
+        <path d="M28.8 18.4v-3" stroke="#a7f3d0" strokeWidth="1.2" />
+        <path d="M8 28.6q2.5-1.5 5 0t5 0 5 0 5 0 5 0 5 0 5 0V40H8z" fill="url(#os-sea)" />
+        <path d="M8 28.6q2.5-1.5 5 0t5 0 5 0 5 0 5 0 5 0 5 0" fill="none" stroke="#6ee7b7" strokeWidth="1.3" strokeLinecap="round" />
+        <path d="M10 32.6q2.5-1.2 5 0t5 0 5 0 5 0 5 0 5 0" fill="none" stroke="#34d399" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
+      </g>
+      <circle cx="24" cy="24" r="13.6" fill="none" stroke="#e2e8f0" strokeWidth="3.6" />
     </svg>
   );
 }
 
-export function Wordmark({ className = "" }: { className?: string }) {
+const wordmarkSize = {
+  sm: { name: "text-[13px]", sub: "mt-0.5 text-[8px]" },
+  md: { name: "text-[15.5px]", sub: "mt-1 text-[9.5px]" },
+};
+
+export function Wordmark({
+  className = "",
+  tone = "light",
+  size = "md",
+  descriptor = true,
+}: {
+  className?: string;
+  /** "light" for white backgrounds, "dark" for navy panels. */
+  tone?: "light" | "dark";
+  size?: keyof typeof wordmarkSize;
+  descriptor?: boolean;
+}) {
+  const sz = wordmarkSize[size];
+  const dark = tone === "dark";
   return (
     <span className={`leading-none ${className}`}>
-      <span className="block text-[15.5px] font-extrabold uppercase tracking-[0.08em] text-slate-900">
-        Petro<span className="text-emerald-600">Ledger</span>
+      <span className={`block font-extrabold uppercase tracking-[0.08em] ${sz.name} ${dark ? "text-white" : "text-slate-900"}`}>
+        {BRAND.lead}
+        <span className={dark ? "text-emerald-400" : "text-emerald-600"}>{BRAND.accent}</span>
       </span>
-      <span className="mt-1 block text-[9.5px] font-bold uppercase tracking-[0.32em] text-emerald-700">Energy OS</span>
+      {descriptor && (
+        <span className={`block font-bold uppercase tracking-[0.32em] ${sz.sub} ${dark ? "text-emerald-400/70" : "text-emerald-700"}`}>
+          {BRAND.descriptor}
+        </span>
+      )}
     </span>
   );
 }

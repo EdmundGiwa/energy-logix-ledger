@@ -67,7 +67,7 @@ export function Compliance() {
                   Audit-ready for <span className="text-gradient">every regulator.</span>
                 </>
               }
-              sub="Each statutory rule maps directly to the operational module that logs the evidence. PetroLedger exports into NCDMB's NOGIC-JQS portal format, providing airtight verification."
+              sub="Each statutory rule maps directly to the operational module that logs the evidence. Offshora exports into NCDMB's NOGIC-JQS portal format, providing airtight verification."
             />
 
             <Reveal delay={100} className="mt-8">
@@ -247,7 +247,7 @@ export function Integrations() {
                     Connector-first. <span className="text-gradient">Fits your ERP.</span>
                   </>
                 }
-                sub="Large energy contractors keep SAP, Oracle or Odoo, while PetroLedger delivers operational field synchronization. Every connector status is transparent."
+                sub="Large energy contractors keep SAP, Oracle or Odoo, while Offshora delivers operational field synchronization. Every connector status is transparent."
               />
 
               <div key={active} className="rise mt-7 flex items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">

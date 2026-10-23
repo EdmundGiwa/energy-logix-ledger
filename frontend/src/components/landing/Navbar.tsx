@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Icon, LogoMark, Wordmark } from "./icons";
+import { NewBadge, NewDot } from "@/components/ui/NewBadge";
 
 const links = [
+  { href: "#offshore", label: "Offshore", isNew: true },
   { href: "#modules", label: "Modules" },
   { href: "#platform", label: "Platform" },
   { href: "#corridor", label: "Corridor" },
@@ -47,7 +49,7 @@ export function Navbar() {
             : "bg-white/70 backdrop-blur-sm border border-slate-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
         }`}
       >
-        <a href="#top" className="flex items-center gap-3" aria-label="PetroLedger home">
+        <a href="#top" className="flex items-center gap-3" aria-label="Offshora home">
           <LogoMark size={36} />
           <Wordmark />
         </a>
@@ -57,13 +59,14 @@ export function Navbar() {
             <li key={l.href}>
               <a
                 href={l.href}
-                className={`relative block rounded-lg px-3.5 py-1.5 text-[13.5px] font-medium transition ${
+                className={`relative flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[13.5px] font-medium transition ${
                   active === l.href
                     ? "bg-white text-slate-900 font-semibold shadow-xs"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 {l.label}
+                {l.isNew && <NewDot className="relative" />}
               </a>
             </li>
           ))}
@@ -103,7 +106,7 @@ export function Navbar() {
               onClick={() => setOpen(false)}
               className="flex items-center justify-between rounded-lg px-4 py-3 font-medium text-slate-800 hover:bg-slate-50"
             >
-              {l.label} <Icon.Chevron size={16} className="text-slate-400" />
+              <span className="flex items-center gap-2">{l.label}{l.isNew && <NewBadge size="xs" />}</span> <Icon.Chevron size={16} className="text-slate-400" />
             </a>
           ))}
           <a

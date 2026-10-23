@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogoMark } from "@/components/landing/icons";
+import { LogoMark, Wordmark } from "@/components/landing/icons";
 import { ApiError, authApi } from "@/lib/api";
+import { BRAND_FULL } from "@/lib/brand";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -45,14 +46,7 @@ export default function LoginPage() {
         <div className="relative z-10 p-10">
           <div className="flex items-center gap-3">
             <LogoMark size={40} />
-            <span className="leading-none">
-              <span className="block text-[15px] font-extrabold uppercase tracking-[0.08em] text-white">
-                Petro<span className="text-emerald-400">Ledger</span>
-              </span>
-              <span className="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.32em] text-emerald-400/70">
-                Energy OS
-              </span>
-            </span>
+            <Wordmark tone="dark" />
           </div>
         </div>
 
@@ -93,7 +87,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-[12px] text-slate-600">
-            © {new Date().getFullYear()} PetroLedger Energy OS
+            © {new Date().getFullYear()} {BRAND_FULL}
           </p>
         </div>
       </div>
@@ -107,14 +101,7 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="flex items-center gap-3 mb-10 lg:hidden">
             <LogoMark size={36} />
-            <span className="leading-none">
-              <span className="block text-[15px] font-extrabold uppercase tracking-[0.08em] text-slate-900">
-                Petro<span className="text-emerald-600">Ledger</span>
-              </span>
-              <span className="mt-0.5 block text-[9px] font-bold uppercase tracking-[0.32em] text-emerald-700">
-                Energy OS
-              </span>
-            </span>
+            <Wordmark />
           </div>
 
           {/* Heading */}
@@ -127,7 +114,7 @@ export default function LoginPage() {
               Sign in to your account
             </h1>
             <p className="mt-2 text-[14.5px] text-slate-500">
-              Enter your credentials to access the PetroLedger platform.
+              Enter your credentials to access the Offshora platform.
             </p>
           </div>
 
@@ -207,7 +194,7 @@ export default function LoginPage() {
           <div className="mt-8 flex items-center gap-4">
             <div className="flex-1 h-px bg-slate-200" />
             <span className="text-[12px] text-slate-400 font-medium whitespace-nowrap">
-              New to PetroLedger?
+              New to Offshora?
             </span>
             <div className="flex-1 h-px bg-slate-200" />
           </div>

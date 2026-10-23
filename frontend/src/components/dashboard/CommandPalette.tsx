@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { moduleNav } from "./Sidebar";
+import { NewBadge } from "@/components/ui/NewBadge";
+import { BRAND_FULL } from "@/lib/brand";
 
 export function CommandPalette({
   open,
@@ -38,6 +40,13 @@ export function CommandPalette({
   );
 
   const mockRecords = [
+    { title: "PSV Voyage VOY-2026-0611 (Onne → Bonga FPSO)", href: "/dashboard/offshore-link", tag: "OffshoreLink" },
+    { title: "MGO Transfer BLK-2026-0731 (Rig Okoro-2)", href: "/dashboard/rig-supply", tag: "RigSupply" },
+    { title: "Heli Manifest FLT-2026-1184 (PHC → Bonga)", href: "/dashboard/crew-transit", tag: "CrewTransit" },
+    { title: "Daily Vessel Report DVR-2026-3310 (AHTS Niger Titan)", href: "/dashboard/vessel-ops", tag: "VesselOps" },
+    { title: "Voyage Risk Assessment VRA-2026-0208 (Bonny)", href: "/dashboard/marine-guard", tag: "MarineGuard" },
+    { title: "Waste Transfer Note WTN-2026-0644 (Drill cuttings)", href: "/dashboard/enviro-ledger", tag: "EnviroLedger" },
+    { title: "Lifting Set LS-2231 Recertification", href: "/dashboard/equip-track", tag: "EquipTrack" },
     { title: "e-BDN BDN-2026-0419 (MT Sea Venture)", href: "/dashboard/bunkerflow", tag: "BunkerFlow" },
     { title: "Hydrotest Log HT-2026-88 (Escravos-Lagos TL)", href: "/dashboard/pipe-integrity", tag: "PipeIntegrity" },
     { title: "Dispatch NG-LAG-4418 (Lekki Corridor)", href: "/dashboard/haul-trac", tag: "HaulTrac" },
@@ -121,7 +130,8 @@ export function CommandPalette({
                     className="h-2 w-2 rounded-full shrink-0"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span>{item.label}</span>
+                  <span className="flex-1">{item.label}</span>
+                  {item.isNew && <NewBadge size="xs" />}
                 </button>
               ))}
             </div>
@@ -157,7 +167,7 @@ export function CommandPalette({
 
         {/* Footer */}
         <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 border-t border-slate-100 text-[11.5px] text-slate-500">
-          <span>PetroLedger Energy OS Quick Navigator</span>
+          <span>{BRAND_FULL} Quick Navigator</span>
           <div className="flex items-center gap-3">
             <span>Navigate <kbd className="font-mono font-semibold">↑↓</kbd></span>
             <span>Select <kbd className="font-mono font-semibold">↵</kbd></span>

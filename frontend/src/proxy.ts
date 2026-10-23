@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 
 export function proxy(request: NextRequest) {
-  if (!request.cookies.has("petroledger_session")) {
+  if (!request.cookies.has("offshora_session")) {
     const login = new URL("/login", request.url);
     login.searchParams.set("next", `${request.nextUrl.pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(login);

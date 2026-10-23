@@ -109,7 +109,7 @@ function Convergence() {
           </span>
         </div>
         <p className="mt-2 text-center text-[10.5px] font-bold uppercase tracking-[0.16em] text-emerald-800">
-          PetroLedger
+          Offshora
         </p>
       </div>
 
@@ -144,7 +144,7 @@ export function Problem() {
                 Your records are scattered. <span className="text-gradient">Your liability isn&apos;t.</span>
               </>
             }
-            sub="Most contractors run pigging one week, bunkering the next and haulage all year, on paper, Excel and WhatsApp. Global tools cover one step each. PetroLedger brings every step onto one signed ledger."
+            sub="Most contractors run pigging one week, bunkering the next and haulage all year, on paper, Excel and WhatsApp. Global tools cover one step each. Offshora brings every step onto one signed ledger."
           />
           <Reveal delay={100}>
             <div className="rounded-3xl border border-slate-200/90 bg-white p-5 shadow-[0_10px_35px_-10px_rgba(15,23,42,0.06)] sm:p-7">

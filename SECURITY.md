@@ -1,10 +1,10 @@
 # Security Policy and Engineering Baseline
 
-This document defines the minimum security expectations for PetroLedger. It is an engineering baseline, not a claim of certification or regulatory compliance. Security controls must be verified in the deployed environment.
+This document defines the minimum security expectations for Offshora. It is an engineering baseline, not a claim of certification or regulatory compliance. Security controls must be verified in the deployed environment.
 
 ## Scope and threat model
 
-PetroLedger is expected to process tenant-isolated operational records, employee and contractor personal data, documents, safety permits, signatures, inventory movements, and financial records. It may operate on intermittently connected field devices and integrate with customer, payment, government, and industrial systems.
+Offshora is expected to process tenant-isolated operational records, employee and contractor personal data, documents, safety permits, signatures, inventory movements, and financial records. It may operate on intermittently connected field devices and integrate with customer, payment, government, and industrial systems.
 
 Primary risks include:
 

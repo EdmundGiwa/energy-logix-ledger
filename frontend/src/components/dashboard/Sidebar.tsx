@@ -5,16 +5,24 @@ import { usePathname } from "next/navigation";
 import type { ComponentType } from "react";
 import { Icon } from "@/components/landing/icons";
 import { SignOutButton } from "@/components/auth/SignOutButton";
+import { NewBadge, NewDot } from "@/components/ui/NewBadge";
 
 /* ------------------------------------------------------------------ */
 /* Navigation data                                                     */
 /* ------------------------------------------------------------------ */
 type IconC = ComponentType<{ size?: number; className?: string }>;
 
-export type NavGroup = "Overview" | "Marine" | "Pipeline & EPC" | "Depot & Haulage" | "HSE & Compliance" | "Finance";
+export type NavGroup = "Overview" | "Offshore" | "Marine" | "Pipeline & EPC" | "Depot & Haulage" | "HSE & Compliance" | "Finance";
 
-export const moduleNav: { href: string; label: string; color: string; icon: IconC; group: NavGroup; exact?: boolean }[] = [
+export const moduleNav: { href: string; label: string; color: string; icon: IconC; group: NavGroup; exact?: boolean; isNew?: boolean }[] = [
   { href: "/dashboard", label: "Overview", color: "#0f172a", icon: Icon.Grid, group: "Overview", exact: true },
+  { href: "/dashboard/offshore-link", label: "OffshoreLink", color: "#0f766e", icon: Icon.Cube, group: "Offshore", isNew: true },
+  { href: "/dashboard/rig-supply", label: "RigSupply", color: "#1d4ed8", icon: Icon.Barrel, group: "Offshore", isNew: true },
+  { href: "/dashboard/crew-transit", label: "CrewTransit", color: "#be185d", icon: Icon.Users, group: "Offshore", isNew: true },
+  { href: "/dashboard/vessel-ops", label: "VesselOps", color: "#2563eb", icon: Icon.Anchor, group: "Offshore", isNew: true },
+  { href: "/dashboard/equip-track", label: "EquipTrack", color: "#a16207", icon: Icon.QR, group: "Offshore", isNew: true },
+  { href: "/dashboard/marine-guard", label: "MarineGuard", color: "#9f1239", icon: Icon.Satellite, group: "Offshore", isNew: true },
+  { href: "/dashboard/enviro-ledger", label: "EnviroLedger", color: "#16a34a", icon: Icon.Wind, group: "HSE & Compliance", isNew: true },
   { href: "/dashboard/bunkerflow", label: "BunkerFlow", color: "#0284c7", icon: Icon.Ship, group: "Marine" },
   { href: "/dashboard/marine-stores", label: "MarineStores", color: "#0e7490", icon: Icon.Package, group: "Marine" },
   { href: "/dashboard/pipe-integrity", label: "PipeIntegrity", color: "#059669", icon: Icon.Pipe, group: "Pipeline & EPC" },
@@ -30,12 +38,21 @@ export const moduleNav: { href: string; label: string; color: string; icon: Icon
 
 export const navGroups: { label: NavGroup; href: string }[] = [
   { label: "Overview", href: "/dashboard" },
+  { label: "Offshore", href: "/dashboard/offshore-link" },
   { label: "Marine", href: "/dashboard/bunkerflow" },
   { label: "Pipeline & EPC", href: "/dashboard/pipe-integrity" },
   { label: "Depot & Haulage", href: "/dashboard/refinery-link" },
   { label: "HSE & Compliance", href: "/dashboard/safe-pass" },
   { label: "Finance", href: "/dashboard/billing" },
 ];
+
+/** True when the route belongs to a module flagged as new. */
+export function isNewModule(pathname: string) {
+  return moduleNav.some((m) => m.isNew && pathname.startsWith(m.href));
+}
+
+/** Nav groups that contain at least one new module. */
+export const newGroups = new Set(moduleNav.filter((m) => m.isNew).map((m) => m.group));
 
 export function isNavActive(pathname: string, item: { href: string; exact?: boolean }) {
   return item.exact ? pathname === item.href : pathname.startsWith(item.href);
@@ -47,9 +64,11 @@ function SidebarItem({
   children,
   href,
   onClick,
+  isNew,
 }: {
   label: string;
   active?: boolean;
+  isNew?: boolean;
   children: React.ReactNode;
   href?: string;
   onClick?: () => void;
@@ -57,7 +76,8 @@ function SidebarItem({
   const cls = `group flex min-h-10 w-full items-center gap-3 rounded-xl px-1.5 py-2 text-left text-[13px] font-medium transition duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 group-hover/sidebar:px-3 group-focus-within/sidebar:px-3 ${
     active ? "bg-[#0b1523] font-semibold text-white shadow-[0_8px_20px_-12px_rgba(11,21,35,0.65)]" : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
   }`;
-  const content = <><span className={`grid h-7 w-7 shrink-0 place-items-center rounded-lg ${active ? "bg-white/10" : "bg-slate-50 group-hover:bg-white"}`}>{children}</span><span className="invisible min-w-0 flex-1 truncate opacity-0 transition-opacity duration-150 group-hover/sidebar:visible group-hover/sidebar:opacity-100 group-focus-within/sidebar:visible group-focus-within/sidebar:opacity-100">{label}</span></>;
+  const reveal = "invisible opacity-0 transition-opacity duration-150 group-hover/sidebar:visible group-hover/sidebar:opacity-100 group-focus-within/sidebar:visible group-focus-within/sidebar:opacity-100";
+  const content = <><span className={`relative grid h-7 w-7 shrink-0 place-items-center rounded-lg ${active ? "bg-white/10" : "bg-slate-50 group-hover:bg-white"}`}>{children}{isNew && <NewDot className="absolute -right-0.5 -top-0.5 transition-opacity group-hover/sidebar:opacity-0 group-focus-within/sidebar:opacity-0" />}</span><span className={`min-w-0 flex-1 truncate ${reveal}`}>{label}</span>{isNew && <NewBadge size="xs" className={reveal} />}</>;
   return href ? (
     <Link href={href} title={label} aria-current={active ? "page" : undefined} className={cls}>{content}</Link>
   ) : (
@@ -73,7 +93,7 @@ export function Sidebar({ onOpenSearch, onOpenAstm }: { onOpenSearch?: () => voi
   }));
 
   return (
-    <aside aria-label="Primary navigation" className="group/sidebar fixed bottom-[72px] left-4 top-[96px] z-40 flex w-[60px] flex-col overflow-hidden rounded-[24px] border border-white/80 bg-white/95 shadow-[0_10px_35px_-20px_rgba(15,23,42,0.28)] backdrop-blur transition-[width] duration-200 ease-out hover:w-[220px] focus-within:w-[220px] motion-reduce:transition-none">
+    <aside aria-label="Primary navigation" className="group/sidebar fixed bottom-[72px] left-4 top-[96px] z-40 flex w-[60px] flex-col overflow-hidden rounded-[24px] border border-white/80 bg-white/95 shadow-[0_10px_35px_-20px_rgba(15,23,42,0.28)] backdrop-blur transition-[width] duration-200 ease-out hover:w-[248px] focus-within:w-[248px] motion-reduce:transition-none">
       <div className="border-b border-slate-100 p-2.5">
         <p className="invisible h-0 overflow-hidden whitespace-nowrap px-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 opacity-0 transition-opacity group-hover/sidebar:visible group-hover/sidebar:h-auto group-hover/sidebar:pb-1.5 group-hover/sidebar:pt-1 group-hover/sidebar:opacity-100 group-focus-within/sidebar:visible group-focus-within/sidebar:h-auto group-focus-within/sidebar:pb-1.5 group-focus-within/sidebar:pt-1 group-focus-within/sidebar:opacity-100">Quick tools</p>
         <div className="space-y-1">
@@ -95,7 +115,7 @@ export function Sidebar({ onOpenSearch, onOpenAstm }: { onOpenSearch?: () => voi
         </div>
         {groupedModules.map((group) => <section key={group.label} aria-labelledby={`sidebar-${group.label.replaceAll(" ", "-").toLowerCase()}`} className="mt-4">
           <h2 id={`sidebar-${group.label.replaceAll(" ", "-").toLowerCase()}`} className="invisible h-0 overflow-hidden whitespace-nowrap px-3 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 opacity-0 transition-opacity group-hover/sidebar:visible group-hover/sidebar:h-auto group-hover/sidebar:pb-1.5 group-hover/sidebar:opacity-100 group-focus-within/sidebar:visible group-focus-within/sidebar:h-auto group-focus-within/sidebar:pb-1.5 group-focus-within/sidebar:opacity-100">{group.label}</h2>
-          <div className="space-y-1">{group.items.map((item) => { const I = item.icon; return <SidebarItem key={item.href} href={item.href} label={item.label} active={isNavActive(pathname, item)}><I size={17} /></SidebarItem>; })}</div>
+          <div className="space-y-1">{group.items.map((item) => { const I = item.icon; return <SidebarItem key={item.href} href={item.href} label={item.label} isNew={item.isNew} active={isNavActive(pathname, item)}><I size={17} /></SidebarItem>; })}</div>
         </section>)}
       </nav>
 

@@ -2,6 +2,7 @@ import { Navbar } from "@/components/landing/Navbar";
 import { Hero } from "@/components/landing/Hero";
 import { Problem, HowItWorks } from "@/components/landing/Problem";
 import { Modules } from "@/components/landing/Modules";
+import { Offshore } from "@/components/landing/Offshore";
 import { CorePlatform } from "@/components/landing/CorePlatform";
 import { Corridor } from "@/components/landing/Corridor";
 import { Compliance, Integrations } from "@/components/landing/Compliance";
@@ -17,6 +18,7 @@ export default function Home() {
       <Hero />
       <Problem />
       <HowItWorks />
+      <Offshore />
       <Modules />
       <CorePlatform />
       <Corridor />

@@ -1,6 +1,6 @@
-# PetroLedger Energy OS
+# Offshora Energy OS
 
-PetroLedger is a multi-tenant operating platform for energy-service contractors. This repository contains an independently deployable Next.js frontend and Django REST API.
+Offshora is a multi-tenant operating platform for energy-service contractors. This repository contains an independently deployable Next.js frontend and Django REST API.
 
 ## Repository layout
 

@@ -24,7 +24,7 @@ export function Security() {
                     Evidence you can put before <span className="text-gradient">an IOC auditor.</span>
                   </>
                 }
-                sub="A signed bunker stem or hydrotest certificate holds legal standing only if records remain tamper-proof. PetroLedger guarantees that standard."
+                sub="A signed bunker stem or hydrotest certificate holds legal standing only if records remain tamper-proof. Offshora guarantees that standard."
               />
 
               <Reveal delay={120} className="mt-8 rounded-2xl border border-slate-200 bg-slate-50 p-5">

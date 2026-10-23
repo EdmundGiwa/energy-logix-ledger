@@ -46,7 +46,7 @@ async function csrfToken() {
   const response = await fetch(`${API_URL}/auth/csrf/`, { credentials: "include" });
   if (!response.ok) throw new ApiError("Unable to establish a secure session.", response.status);
   const body = (await response.json()) as { csrf_token: string };
-  return cookie("petroledger_csrftoken") || body.csrf_token;
+  return cookie("offshora_csrftoken") || body.csrf_token;
 }
 
 function errorFields(body: unknown): Record<string, string[]> {

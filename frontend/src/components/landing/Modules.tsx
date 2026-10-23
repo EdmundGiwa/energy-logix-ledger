@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useState, type ComponentType } from "r
 import { Icon } from "./icons";
 import { seeded } from "./charts";
 import { Reveal, SectionHeading, Spotlight } from "./primitives";
+import { NewBadge } from "@/components/ui/NewBadge";
 
-type Group = "Marine" | "Pipeline & EPC" | "Depot & Haulage" | "HSE & Compliance" | "Commercial";
+type Group = "Offshore" | "Marine" | "Pipeline & EPC" | "Depot & Haulage" | "HSE & Compliance" | "Commercial";
 type Preview =
   | "bunker"
   | "pipe"
@@ -18,7 +19,14 @@ type Preview =
   | "shield"
   | "billing"
   | "portal"
-  | "owner";
+  | "owner"
+  | "offshore"
+  | "rigsupply"
+  | "crew"
+  | "vessel"
+  | "equip"
+  | "guard"
+  | "enviro";
 
 type Module = {
   n: number;
@@ -31,6 +39,7 @@ type Module = {
   blurb: string;
   features: string[];
   preview: Preview;
+  isNew?: boolean;
 };
 
 const modules: Module[] = [
@@ -230,7 +239,7 @@ const modules: Module[] = [
     icon: Icon.Globe,
     phase: "Phase 2",
     addon: "Client Portal add-on · free in Enterprise",
-    blurb: "Your IOC and EPC clients see the BDNs, PODs and certificates themselves, and ask their other vendors to use PetroLedger too.",
+    blurb: "Your IOC and EPC clients see the BDNs, PODs and certificates themselves, and ask their other vendors to use Offshora too.",
     features: [
       "Read-only portal for IOCs, EPC clients and fleet customers",
       "Shared BDNs, PODs, test certificates and inspection reports",
@@ -252,9 +261,149 @@ const modules: Module[] = [
     ],
     preview: "owner",
   },
+  {
+    n: 13,
+    isNew: true,
+    name: "OffshoreLink",
+    tag: "Supply base and deck cargo logistics",
+    group: "Offshore",
+    icon: Icon.Cube,
+    phase: "Phase 2 · Offshore",
+    addon: "Shared-voyage cost split add-on",
+    blurb: "Every lift from the supply base quay to the rig deck and back, on one manifest. No CCU goes missing, and no dangerous good sails in the wrong place.",
+    features: [
+      "Multi-drop PSV voyage planner for rigs, FPSOs, platforms and jackets",
+      "Deck space and deck load planner with stowage drawing",
+      "Lift-by-lift manifest with QR / RFID tag, weight and destination",
+      "CCU and lifting-set certificate check before every load-out (aligned with DNV-ST-E271 / 2.7-1)",
+      "IMDG dangerous goods declaration with segregation checks that block load-out",
+      "Backload reconciliation and overdue-CCU alerts with rental exposure",
+      "Weather and port sailing holds with master's go / no-go",
+    ],
+    preview: "offshore",
+  },
+  {
+    n: 14,
+    isNew: true,
+    name: "RigSupply",
+    tag: "Offshore fuel, water and bulk supply",
+    group: "Offshore",
+    icon: Icon.Barrel,
+    phase: "Phase 2 · Offshore",
+    blurb: "Diesel, drill water, mud, brine and cement delivered to the rig and reconciled to the litre, with days-of-supply alerts before anyone runs short.",
+    features: [
+      "MGO / AGO delivery tickets to rigs, FPSOs and platforms",
+      "Drill water, potable water, brine and liquid mud (OBM / WBM / SBM)",
+      "Dry bulk: cement, barite and bentonite tonnage per transfer",
+      "Vessel meter vs. rig sounding reconciliation with variance alerts",
+      "Sample seals and density at 15 °C on every fuel transfer",
+      "Rig tank levels and days-of-supply forecast per product",
+      "Suggests extra drops onto planned OffshoreLink voyages",
+    ],
+    preview: "rigsupply",
+  },
+  {
+    n: 15,
+    isNew: true,
+    name: "CrewTransit",
+    tag: "Helicopter, crew boat and POB",
+    group: "Offshore",
+    icon: Icon.Users,
+    phase: "Phase 2 · Offshore",
+    blurb: "Book seats on flights and crew boats, check every ticket before boarding, and keep personnel-on-board counts right when plans change.",
+    features: [
+      "Helicopter manifests with seat allocation and standby list",
+      "Crew boat and walk-to-work transfers with sea-state limits",
+      "Passenger and baggage weight capture at check-in",
+      "Seat blocked automatically when BOSIET, HUET or medical has expired (via SafePass)",
+      "Live POB per installation with bed and lifeboat capacity limits",
+      "Weather cancellation and rebooking without re-entry",
+      "Muster list export for the offshore installation manager",
+    ],
+    preview: "crew",
+  },
+  {
+    n: 16,
+    isNew: true,
+    name: "VesselOps",
+    tag: "OSV charter, fleet and vessel compliance",
+    group: "Offshore",
+    icon: Icon.Anchor,
+    phase: "Phase 2 · Offshore",
+    blurb: "On-hire, off-hire, daily vessel reports and certificates for PSVs, AHTS, crew boats and tugs, so every chargeable day is backed by a signed record.",
+    features: [
+      "Charter party register: day rates, mob / demob and fuel terms",
+      "On-hire / off-hire ledger signed by owner and charterer",
+      "Daily vessel report: activities, position, DP hours, fuel and water ROB",
+      "Class, flag, ISM / ISPS and P&I certificates with expiry alerts",
+      "NIMASA cabotage registration and waiver tracking",
+      "OVID / CMID inspection findings tracked to close-out",
+      "Charter invoices raised from chargeable days into Billing",
+    ],
+    preview: "vessel",
+  },
+  {
+    n: 17,
+    isNew: true,
+    name: "EquipTrack",
+    tag: "Rental equipment, CCUs and lifting gear",
+    group: "Offshore",
+    icon: Icon.QR,
+    phase: "Phase 3",
+    blurb: "Know where every rented tool, container and sling is, whether its certificate is valid, and how many days you are paying for it.",
+    features: [
+      "One register for owned and rented tools, CCUs, tanks and lifting gear",
+      "QR / RFID tag with location history: base, vessel, installation",
+      "CCU periodic inspection and lifting-gear thorough examination dates",
+      "Expired items blocked from OffshoreLink manifests",
+      "On-rent / off-rent dates with chargeable-day counter",
+      "Idle equipment alerts with daily cost exposure",
+      "Supplier invoice check against tracked rental days",
+    ],
+    preview: "equip",
+  },
+  {
+    n: 18,
+    isNew: true,
+    name: "MarineGuard",
+    tag: "Maritime security and voyage risk",
+    group: "Offshore",
+    icon: Icon.Satellite,
+    phase: "Phase 3",
+    blurb: "Voyage risk assessments, escort bookings and MDAT-GoG reports for Gulf of Guinea transits, with every incident on record.",
+    features: [
+      "Voyage risk assessment per route, vessel and time of day",
+      "Security escort booking with rendezvous, comms plan and cost",
+      "MDAT-GoG initial, daily and final report tracker",
+      "BMP West Africa ship-protection checklist and citadel drill records",
+      "AIS status log with reasons for any change",
+      "Offline incident capture: statements, photos, positions, time line",
+    ],
+    preview: "guard",
+  },
+  {
+    n: 19,
+    isNew: true,
+    name: "EnviroLedger",
+    tag: "Offshore waste, discharges and emissions",
+    group: "HSE & Compliance",
+    icon: Icon.Wind,
+    phase: "Phase 3",
+    addon: "ESG reporting pack add-on",
+    blurb: "Waste tracked from the installation to licensed disposal, MARPOL record books kept current, and fuel-based emissions ready for client ESG reports.",
+    features: [
+      "Waste transfer notes from installation to vessel, base and disposal",
+      "Drill cuttings, oily waste, chemicals and scrap with custody-gap alerts",
+      "MARPOL Annex I oil record book and Annex V garbage record book",
+      "Oil spill reporting pack for NOSDRA, plus drill and readiness records",
+      "Fuel-based CO₂ per vessel, voyage, installation and client",
+      "Data ready for IMO DCS and CII where the vessel size requires it",
+    ],
+    preview: "enviro",
+  },
 ];
 
-const groups: ("All" | Group)[] = ["All", "Marine", "Pipeline & EPC", "Depot & Haulage", "HSE & Compliance", "Commercial"];
+const groups: ("All" | "New" | Group)[] = ["All", "New", "Offshore", "Marine", "Pipeline & EPC", "Depot & Haulage", "HSE & Compliance", "Commercial"];
 
 /* ------------------------------------------------------------------ */
 /* Previews                                                            */
@@ -617,6 +766,167 @@ function PreviewBody({ kind }: { kind: Preview }) {
           })}
         </div>
       );
+    case "offshore":
+      return (
+        <div>
+          <div className="flex items-center justify-between text-[12px]">
+            <span className="font-bold uppercase tracking-wider text-slate-500">VOY-0611 · Onne → Bonga → Agbami</span>
+            <span className="rounded-md border border-sky-200 bg-sky-50 px-2 py-0.5 font-bold text-sky-800">Sailing 18:00</span>
+          </div>
+          <div className="mt-3 grid grid-cols-6 gap-1.5 rounded-xl border border-slate-200 bg-white p-2.5 shadow-xs">
+            {Array.from({ length: 24 }).map((_, i) => {
+              const dg = i === 9 || i === 10;
+              const empty = i > 20;
+              return (
+                <span
+                  key={i}
+                  className={`rise h-6 rounded-md ${dg ? "bg-rose-400" : empty ? "border border-dashed border-slate-300" : i % 3 === 0 ? "bg-sky-500" : "bg-emerald-500"}`}
+                  style={{ animationDelay: `${i * 0.02}s`, opacity: empty ? 1 : 0.85 }}
+                />
+              );
+            })}
+          </div>
+          <Row l="Lifts tagged & weighed" r="46 / 46" tone="text-emerald-700" />
+          <Row l="Deck used" r="612 m² · 87%" />
+          <Row l="DG check" r="Class 8 beside 5.1" tone="text-rose-600" />
+          <Row l="Backload due" r="18 CCUs" />
+        </div>
+      );
+    case "rigsupply":
+      return (
+        <div>
+          <p className="text-[12px] font-bold uppercase tracking-wider text-slate-500">Rig Okoro-2 · days of supply</p>
+          <div className="mt-3 space-y-2.5">
+            {[
+              ["Diesel (MGO)", 0.78, "9.1 d", "bg-emerald-500"],
+              ["Drill water", 0.22, "2.5 d", "bg-rose-500"],
+              ["Potable water", 0.61, "6.8 d", "bg-emerald-500"],
+              ["Liquid mud 1.45 SG", 0.44, "4.0 d", "bg-amber-400"],
+              ["Cement (Class G)", 0.7, "8.2 d", "bg-emerald-500"],
+            ].map(([l, v, d, c]) => (
+              <div key={l as string}>
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-slate-600">{l as string}</span>
+                  <span className="font-mono font-semibold text-slate-900">{d as string}</span>
+                </div>
+                <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
+                  <div className={`bar-anim h-full rounded-full ${c as string}`} style={{ width: `${(v as number) * 100}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-[12px] shadow-xs">
+            <span className="text-slate-600">Last transfer · vessel vs. rig</span>
+            <span className="font-mono font-bold text-emerald-700">Δ 0.18%</span>
+          </div>
+        </div>
+      );
+    case "crew":
+      return (
+        <div>
+          <div className="flex items-center justify-between text-[12px]">
+            <span className="font-bold uppercase tracking-wider text-slate-500">FLT-1184 · AW139 · PHC → Bonga</span>
+            <span className="font-mono font-bold text-slate-900">1,268 kg</span>
+          </div>
+          <div className="mt-3 grid grid-cols-4 gap-1.5">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <span
+                key={i}
+                className={`rise grid h-9 place-items-center rounded-lg text-[10.5px] font-bold ${i === 7 ? "border border-rose-200 bg-rose-50 text-rose-700" : "border border-emerald-200 bg-emerald-50 text-emerald-800"}`}
+                style={{ animationDelay: `${i * 0.03}s` }}
+              >
+                {i === 7 ? "HUET ✕" : `${String.fromCharCode(65 + Math.floor(i / 4))}${(i % 4) + 1}`}
+              </span>
+            ))}
+          </div>
+          <Row l="Credentials checked" r="11 cleared · 1 blocked" />
+          <Row l="Standby list" r="1 seat filled" tone="text-emerald-700" />
+          <Row l="Bonga POB after flight" r="94 / 100 beds" />
+        </div>
+      );
+    case "vessel":
+      return (
+        <div>
+          <p className="text-[12px] font-bold uppercase tracking-wider text-slate-500">Fleet · on-hire this month</p>
+          <div className="mt-3 space-y-2">
+            {[
+              ["AHTS Niger Titan", "On-hire", "ok"],
+              ["PSV Atlantic Grace", "On-hire", "ok"],
+              ["PSV Delta Star", "Off-hire · engine", "crit"],
+              ["Crew boat Swift Runner", "Cabotage 41 d", "warn"],
+            ].map(([v, s, t]) => (
+              <div key={v} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2 text-[12.5px] shadow-xs">
+                <span className="font-semibold text-slate-900">{v}</span>
+                <span className={`rounded-md px-2 py-0.5 text-[11px] font-bold ${t === "ok" ? "bg-emerald-50 text-emerald-800" : t === "crit" ? "bg-rose-50 text-rose-700" : "bg-amber-50 text-amber-800"}`}>{s}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
+            <p className="mb-2 text-[11px] text-slate-500">Chargeable days · last 14</p>
+            <Bars seed={73} />
+          </div>
+        </div>
+      );
+    case "equip":
+      return (
+        <div className="grid gap-4 sm:grid-cols-[150px_1fr]">
+          <div className="mx-auto">
+            <Ring pct={0.86} label="Certs valid" />
+          </div>
+          <div>
+            <Row l="Assets tracked" r="2,640" />
+            <Row l="Offshore now" r="784" />
+            <Row l="Sling LS-2231" r="Expires 6 d" tone="text-amber-700" />
+            <Row l="Idle rental · 30 d" r="$61,000" tone="text-rose-600" />
+            <Row l="CCU OC-0142" r="Passed" tone="text-emerald-700" />
+          </div>
+        </div>
+      );
+    case "guard":
+      return (
+        <div>
+          <div className="flex items-center justify-between text-[12px]">
+            <span className="font-bold uppercase tracking-wider text-slate-500">VRA-0208 · Onne → Bonny terminal</span>
+            <span className="rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 font-bold text-rose-700">High risk</span>
+          </div>
+          <svg viewBox="0 0 300 110" className="mt-3 h-32 w-full rounded-xl border border-slate-200 bg-sky-50/60">
+            <path d="M0,20 C60,30 80,10 140,18 S240,8 300,16 L300,0 L0,0 Z" fill="#cbd5e1" />
+            <circle cx="150" cy="58" r="22" fill="#fecaca" opacity="0.7" />
+            <circle cx="220" cy="78" r="14" fill="#fde68a" opacity="0.8" />
+            <path d="M30,30 C90,50 140,70 270,92" pathLength={1} className="draw-line" stroke="#0369a1" strokeWidth="2.4" fill="none" />
+            <circle cx="30" cy="30" r="4" fill="#0369a1" />
+            <circle cx="270" cy="92" r="4" fill="#059669" />
+          </svg>
+          <Row l="Escort" r="Booked · RV 17:30" tone="text-emerald-700" />
+          <Row l="BMP West Africa checklist" r="12 / 12" tone="text-emerald-700" />
+          <Row l="MDAT-GoG reports" r="Initial ✓ · Daily ✓" />
+        </div>
+      );
+    case "enviro":
+      return (
+        <div>
+          <p className="text-[12px] font-bold uppercase tracking-wider text-slate-500">Waste chain of custody · WTN-0644</p>
+          <div className="mt-3 grid grid-cols-4 gap-1.5 text-center">
+            {[
+              ["Platform", "✓"],
+              ["Vessel", "✓"],
+              ["Base", "✓"],
+              ["Disposal", "✓"],
+            ].map(([a, b], i) => (
+              <div key={a} className="rise rounded-xl border border-emerald-200 bg-emerald-50 py-2" style={{ animationDelay: `${i * 0.08}s` }}>
+                <p className="text-[13px] font-bold text-emerald-700">{b}</p>
+                <p className="text-[10.5px] font-semibold text-emerald-900">{a}</p>
+              </div>
+            ))}
+          </div>
+          <Row l="Drill cuttings" r="36.4 t · 12 skips" />
+          <Row l="Garbage record book" r="Up to date" tone="text-emerald-700" />
+          <Row l="Fleet CO₂ year to date" r="4,210 t" />
+          <div className="mt-2 rounded-xl border border-slate-200 bg-white p-3 shadow-xs">
+            <Bars seed={88} n={12} tone="bg-sky-500" />
+          </div>
+        </div>
+      );
     case "owner":
       return (
         <div className="grid grid-cols-2 gap-2.5">
@@ -642,7 +952,7 @@ function PreviewBody({ kind }: { kind: Preview }) {
 
 /* ------------------------------------------------------------------ */
 
-const featured = new Set([1, 4, 6]);
+const featured = new Set([1, 4, 6, 13]);
 
 function ModuleModal({ m, onClose, onStep }: { m: Module; onClose: () => void; onStep: (d: number) => void }) {
   const MI = m.icon;
@@ -673,7 +983,7 @@ function ModuleModal({ m, onClose, onStep }: { m: Module; onClose: () => void; o
             <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-slate-500">
               Module {String(m.n).padStart(2, "0")} · {m.group}
             </p>
-            <h3 className="text-[22px] font-extrabold tracking-tight text-slate-900">{m.name}</h3>
+            <h3 className="flex items-center gap-2 text-[22px] font-extrabold tracking-tight text-slate-900">{m.name}{m.isNew && <NewBadge size="md" />}</h3>
             <p className="text-[13px] text-slate-500">{m.tag}</p>
           </div>
           <span className="hidden rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-700 sm:block">
@@ -747,7 +1057,7 @@ function ModuleModal({ m, onClose, onStep }: { m: Module; onClose: () => void; o
 export function Modules() {
   const [group, setGroup] = useState<(typeof groups)[number]>("All");
   const [open, setOpen] = useState<number | null>(null);
-  const list = modules.filter((m) => group === "All" || m.group === group);
+  const list = modules.filter((m) => group === "All" || (group === "New" ? m.isNew : m.group === group));
   const current = open === null ? null : modules.find((x) => x.n === open) ?? null;
   const close = useCallback(() => setOpen(null), []);
   const step = useCallback((d: number) => {
@@ -763,13 +1073,13 @@ export function Modules() {
       <div className="mx-auto max-w-[1240px]">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <SectionHeading
-            eyebrow="12 modules · one ledger"
+            eyebrow="19 modules · one ledger"
             title={
               <>
                 License what you run. <span className="text-gradient">Add the rest later.</span>
               </>
             }
-            sub="Start with one module, or run the full suite on one audit trail. Click any module to see live interactive controls."
+            sub="From the supply base quay to the rig deck, the depot and the pipeline. Start with one module or run the full suite on one audit trail. Click any module to see live interactive controls."
           />
           <Reveal className="no-scrollbar -mx-5 flex gap-1.5 overflow-x-auto px-5 lg:mx-0 lg:flex-wrap lg:justify-end lg:px-0">
             {groups.map((g) => (
@@ -777,13 +1087,14 @@ export function Modules() {
                 key={g}
                 type="button"
                 onClick={() => setGroup(g)}
-                className={`shrink-0 rounded-lg px-3.5 py-1.5 text-[13px] font-semibold transition ${
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[13px] font-semibold transition ${
                   group === g
                     ? "bg-emerald-600 text-white shadow-xs"
                     : "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
                 }`}
               >
-                {g}
+                {g === "New" ? <NewBadge size="xs" /> : g}
+                {g === "New" && <span className="font-mono text-[11px] opacity-70">{modules.filter((x) => x.isNew).length}</span>}
               </button>
             ))}
           </Reveal>
@@ -814,6 +1125,7 @@ export function Modules() {
                       <I size={big ? 21 : 18} />
                     </span>
                     <span className="font-mono text-[11px] text-slate-400">{String(m.n).padStart(2, "0")}</span>
+                    {m.isNew && <NewBadge size="xs" />}
                     <span
                       className={`ml-auto rounded-md px-2 py-0.5 text-[10.5px] font-bold ${
                         m.phase.startsWith("Phase 1")

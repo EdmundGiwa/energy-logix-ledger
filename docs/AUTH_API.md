@@ -5,7 +5,7 @@ This document defines the initial browser authentication and tenant-context cont
 ## Session and CSRF model
 
 - Authentication uses Django database-backed sessions.
-- The reusable session identifier is stored in the `petroledger_session` `HttpOnly` cookie and is never exposed to frontend JavaScript.
+- The reusable session identifier is stored in the `offshora_session` `HttpOnly` cookie and is never exposed to frontend JavaScript.
 - Browser clients call `GET /api/v1/auth/csrf/` before every state-changing authentication request and send the returned token as `X-CSRFToken`.
 - Browser requests include credentials. CORS permits only configured origins and never uses a credentialed wildcard.
 - Login rotates the CSRF token. Session refresh rotates the session identifier. Logout invalidates the server-side session.

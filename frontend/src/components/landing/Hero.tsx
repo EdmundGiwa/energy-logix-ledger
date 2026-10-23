@@ -32,6 +32,28 @@ type Chapter = {
 
 const chapters: Chapter[] = [
   {
+    key: "lift",
+    word: "lift",
+    module: "OffshoreLink",
+    icon: Icon.Cube,
+    image: "/images/rig-aerial.jpg",
+    alt: "Platform supply vessel working alongside an offshore installation",
+    position: "object-[45%_50%]",
+    place: "Onne supply base → Bonga FPSO",
+    coords: "4.72° N · 7.15° E",
+    line: "Deck cargo, fuel, water, mud, provisions and crew, from the supply base quay to the rig and back. Every lift is tagged, weighed and signed for.",
+    record: { title: "PSV voyage · Onne → Bonga", id: "VOY-2026-0611" },
+    steps: [
+      { label: "Voyage & deck plan approved", meta: "2 drops" },
+      { label: "46 lifts tagged & weighed", meta: "46 / 46" },
+      { label: "CCU & sling certificates checked", meta: "All valid" },
+      { label: "DG segregation conflict", meta: "Re-stowed", flag: true },
+      { label: "Master & base signed manifest", meta: "2 / 2" },
+    ],
+    metric: { label: "Deck cargo out", value: 1940, unit: "t", note: "84% deck utilisation", seed: 7 },
+    toast: { tone: "ok", title: "MGO 420 m³ to Rig Okoro-2", text: "Vessel vs. rig variance 0.18%" },
+  },
+  {
     key: "bunker",
     word: "litre",
     module: "BunkerFlow",
@@ -380,7 +402,7 @@ export function Hero() {
       id="top"
       className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-[#06111d] text-white"
       aria-roledescription="carousel"
-      aria-label="PetroLedger in the field"
+      aria-label="Offshora in the field"
     >
       {/* ---------- Background: circular wipe + slow zoom ---------- */}
       <div className="absolute inset-0 -z-10 bg-[#06111d]">
@@ -427,7 +449,7 @@ export function Hero() {
             <p className="text-[11.5px] font-semibold uppercase tracking-[0.24em] text-white/60">
               <span className="text-emerald-300">Energy OS</span>
               <span className="mx-2 text-white/25">/</span>
-              Built for Nigerian service contractors
+              Built for offshore & onshore energy contractors
             </p>
           </div>
 
@@ -468,7 +490,7 @@ export function Hero() {
               <span className="grid h-7 w-7 place-items-center rounded-lg bg-white text-slate-900 transition group-hover:scale-110">
                 <Icon.Play size={12} className="ml-0.5" />
               </span>
-              See all 12 modules
+              See all 19 modules
             </a>
           </div>
 

@@ -59,6 +59,11 @@ const addons: { name: string; usd: number; ngn: number; note?: string }[] = [
   { name: "e-BDN export interoperability", usd: 400, ngn: 600_000 },
   { name: "NCFCC / NOGIC-JQS export pack", usd: 250, ngn: 375_000, note: "Included free in Growth & above" },
   { name: "Client Portal", usd: 300, ngn: 450_000, note: "Included in Enterprise" },
+  { name: "Offshore suite (OffshoreLink, RigSupply, CrewTransit)", usd: 900, ngn: 1_350_000, note: "Proposal · validate in pilot" },
+  { name: "VesselOps charter & fleet", usd: 450, ngn: 675_000, note: "Per fleet up to 15 vessels" },
+  { name: "EquipTrack rentals & lifting gear", usd: 300, ngn: 450_000 },
+  { name: "MarineGuard security & MDAT-GoG", usd: 250, ngn: 375_000 },
+  { name: "EnviroLedger waste & emissions", usd: 300, ngn: 450_000 },
 ];
 
 const oneTime = [

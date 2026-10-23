@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { moduleNav } from "./Sidebar";
-import { LogoMark } from "@/components/landing/icons";
+import { NewBadge } from "@/components/ui/NewBadge";
+import { LogoMark, Wordmark } from "@/components/landing/icons";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 
 export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -30,14 +31,7 @@ export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () =>
         <div className="flex items-center justify-between px-5 py-5 border-b border-slate-100">
           <div className="flex items-center gap-3">
             <LogoMark size={32} />
-            <span className="leading-none">
-              <span className="block text-[13px] font-extrabold uppercase tracking-[0.08em] text-slate-900">
-                Petro<span className="text-emerald-600">Ledger</span>
-              </span>
-              <span className="mt-0.5 block text-[8px] font-bold uppercase tracking-[0.32em] text-emerald-700">
-                Energy OS
-              </span>
-            </span>
+            <Wordmark size="sm" />
           </div>
           <button
             type="button"
@@ -73,7 +67,8 @@ export function MobileSidebar({ open, onClose }: { open: boolean; onClose: () =>
                   className="h-2 w-2 rounded-full shrink-0"
                   style={{ backgroundColor: active ? "#059669" : item.color }}
                 />
-                <span>{item.label}</span>
+                <span className="flex-1">{item.label}</span>
+                {item.isNew && <NewBadge size="xs" />}
               </Link>
             );
           })}

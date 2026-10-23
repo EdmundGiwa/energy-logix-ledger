@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Outfit, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { BRAND, BRAND_FULL } from "@/lib/brand";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -16,9 +17,8 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PetroLedger Energy OS — Every litre, every line, on record",
-  description:
-    "One operating system for Nigerian energy service contractors: bunkering and e-BDN, pipeline integrity, depot and gantry reconciliation, bulk haulage e-Waybills, NCDMB local content, permits and crew gating. Offline-first, audit-ready.",
+  title: `${BRAND_FULL} — ${BRAND.tagline}`,
+  description: BRAND.description,
 };
 
 export default function RootLayout({

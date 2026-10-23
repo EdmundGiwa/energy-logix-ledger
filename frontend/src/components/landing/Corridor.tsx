@@ -210,7 +210,7 @@ export function Corridor() {
               <div>
                 <p className="text-[15px] font-bold text-slate-900">Lagos e-Call-Up connector</p>
                 <p className="mt-1.5 text-[13px] leading-relaxed text-slate-600">
-                  The e-Call-Up system is run by the Lagos State Government. PetroLedger integrates as API access becomes verified. Until then, the holding-park queue manager runs independently offline and online.
+                  The e-Call-Up system is run by the Lagos State Government. Offshora integrates as API access becomes verified. Until then, the holding-park queue manager runs independently offline and online.
                 </p>
               </div>
             </div>

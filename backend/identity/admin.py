@@ -5,13 +5,13 @@ from .models import AuthenticationEvent, User
 
 
 @admin.register(User)
-class PetroLedgerUserAdmin(UserAdmin):
+class OffshoraUserAdmin(UserAdmin):
     list_display = ("username", "email", "is_staff", "is_active", "date_joined")
     list_filter = ("is_staff", "is_superuser", "is_active", "groups")
     search_fields = ("username", "first_name", "last_name", "email", "public_id")
     ordering = ("username",)
     readonly_fields = ("public_id", "last_login", "date_joined")
-    fieldsets = UserAdmin.fieldsets + (("PetroLedger", {"fields": ("public_id",)}),)
+    fieldsets = UserAdmin.fieldsets + (("Offshora", {"fields": ("public_id",)}),)
 
     def has_add_permission(self, request):
         return request.user.is_superuser and super().has_add_permission(request)

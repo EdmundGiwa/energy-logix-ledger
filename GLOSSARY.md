@@ -1,16 +1,16 @@
-# PetroLedger Industry Glossary
+# Offshora Industry Glossary
 
-This glossary gives software engineers and product contributors a working introduction to terms used in PetroLedger. It is explanatory, not an engineering calculation standard, operating procedure, legal opinion, or compliance certification.
+This glossary gives software engineers and product contributors a working introduction to terms used in Offshora. It is explanatory, not an engineering calculation standard, operating procedure, legal opinion, or compliance certification.
 
 Definitions marked **Verify before implementation** depend on the product, jurisdiction, contract, facility, or current version of a standard. Confirm those definitions and any resulting validation rules with a qualified domain expert and the authoritative source before encoding them in software.
 
 ## How to maintain this glossary
 
 - Add a term when it first appears in a feature, API, model, event, or user-facing workflow and a general software engineer may not understand it.
-- Define the term in plain language, then explain why it matters to PetroLedger where useful.
+- Define the term in plain language, then explain why it matters to Offshora where useful.
 - Expand an acronym on first use. Add common aliases when field users may search for them.
 - Do not copy restricted standards or invent formulas from memory. Reference the governing publication and version instead.
-- Keep regulatory and integration status separate from definitions. A defined external system is not proof that PetroLedger has access to it.
+- Keep regulatory and integration status separate from definitions. A defined external system is not proof that Offshora has access to it.
 - Mark disputed, customer-specific, or jurisdiction-dependent usage explicitly.
 
 ## General energy operations
@@ -289,7 +289,7 @@ A separately contained section of a road tanker. Loads, seals, valves, and deliv
 
 ### e-Call-Up
 
-An electronic appointment or traffic-management process used to schedule or control truck access to a facility or corridor. PetroLedger must not assume access to an external e-call-up API without a confirmed agreement.
+An electronic appointment or traffic-management process used to schedule or control truck access to a facility or corridor. Offshora must not assume access to an external e-call-up API without a confirmed agreement.
 
 ### e-Waybill
 
@@ -522,7 +522,7 @@ The property that safely repeating the same operation produces no additional uni
 
 ### RLS — Row-Level Security
 
-A PostgreSQL feature that applies database policies to decide which rows a database role can read or modify. PetroLedger intends to use it as defence in depth, not as a replacement for application authorization.
+A PostgreSQL feature that applies database policies to decide which rows a database role can read or modify. Offshora intends to use it as defence in depth, not as a replacement for application authorization.
 
 ### Tenant
 
@@ -542,7 +542,7 @@ A security approach that does not grant implicit trust merely because a user, de
 
 ## Authoritative starting points
 
-- Product scope and project cautions: `PetroLedger_Product_Specification_v3.md`
+- Product scope and project cautions: `Offshora_Product_Specification_v3.md`
 - ASTM D1250 overview: <https://www.astm.org/d1250>
 - API petroleum measurement standards: <https://www.api.org/products-and-services/standards/important-standards-announcements/petroleum-measurement>
 - IMO MARPOL overview: <https://www.imo.org/en/about/conventions/pages/international-convention-for-the-prevention-of-pollution-from-ships-(marpol).aspx>

@@ -75,6 +75,15 @@ export default function MarineStoresPage() {
           ],
         },
         {
+          title: "Offshore Provisioning & Catering",
+          items: [
+            "Provision orders sized from live POB in CrewTransit (meals per head per day)",
+            "Chilled, frozen and dry stores packed into CCUs and booked on OffshoreLink voyages",
+            "Cold-chain temperature log from base to installation galley",
+            "Camp services: laundry, cleaning and accommodation consumables",
+          ],
+        },
+        {
           title: "Refrigerant Gas Ledger",
           items: [
             "Refrigerant gas inventory (R404, R22, R407, R134a, R407C, R410A)",

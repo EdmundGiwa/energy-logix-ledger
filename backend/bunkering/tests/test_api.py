@@ -77,7 +77,7 @@ class BunkerFlowAPITests(APITestCase):
                 "density_kg_m3": "845.200",
                 "reviewed_volume_m3": "1478.900",
                 "reviewed_mass_mt": "1250.000",
-                "calculation_method_note": "Result transcribed from an independently reviewed worksheet; no calculation was performed by PetroLedger.",
+                "calculation_method_note": "Result transcribed from an independently reviewed worksheet; no calculation was performed by Offshora.",
             },
             format="json",
         )

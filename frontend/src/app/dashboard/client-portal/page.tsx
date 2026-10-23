@@ -71,7 +71,7 @@ const mockDocuments: DocumentRecord[] = [
     id: "NCFCC-2026-Q3",
     type: "NCDMB Local Content Spend Certificate",
     title: "Nigerian Content Performance Dossier (NOGIC-JQS)",
-    asset: "PetroLedger Core Contract PL-2026-77",
+    asset: "Offshora Core Contract OF-2026-77",
     client: "total",
     date: "05 Oct 2026, 16:30 WAT",
     status: "Verified",
@@ -327,7 +327,7 @@ export default function ClientPortalPage() {
                 <div>
                   <p className="font-bold">Digital Signature Authenticated</p>
                   <p className="text-emerald-700 mt-0.5">
-                    Attributed to registered PetroLedger authorized signatory and Chief Engineer. Compliant with NUPRC, NMDPRA, and MARPOL Annex VI regulations.
+                    Attributed to registered Offshora authorized signatory and Chief Engineer. Compliant with NUPRC, NMDPRA, and MARPOL Annex VI regulations.
                   </p>
                 </div>
               </div>

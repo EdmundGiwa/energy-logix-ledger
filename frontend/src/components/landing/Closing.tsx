@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Icon, LogoMark, Wordmark } from "./icons";
 import { Reveal } from "./primitives";
+import { BRAND, BRAND_FULL } from "@/lib/brand";
 
 const hubs = [
   { city: "Lagos", coord: "6.4550° N, 3.3841° E" },
@@ -165,7 +166,7 @@ export function Closing() {
         </div>
         <div className="border-t border-slate-200/80">
           <div className="mx-auto flex max-w-[1240px] flex-col gap-2 px-5 py-6 text-[12px] text-slate-500 sm:px-8 md:flex-row md:items-center md:justify-between">
-            <p>© {new Date().getFullYear()} PetroLedger Energy OS. A PetroLogix Core product.</p>
+            <p>© {new Date().getFullYear()} {BRAND_FULL}. {BRAND.tagline}</p>
             <p className="text-slate-400">
               NDPA 2023 · ISO 27001 readiness · SOC 2 Type II compliant pipeline
             </p>
