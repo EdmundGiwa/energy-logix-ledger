@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     "organizations",
     "bunkering",
     "haulage",
+    "hse",
+    "pipeline_integrity",
 ]
 
 MIDDLEWARE = [

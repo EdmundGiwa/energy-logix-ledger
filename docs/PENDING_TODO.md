@@ -39,3 +39,28 @@ behaviour, security controls, implementation, and tests are complete.
 - Each future provider integration requires a documented payload contract,
   credential and signature validation, timeouts, bounded retries, idempotency,
   observable failures, and tenant-isolation tests before it can be enabled.
+
+## SafePass production decisions
+
+### Safety procedures and approval authority
+
+**Status:** Domain-owner approval required before a real operational pilot.
+
+- Confirm atmospheric limits, gas-test recency requirements, retest frequency,
+  permit durations, and escalation rules for every site and permit type.
+- Confirm the real Performing Authority, Area Authority, Site Authority, and OIM
+  approval chain. The MVP restricts consequential approval actions to tenant
+  owners and administrators but does not claim this is an operator-approved chain.
+- Confirm accepted BOSIET/HUET/STCW providers, OSP verification method, medical
+  fitness evidence, credential equivalents, and jurisdiction-specific validity.
+- Confirm whether the 30-day mobilization buffer applies to every operation or
+  must vary by customer, site, role, and credential.
+
+### Secure certificate files
+
+**Status:** Metadata foundation implemented; binary upload remains unavailable.
+
+- SafePass stores an internal document-vault reference only. Do not present this
+  as an uploaded or verified certificate until tenant-scoped object storage,
+  content validation, malware scanning, retention, and authorized download are
+  implemented and tested.

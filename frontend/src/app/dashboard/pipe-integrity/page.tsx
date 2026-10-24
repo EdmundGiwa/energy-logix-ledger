@@ -1,7 +1,8 @@
-import { ModulePage } from "@/components/dashboard/ModulePage";
+import { PipeIntegrityDashboard } from "@/components/pipeintegrity/PipeIntegrityDashboard";
 
 export default function PipeIntegrityPage() {
-  return (
+  return <PipeIntegrityDashboard />;
+  /* return (
     <ModulePage
       color="#059669"
       name="PipeIntegrity"
@@ -102,5 +103,5 @@ export default function PipeIntegrityPage() {
         { label: "Integrity Report", desc: "Generate IOC-ready asset integrity dossier" },
       ]}
     />
-  );
+  ); */
 }

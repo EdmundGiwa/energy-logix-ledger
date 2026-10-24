@@ -264,6 +264,69 @@ export const haulApi = {
   createReference: (kind: "customers" | "locations" | "trucks" | "trailers" | "drivers", payload: Record<string, unknown>) => apiRequest<unknown>(`/haultrac/${kind}/`, { method: "POST", body: JSON.stringify(payload) }),
 };
 
+export type PipeAsset = { id: string; reference: string; name: string; fluid_type: "liquid" | "gas"; governing_code: string; is_active: boolean; created_at: string; updated_at: string };
+export type PipePigRun = { id: string; asset: string; reference: string; pig_type: string; launcher_kp: string; receiver_kp: string; status: string; launched_at: string | null; arrived_at: string | null; recovered_at: string | null; transit_velocity_mps: string | null; debris_volume_m3: string | null; notes: string; version: number; allowed_actions: string[] };
+export type PipeHydrotest = { id: string; asset: string; reference: string; test_pressure_bar: string; hold_duration_minutes: number; pressure_drop_bar: string | null; minimum_temperature_c: string | null; maximum_temperature_c: string | null; status: string; version: number; allowed_actions: string[] };
+export type PipeInspection = { id: string; asset: string; reference: string; inspection_type: string; subject_reference: string; result: string; measured_wall_thickness_mm: string | null; corrosion_rate_mm_per_year: string | null; remaining_life_years: string | null; inspected_at: string; inspector_name: string };
+export type PipeCpPoint = { id: string; asset: string; reference: string; kp: string; potential_mv: string; electrode: string; surveyed_at: string; surveyor_name: string };
+export type PipeRowObservation = { id: string; asset: string; reference: string; kp: string; category: string; severity: string; status: string; observed_at: string; observer_name: string; description: string };
+
+export const pipeIntegrityApi = {
+  assets: (params = "") => apiRequest<Paginated<PipeAsset>>(`/pipeintegrity/assets/${params ? `?${params}` : ""}`),
+  createAsset: (payload: Record<string, unknown>) => apiRequest<PipeAsset>("/pipeintegrity/assets/", { method: "POST", body: JSON.stringify(payload) }),
+  pigRuns: (params = "") => apiRequest<Paginated<PipePigRun>>(`/pipeintegrity/pig-runs/${params ? `?${params}` : ""}`),
+  createPigRun: (payload: Record<string, unknown>) => apiRequest<PipePigRun>("/pipeintegrity/pig-runs/", { method: "POST", body: JSON.stringify(payload) }),
+  transitionPig: (id: string, action: string, version: number, reason: string) => apiRequest<PipePigRun>(`/pipeintegrity/pig-runs/${id}/actions/${action}/`, { method: "POST", body: JSON.stringify({ version, reason }) }),
+  hydrotests: (params = "") => apiRequest<Paginated<PipeHydrotest>>(`/pipeintegrity/hydrotests/${params ? `?${params}` : ""}`),
+  createHydrotest: (payload: Record<string, unknown>) => apiRequest<PipeHydrotest>("/pipeintegrity/hydrotests/", { method: "POST", body: JSON.stringify(payload) }),
+  transitionHydrotest: (id: string, action: string, version: number, reason: string) => apiRequest<PipeHydrotest>(`/pipeintegrity/hydrotests/${id}/actions/${action}/`, { method: "POST", body: JSON.stringify({ version, reason }) }),
+  inspections: (params = "") => apiRequest<Paginated<PipeInspection>>(`/pipeintegrity/inspections/${params ? `?${params}` : ""}`),
+  cpSurveyPoints: (params = "") => apiRequest<Paginated<PipeCpPoint>>(`/pipeintegrity/cp-survey-points/${params ? `?${params}` : ""}`),
+  rowObservations: (params = "") => apiRequest<Paginated<PipeRowObservation>>(`/pipeintegrity/row-observations/${params ? `?${params}` : ""}`),
+  createInspection: (payload: Record<string, unknown>) => apiRequest<PipeInspection>("/pipeintegrity/inspections/", { method: "POST", body: JSON.stringify(payload) }),
+  createCpSurveyPoint: (payload: Record<string, unknown>) => apiRequest<PipeCpPoint>("/pipeintegrity/cp-survey-points/", { method: "POST", body: JSON.stringify(payload) }),
+  createRowObservation: (payload: Record<string, unknown>) => apiRequest<PipeRowObservation>("/pipeintegrity/row-observations/", { method: "POST", body: JSON.stringify(payload) }),
+};
+
+export type SafePassSummary = { active_workers: number; active_permits: number; open_mobilizations: number; credential_alerts: number };
+export type SafePassWorker = { id: string; employee_number: string; full_name: string; job_title: string; email: string; phone_number: string; is_active: boolean; created_at: string; updated_at: string };
+export type SafePassCredential = { id: string; worker_name: string; kind: string; certificate_number: string; issuer: string; valid_from: string; expires_on: string; status: "pending" | "verified" | "rejected" | "revoked"; evidence_reference: string };
+export type SafePassProcedure = { id: string; name: string; site: string; credential_buffer_days: number; oxygen_min_percent: string; oxygen_max_percent: string; max_lel_percent: string; max_h2s_ppm: string; required_credential_kinds: string[]; is_approved: boolean };
+export type SafePassCrew = { worker_id: string; worker_name: string; is_cleared: boolean; blocking_reasons: string[]; checked_at: string | null };
+export type SafePassMobilization = { id: string; reference: string; destination: string; scheduled_at: string; procedure_name: string; status: string; version: number; crew_entries: SafePassCrew[]; created_at: string; updated_at: string };
+export type SafePassGasTest = { id: string; tested_at: string; oxygen_percent: string; lel_percent: string; h2s_ppm: string; instrument_reference: string; instrument_calibration_expires_on: string; passed: boolean };
+export type SafePassPermit = { id: string; reference: string; kind: string; title: string; site: string; work_description: string; procedure_name: string; performing_authority_name: string; starts_at: string; expires_at: string; hazards: string[]; controls: string[]; status: string; version: number; gas_tests: SafePassGasTest[]; acknowledgements: { id: string; worker_name: string; kind: string; acknowledged_at: string; statement: string }[]; audit_events: { id: string; actor: string; action: string; reason: string; from_status: string; to_status: string; created_at: string }[] };
+
+export const safePassApi = {
+  summary: () => apiRequest<SafePassSummary>("/safepass/summary/"),
+  workers: () => apiRequest<SafePassWorker[]>("/safepass/workers/"),
+  createWorker: (payload: Record<string, unknown>) => apiRequest<SafePassWorker>("/safepass/workers/", { method: "POST", body: JSON.stringify(payload) }),
+  credentials: () => apiRequest<SafePassCredential[]>("/safepass/credentials/"),
+  createCredential: (payload: Record<string, unknown>) => apiRequest<SafePassCredential>("/safepass/credentials/", { method: "POST", body: JSON.stringify(payload) }),
+  verifyCredential: (id: string) => apiRequest<SafePassCredential>(`/safepass/credentials/${id}/verify/`, { method: "POST", body: "{}" }),
+  procedures: () => apiRequest<SafePassProcedure[]>("/safepass/procedures/"),
+  createProcedure: (payload: Record<string, unknown>) => apiRequest<SafePassProcedure>("/safepass/procedures/", { method: "POST", body: JSON.stringify(payload) }),
+  approveProcedure: (id: string) => apiRequest<SafePassProcedure>(`/safepass/procedures/${id}/approve/`, { method: "POST", body: "{}" }),
+  mobilizations: () => apiRequest<SafePassMobilization[]>("/safepass/mobilizations/"),
+  createMobilization: (payload: Record<string, unknown>) => apiRequest<SafePassMobilization>("/safepass/mobilizations/", { method: "POST", body: JSON.stringify(payload) }),
+  addCrew: (id: string, workerId: string) => apiRequest<SafePassMobilization>(`/safepass/mobilizations/${id}/crew/`, { method: "POST", body: JSON.stringify({ worker_id: workerId }) }),
+  assessMobilization: (id: string, version: number) => apiRequest<SafePassMobilization>(`/safepass/mobilizations/${id}/assess/`, { method: "POST", body: JSON.stringify({ version }) }),
+  releaseMobilization: (id: string, version: number, reason: string) => apiRequest<SafePassMobilization>(`/safepass/mobilizations/${id}/release/`, { method: "POST", body: JSON.stringify({ version, reason }) }),
+  permits: () => apiRequest<SafePassPermit[]>("/safepass/permits/"),
+  permit: (id: string) => apiRequest<SafePassPermit>(`/safepass/permits/${id}/`),
+  createPermit: (payload: Record<string, unknown>) => apiRequest<SafePassPermit>("/safepass/permits/", { method: "POST", body: JSON.stringify(payload) }),
+  gasTest: (id: string, payload: Record<string, unknown>) => apiRequest<SafePassGasTest>(`/safepass/permits/${id}/gas-tests/`, { method: "POST", body: JSON.stringify(payload) }),
+  acknowledge: (id: string, payload: Record<string, unknown>) => apiRequest(`/safepass/permits/${id}/acknowledgements/`, { method: "POST", body: JSON.stringify(payload) }),
+  transition: (id: string, action: string, version: number, reason: string) => apiRequest<SafePassPermit>(`/safepass/permits/${id}/actions/${action}/`, { method: "POST", body: JSON.stringify({ version, reason }) }),
+};
+
+export async function downloadSafePassPermit(id: string, filename: string) {
+  const response = await fetch(`${API_URL}/safepass/permits/${id}/export/`, { credentials: "include" });
+  if (!response.ok) throw new ApiError("The Permit-to-Work PDF could not be exported.", response.status);
+  const url = URL.createObjectURL(await response.blob());
+  const link = document.createElement("a"); link.href = url; link.download = `${filename}.pdf`; link.click(); URL.revokeObjectURL(url);
+}
+
 export const haulQrUrl = (id: string) => `${API_URL}/haultrac/dispatches/${id}/waybill/qr/`;
 
 export async function downloadDeliveryDocument(id: string, filename: string) {
