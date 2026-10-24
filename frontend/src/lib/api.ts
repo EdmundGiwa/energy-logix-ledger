@@ -339,3 +339,144 @@ export async function downloadDeliveryDocument(id: string, filename: string) {
   link.click();
   URL.revokeObjectURL(url);
 }
+
+export type RefineryTerminal = {
+  id: string;
+  code: string;
+  name: string;
+  location: string;
+  is_active: boolean;
+};
+
+export type RefineryTank = {
+  id: string;
+  terminal_id: string;
+  terminal_code: string;
+  terminal_name: string;
+  tank_number: string;
+  product_type: "pms" | "ago" | "dpk" | "atk";
+  nominal_capacity_litres: string;
+  safe_fill_level_mm: number;
+  current_status: "receiving" | "settling" | "dispensing" | "idle" | "maintenance";
+};
+
+export type RefineryAppointment = {
+  id: string;
+  terminal_id: string;
+  terminal_code: string;
+  terminal_name: string;
+  reference: string;
+  truck_plate: string;
+  driver_name: string;
+  driver_phone: string;
+  driver_license: string;
+  product_type: "pms" | "ago" | "dpk" | "atk";
+  nominated_volume_litres: string;
+  holding_park_slot: string;
+  rfid_tag: string;
+  e_callup_reference: string;
+  status: "scheduled" | "checked_in" | "called_up" | "loading" | "completed" | "cancelled";
+  scheduled_at: string;
+  checked_in_at: string | null;
+  called_up_at: string | null;
+  completed_at: string | null;
+  version: number;
+  allowed_actions: string[];
+  notes: string;
+};
+
+export type RefineryTankDip = {
+  id: string;
+  tank_id: string;
+  tank_number: string;
+  terminal_code: string;
+  reference: string;
+  dip_type: "manual" | "automated";
+  observed_level_mm: string;
+  water_cut_mm: string;
+  temperature_c: string;
+  observed_density_kg_m3: string;
+  gross_observed_volume_litres: string;
+  net_standard_volume_litres: string;
+  recorded_at: string;
+  operator_name: string;
+};
+
+export type RefineryMeterTicket = {
+  id: string;
+  appointment_id: string;
+  appointment_reference: string;
+  truck_plate: string;
+  tank_id: string;
+  tank_number: string;
+  ticket_number: string;
+  meter_id: string;
+  batch_start_reading: string;
+  batch_end_reading: string;
+  gross_volume_litres: string;
+  net_volume_litres: string;
+  temperature_c: string;
+  density_at_15c: string;
+  variance_litres: string;
+  variance_percent: string;
+  status: "issued" | "reconciled" | "flagged_variance";
+  started_at: string;
+  completed_at: string;
+};
+
+export type RefineryQualityCert = {
+  id: string;
+  certificate_number: string;
+  product_type: "pms" | "ago" | "dpk" | "atk";
+  batch_number: string;
+  density_at_15c: string;
+  flash_point_c: string | null;
+  ron: string | null;
+  distillation_recovery_percent: string | null;
+  sulphur_ppm: string;
+  is_compliant_nmdpra: boolean;
+  laboratory_name: string;
+  tested_at: string;
+  authorized_chemist: string;
+};
+
+export type RefinerySummary = {
+  today_throughput_litres: string;
+  holding_park_queue_count: number;
+  called_up_queue_count: number;
+  reconciled_tickets_count: number;
+  flagged_tickets_count: number;
+  active_tanks_count: number;
+};
+
+export const refineryLinkApi = {
+  summary: () => apiRequest<RefinerySummary>("/refinerylink/summary/"),
+  terminals: () => apiRequest<RefineryTerminal[]>("/refinerylink/terminals/"),
+  createTerminal: (payload: Record<string, unknown>) =>
+    apiRequest<RefineryTerminal>("/refinerylink/terminals/", { method: "POST", body: JSON.stringify(payload) }),
+  tanks: (params = "") => apiRequest<Paginated<RefineryTank>>(`/refinerylink/tanks/${params ? `?${params}` : ""}`),
+  createTank: (payload: Record<string, unknown>) =>
+    apiRequest<RefineryTank>("/refinerylink/tanks/", { method: "POST", body: JSON.stringify(payload) }),
+  appointments: (params = "") =>
+    apiRequest<Paginated<RefineryAppointment>>(`/refinerylink/appointments/${params ? `?${params}` : ""}`),
+  appointment: (id: string) => apiRequest<RefineryAppointment>(`/refinerylink/appointments/${id}/`),
+  createAppointment: (payload: Record<string, unknown>) =>
+    apiRequest<RefineryAppointment>("/refinerylink/appointments/", { method: "POST", body: JSON.stringify(payload) }),
+  transitionAppointment: (id: string, action: string, version: number, reason: string) =>
+    apiRequest<RefineryAppointment>(`/refinerylink/appointments/${id}/actions/${action}/`, {
+      method: "POST",
+      body: JSON.stringify({ version, reason }),
+    }),
+  dips: (params = "") => apiRequest<Paginated<RefineryTankDip>>(`/refinerylink/tank-dips/${params ? `?${params}` : ""}`),
+  createDip: (payload: Record<string, unknown>) =>
+    apiRequest<RefineryTankDip>("/refinerylink/tank-dips/", { method: "POST", body: JSON.stringify(payload) }),
+  tickets: (params = "") =>
+    apiRequest<Paginated<RefineryMeterTicket>>(`/refinerylink/meter-tickets/${params ? `?${params}` : ""}`),
+  createTicket: (payload: Record<string, unknown>) =>
+    apiRequest<RefineryMeterTicket>("/refinerylink/meter-tickets/", { method: "POST", body: JSON.stringify(payload) }),
+  qualityCerts: (params = "") =>
+    apiRequest<Paginated<RefineryQualityCert>>(`/refinerylink/quality-certs/${params ? `?${params}` : ""}`),
+  createQualityCert: (payload: Record<string, unknown>) =>
+    apiRequest<RefineryQualityCert>("/refinerylink/quality-certs/", { method: "POST", body: JSON.stringify(payload) }),
+};
+

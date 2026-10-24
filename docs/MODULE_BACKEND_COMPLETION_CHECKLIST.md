@@ -97,13 +97,15 @@ evidence.
   - [x] Cathodic-protection and right-of-way observation records
   - [ ] Asset-integrity reports and evidence export
 
-- [ ] **5. RefineryLink** — Not started
-  - [ ] Terminal offtake and truck appointment records
-  - [ ] Holding-park queue, driver accreditation, and QR/RFID evidence
-  - [ ] Tank gauging, ullage, volume conversion, and reconciliation
-  - [ ] Gantry ticket and quality-certificate linkage
-  - [ ] Government and refinery integrations remain conditional on confirmed
-        contracts and API access
+- [ ] **5. RefineryLink** — Pilot-ready
+  - [x] Terminal offtake and truck appointment records with version-locked lifecycle
+  - [x] Holding-park queue manager, driver accreditation, slot assignment, and RFID/e-Call-Up tracking
+  - [x] Tank gauging (manual ullage & ATG), GOV/NSV conversion, and continuous custody transfer reconciliation
+  - [x] Gantry meter ticket reconciliation (AccuLoad / Smith Meter) with automated variance calculation (<0.5%)
+  - [x] Product batch quality certificates linked with NMDPRA compliance verification (Euro V standards)
+  - [x] PostgreSQL RLS on all 7 tables, immutable audit triggers, and two-tenant database security test coverage
+  - [x] Government and external refinery live integrations remain optional standalone queue identifiers until confirmed
+
 
 - [ ] **6. MarineStores** — Not started
   - [ ] Catalogue, stock, lot/serial, expiry, and unit controls

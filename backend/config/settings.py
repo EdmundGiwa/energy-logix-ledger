@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "haulage",
     "hse",
     "pipeline_integrity",
+    "refinery_link",
 ]
 
 MIDDLEWARE = [

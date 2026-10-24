@@ -11,4 +11,5 @@ urlpatterns = [
     path("api/v1/haultrac/", include("haulage.urls")),
     path("api/v1/safepass/", include("hse.urls")),
     path("api/v1/pipeintegrity/", include("pipeline_integrity.urls")),
+    path("api/v1/refinerylink/", include("refinery_link.urls")),
 ]
