@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "tank_works",
     "epc_link",
     "compliance_shield",
+    "billing",
 ]
 
 MIDDLEWARE = [

@@ -1084,4 +1084,172 @@ export const complianceApi = {
     }),
 };
 
+export type CustomerAccount = {
+  id: string;
+  public_id: string;
+  customer_code: string;
+  name: string;
+  tax_id: string;
+  contact_email: string;
+  contact_phone: string;
+  billing_address: string;
+  credit_limit_minor: number;
+  currency: "NGN" | "USD";
+  payment_terms_days: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InvoiceLineItem = {
+  id: string;
+  public_id: string;
+  source_module: string;
+  source_record_id: string;
+  description: string;
+  quantity: string;
+  unit_of_measure: string;
+  unit_rate_minor: number;
+  amount_minor: number;
+  created_at: string;
+};
+
+export type CommercialInvoice = {
+  id: string;
+  public_id: string;
+  customer_id: string;
+  customer_name: string;
+  customer_code: string;
+  invoice_number: string;
+  currency: "NGN" | "USD";
+  exchange_rate_snapshot: string;
+  issue_date: string;
+  due_date: string;
+  subtotal_minor: number;
+  vat_percent: string;
+  vat_amount_minor: number;
+  wht_percent: string;
+  wht_amount_minor: number;
+  total_amount_minor: number;
+  balance_due_minor: number;
+  status: "draft" | "issued" | "partially_paid" | "paid" | "overdue" | "cancelled";
+  version: number;
+  notes: string;
+  created_by_name: string;
+  line_items: InvoiceLineItem[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type InterimPaymentCertificate = {
+  id: string;
+  public_id: string;
+  customer_id: string;
+  customer_name: string;
+  customer_code: string;
+  ipc_number: string;
+  contract_reference: string;
+  project_name: string;
+  valuation_period_start: string;
+  valuation_period_end: string;
+  currency: "NGN" | "USD";
+  gross_certified_minor: number;
+  retention_percent: string;
+  retention_amount_minor: number;
+  advance_recovery_minor: number;
+  net_certified_minor: number;
+  status: "draft" | "submitted" | "qs_certified" | "approved" | "invoiced";
+  qs_sign_off_by: string;
+  qs_sign_off_at: string | null;
+  version: number;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PaymentReceipt = {
+  id: string;
+  public_id: string;
+  customer_id: string;
+  customer_name: string;
+  invoice_id: string | null;
+  invoice_number: string | null;
+  receipt_number: string;
+  payment_method: "bank_transfer" | "paystack_link" | "flutterwave_link" | "cheque" | "cash";
+  transaction_reference: string;
+  amount_minor: number;
+  currency: "NGN" | "USD";
+  payment_date: string;
+  recorded_by_name: string;
+  notes: string;
+  created_at: string;
+};
+
+export type CustomerStatement = {
+  customer_code: string;
+  customer_name: string;
+  currency: string;
+  total_outstanding_minor: number;
+  ageing: {
+    current_0_30_minor: number;
+    overdue_31_60_minor: number;
+    overdue_61_90_minor: number;
+    overdue_90_plus_minor: number;
+  };
+  ledger: {
+    date: string;
+    type: "invoice" | "payment";
+    reference: string;
+    description: string;
+    debit_minor: number;
+    credit_minor: number;
+    running_balance_minor: number;
+  }[];
+};
+
+export type BillingSummary = {
+  total_billed_minor: number;
+  total_collected_minor: number;
+  total_outstanding_minor: number;
+  total_invoices_count: number;
+  paid_invoices_count: number;
+  overdue_invoices_count: number;
+  total_customers_count: number;
+  total_ipcs_count: number;
+  approved_ipcs_count: number;
+};
+
+export const billingApi = {
+  summary: () => apiRequest<BillingSummary>("/billing/summary/"),
+  customers: (params = "") =>
+    apiRequest<Paginated<CustomerAccount>>(`/billing/customers/${params ? `?${params}` : ""}`),
+  customer: (id: string) => apiRequest<CustomerAccount>(`/billing/customers/${id}/`),
+  createCustomer: (payload: Record<string, unknown>) =>
+    apiRequest<CustomerAccount>("/billing/customers/", { method: "POST", body: JSON.stringify(payload) }),
+  customerStatement: (id: string) => apiRequest<CustomerStatement>(`/billing/customers/${id}/statement/`),
+  invoices: (params = "") =>
+    apiRequest<Paginated<CommercialInvoice>>(`/billing/invoices/${params ? `?${params}` : ""}`),
+  invoice: (id: string) => apiRequest<CommercialInvoice>(`/billing/invoices/${id}/`),
+  createInvoice: (payload: Record<string, unknown>) =>
+    apiRequest<CommercialInvoice>("/billing/invoices/", { method: "POST", body: JSON.stringify(payload) }),
+  invoiceAction: (id: string, action: string, version: number, reason = "") =>
+    apiRequest<CommercialInvoice>(`/billing/invoices/${id}/actions/${action}/`, {
+      method: "POST",
+      body: JSON.stringify({ version, reason }),
+    }),
+  payments: (params = "") =>
+    apiRequest<Paginated<PaymentReceipt>>(`/billing/payments/${params ? `?${params}` : ""}`),
+  recordPayment: (payload: Record<string, unknown>) =>
+    apiRequest<PaymentReceipt>("/billing/payments/", { method: "POST", body: JSON.stringify(payload) }),
+  ipcs: (params = "") =>
+    apiRequest<Paginated<InterimPaymentCertificate>>(`/billing/ipcs/${params ? `?${params}` : ""}`),
+  createIpc: (payload: Record<string, unknown>) =>
+    apiRequest<InterimPaymentCertificate>("/billing/ipcs/", { method: "POST", body: JSON.stringify(payload) }),
+  ipcAction: (id: string, action: string, version: number, payload: Record<string, unknown> = {}) =>
+    apiRequest<InterimPaymentCertificate>(`/billing/ipcs/${id}/actions/${action}/`, {
+      method: "POST",
+      body: JSON.stringify({ version, ...payload }),
+    }),
+};
+
 

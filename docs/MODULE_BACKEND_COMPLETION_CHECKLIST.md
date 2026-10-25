@@ -137,12 +137,15 @@ evidence.
   - [x] ISO 9001, ISO 14001, ISO 45001, and API Spec Q1/Q2 audit management with NCR tracking and sign-off
   - [x] PostgreSQL RLS on all 5 tables, immutable audit triggers, and two-tenant database security test coverage
 
-- [ ] **10. Billing & Commercial** — Not started
-  - [ ] Job costing from approved operational records
-  - [ ] NGN/USD minor-unit money representation and rate snapshots
-  - [ ] Invoices, payment state, statements, and ageing
-  - [ ] Payment provider contracts, webhook validation, idempotency, and
-        reconciliation before enabling live payments
+- [x] **10. Billing & Commercial** — Pilot-ready
+  - [x] Job costing from approved operational records across BunkerFlow, HaulTrac, TankWorks, PipeIntegrity, EPC-Link, and MarineStores
+  - [x] Integer minor-unit money representation (Kobo/Cents) for NGN and USD with exchange rate snapshots
+  - [x] Commercial invoices with version-checked lifecycle (draft → issued → partially_paid → paid → overdue → cancelled), statutory VAT (7.5%) and WHT (5%) calculations
+  - [x] Payment receipts with automatic invoice balance decrementing and transaction reference tracking
+  - [x] Interim Payment Certificates (IPC) for EPC contracts with gross valuation, 5% retention, advance recovery, and QS certification workflow
+  - [x] Real-time customer statement of account and 4-bucket accounts receivable ageing analysis (0–30d, 31–60d, 61–90d, >90d)
+  - [x] PostgreSQL RLS on all 6 tables, immutable audit triggers, and two-tenant database security test coverage
+  - [ ] External payment provider webhooks (Paystack / Flutterwave) remain in sandbox mode until production merchant keys and callback signatures are configured (documented in PENDING_TODO.md)
 
 - [ ] **11. Client Portal** — Not started
   - [ ] Explicit external-user identity and tenant/customer boundary
