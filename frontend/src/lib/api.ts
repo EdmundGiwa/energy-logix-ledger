@@ -1323,4 +1323,67 @@ export const clientPortalApi = {
     apiRequest<Paginated<ClientPortalAccessLog>>(`/portal/audit-logs/${params ? `?${params}` : ""}`),
 };
 
+export type ExecutiveKpiSnapshot = {
+  public_id: string;
+  as_of_date: string;
+  currency: "NGN" | "USD";
+  gross_billed_minor: number;
+  collected_minor: number;
+  outstanding_receivables_minor: number;
+  ipc_retention_held_minor: number;
+  product_delivered_tonnage: string;
+  avg_shrinkage_percent: string;
+  avg_turnaround_hours: string;
+  reconciliation_rate_percent: string;
+  active_field_jobs_count: number;
+  critical_risk_items_count: number;
+  warning_risk_items_count: number;
+  module_breakdown: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ExecutiveExceptionAlert = {
+  public_id: string;
+  severity: "crit" | "warn" | "info";
+  module: string;
+  title: string;
+  description: string;
+  source_record_type: string;
+  source_record_id: string;
+  source_url: string;
+  variance_percent: string | null;
+  is_acknowledged: boolean;
+  acknowledged_by_email: string | null;
+  acknowledged_at: string | null;
+  created_at: string;
+};
+
+export type ExecutiveExportJob = {
+  public_id: string;
+  requested_by_email: string;
+  report_type: string;
+  filters: Record<string, unknown>;
+  status: string;
+  file_format: string;
+  file_size_bytes: number;
+  download_checksum: string;
+  completed_at: string | null;
+  created_at: string;
+};
+
+export const ownerDashboardApi = {
+  kpis: (currency = "USD") => apiRequest<ExecutiveKpiSnapshot>(`/owner/kpis/?currency=${currency}`),
+  exceptions: (params = "") =>
+    apiRequest<Paginated<ExecutiveExceptionAlert>>(`/owner/exceptions/${params ? `?${params}` : ""}`),
+  acknowledgeException: (id: string) =>
+    apiRequest<ExecutiveExceptionAlert>(`/owner/exceptions/${id}/acknowledge/`, { method: "POST" }),
+  createException: (payload: Record<string, unknown>) =>
+    apiRequest<ExecutiveExceptionAlert>("/owner/exceptions/", { method: "POST", body: JSON.stringify(payload) }),
+  exports: () => apiRequest<Paginated<ExecutiveExportJob>>("/owner/exports/"),
+  createExport: (payload: Record<string, unknown>) =>
+    apiRequest<ExecutiveExportJob>("/owner/exports/", { method: "POST", body: JSON.stringify(payload) }),
+  exportDetail: (id: string) => apiRequest<ExecutiveExportJob>(`/owner/exports/${id}/`),
+};
+
 

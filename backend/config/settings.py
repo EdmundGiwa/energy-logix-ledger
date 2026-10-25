@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "compliance_shield",
     "billing",
     "client_portal",
+    "owner_dashboard",
 ]
 
 MIDDLEWARE = [

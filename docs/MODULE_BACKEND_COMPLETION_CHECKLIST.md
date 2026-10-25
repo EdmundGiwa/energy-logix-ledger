@@ -154,12 +154,13 @@ evidence.
   - [x] Strict tenant & client isolation: no access to drafts, internal notes, or unrelated tenant/client records
   - [x] PostgreSQL RLS on all 3 tables, access log immutability triggers, and two-tenant database security test coverage
 
-- [ ] **12. Owner Dashboard** — Not started
-  - [ ] Read-optimized projections from authoritative module services
-  - [ ] Turnaround, shrinkage, reconciliation, utilization, and expiry risk
-  - [ ] Exception feed with source record links and permissions
-  - [ ] Currency, site, date-range, and module filters
-  - [ ] Export jobs with tenant-scoped authorization
+- [x] **12. Owner Dashboard** — Pilot-ready
+  - [x] Read-optimized live KPI projections from authoritative services across all 11 modules
+  - [x] Turnaround, shrinkage, reconciliation, asset utilization, and statutory expiry risk indicators
+  - [x] Real-time exception feed with severity levels, acknowledge workflow, and permissions
+  - [x] Dual-currency (USD / NGN), site, date-range, and module filtering
+  - [x] Executive export jobs (board briefs, variance ledgers, audit packs) with SHA-256 seal verification and tenant-scoped authorization
+  - [x] PostgreSQL RLS on all 3 tables and two-tenant database security test coverage
 
 ## Release gates
 

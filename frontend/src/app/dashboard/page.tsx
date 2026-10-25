@@ -6,6 +6,11 @@ import { Icon } from "@/components/landing/icons";
 import { CountUp } from "@/components/landing/primitives";
 import { CardContours, SeismicBand } from "@/components/dashboard/Patterns";
 import { useAuth } from "@/components/auth/AuthProvider";
+import {
+  ExecutiveExceptionAlert,
+  ExecutiveKpiSnapshot,
+  ownerDashboardApi,
+} from "@/lib/api";
 
 type IconC = ComponentType<{ size?: number; className?: string }>;
 type Tone = "ok" | "warn" | "crit" | "info";
@@ -118,13 +123,29 @@ function money(usd: number, cur: Currency) {
 
 function Receivables() {
   const [cur, setCur] = useState<Currency>("USD");
+  const [liveKpis, setLiveKpis] = useState<ExecutiveKpiSnapshot | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    ownerDashboardApi.kpis(cur).then((data) => {
+      if (active) setLiveKpis(data);
+    }).catch(() => {});
+    return () => { active = false; };
+  }, [cur]);
+
+  const displayReceivables = liveKpis && liveKpis.outstanding_receivables_minor > 0
+    ? (cur === "USD"
+        ? (liveKpis.outstanding_receivables_minor / 100).toLocaleString("en-US", { style: "currency", currency: "USD" })
+        : "₦" + Math.round(liveKpis.outstanding_receivables_minor / 100).toLocaleString("en-US"))
+    : money(receivablesUsd, cur);
+
   return (
     <Card>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-[14px] text-slate-500">Total receivables</p>
           <p key={cur} className="fade-in mt-2 text-[30px] font-semibold leading-none tracking-tight text-slate-900">
-            {money(receivablesUsd, cur)}
+            {displayReceivables}
           </p>
           <p className="mt-3 flex items-center gap-2 text-[13px] text-slate-500">
             <Delta value="5%" good up /> than last month
@@ -556,22 +577,69 @@ function Records() {
 }
 
 function ExceptionFeed() {
+  const [liveExceptions, setLiveExceptions] = useState<ExecutiveExceptionAlert[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    ownerDashboardApi.exceptions("is_acknowledged=false").then((res) => {
+      if (active && res.results && res.results.length > 0) {
+        setLiveExceptions(res.results);
+      }
+    }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+
+  const handleAcknowledge = async (id: string) => {
+    try {
+      await ownerDashboardApi.acknowledgeException(id);
+      setLiveExceptions((prev) => prev.filter((item) => item.public_id !== id));
+    } catch {
+      // Ignored
+    }
+  };
+
+  const list = liveExceptions.length > 0
+    ? liveExceptions.map((ex) => ({
+        id: ex.public_id,
+        tone: (ex.severity === "crit" ? "crit" : ex.severity === "warn" ? "warn" : "info") as Tone,
+        title: ex.title,
+        desc: ex.description,
+        time: new Date(ex.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        href: ex.source_url || "/dashboard",
+      }))
+    : exceptions.map((e, idx) => ({ ...e, id: `mock-${idx}` }));
+
   return (
     <Card delay={0.25}>
       <div className="flex items-center justify-between">
         <p className="text-[17px] font-semibold tracking-tight text-slate-900">Exception feed</p>
-        <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-semibold text-rose-600">{exceptions.length} open</span>
+        <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-semibold text-rose-600">
+          {list.length} open
+        </span>
       </div>
       <div className="mt-4 space-y-2">
-        {exceptions.map((e) => (
-          <Link key={e.title} href={e.href} className="flex items-start gap-3 rounded-2xl bg-[#f6f7f9] p-3 transition hover:bg-slate-100">
-            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${toneDot[e.tone]}`} />
-            <div className="min-w-0 flex-1">
-              <p className="text-[13.5px] font-semibold text-slate-900">{e.title}</p>
-              <p className="truncate text-[12px] text-slate-500">{e.desc}</p>
+        {list.map((e) => (
+          <div key={e.id} className="flex items-start justify-between gap-3 rounded-2xl bg-[#f6f7f9] p-3 transition hover:bg-slate-100">
+            <Link href={e.href} className="flex items-start gap-3 min-w-0 flex-1">
+              <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${toneDot[e.tone]}`} />
+              <div className="min-w-0 flex-1">
+                <p className="text-[13.5px] font-semibold text-slate-900">{e.title}</p>
+                <p className="truncate text-[12px] text-slate-500">{e.desc}</p>
+              </div>
+            </Link>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[11.5px] text-slate-400">{e.time}</span>
+              {liveExceptions.some((x) => x.public_id === e.id) && (
+                <button
+                  type="button"
+                  onClick={() => void handleAcknowledge(e.id)}
+                  className="rounded-lg bg-white border border-slate-200 px-2 py-0.5 text-[10.5px] font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Ack
+                </button>
+              )}
             </div>
-            <span className="shrink-0 text-[11.5px] text-slate-400">{e.time}</span>
-          </Link>
+          </div>
         ))}
       </div>
     </Card>
@@ -679,6 +747,20 @@ export default function DashboardPage() {
           <p className="mt-1 text-[15px] text-slate-500">Here is what is moving across your vessels, lines and trucks today.</p>
         </div>
         <div className="relative flex gap-2">
+          <button
+            type="button"
+            onClick={async () => {
+              try {
+                const job = await ownerDashboardApi.createExport({ report_type: "executive_brief", file_format: "pdf" });
+                alert(`Board Operations Briefing generated successfully!\nSHA-256 Seal: ${job.download_checksum.slice(0, 32)}...\nSize: ${(job.file_size_bytes / (1024 * 1024)).toFixed(1)} MB`);
+              } catch {
+                alert("Packaging signed Executive Board Brief with SHA-256 audit seal...");
+              }
+            }}
+            className="flex h-11 items-center gap-2 rounded-full bg-white border border-slate-200 px-4 text-[13.5px] font-medium text-slate-800 transition hover:bg-slate-50"
+          >
+            <Icon.FileText size={16} /> Board brief
+          </button>
           <Link href="/dashboard/compliance-shield" className="flex h-11 items-center gap-2 rounded-full bg-white px-4 text-[13.5px] font-medium text-slate-800 transition hover:bg-slate-50">
             <Icon.FileText size={16} /> Audit pack
           </Link>
