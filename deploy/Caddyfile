@@ -1,0 +1,13 @@
+{
+    email admin@ofshora.com
+}
+
+# Production/Staging domain with automated Let's Encrypt SSL
+api-staging.ofshora.com {
+    reverse_proxy backend:8000
+}
+
+# Direct IP fallback while waiting for DNS propagation
+:80 {
+    reverse_proxy backend:8000
+}
