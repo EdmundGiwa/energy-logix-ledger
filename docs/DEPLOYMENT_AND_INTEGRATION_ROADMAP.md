@@ -140,18 +140,39 @@ Here is the complete list of external services and integrations required across 
 └─────────────────────────────────┘       └─────────────────────────────────┘
 ```
 
-### Estimated Monthly Hosting Budget (Pilot Phase)
+### Lean Bootstrap Architecture (Pre-Traffic / MVP Phase: $6 – $12 / month)
 
-| Component | Specification | Estimated Cost |
-| :--- | :--- | :--- |
-| **DigitalOcean Production Droplet** | 4 vCPU, 8 GB RAM, 160 GB NVMe (Docker Compose: Next.js + Django + Celery) | ~$48 / month |
-| **DigitalOcean Staging Droplet** | 2 vCPU, 4 GB RAM, 80 GB NVMe | ~$24 / month |
-| **Managed PostgreSQL (Production)** | 1 Node, 2 GB RAM, 25 GB Storage, Daily Backups & Connection Pool | ~$30 / month |
-| **DigitalOcean Spaces (Object Storage)** | 250 GB Storage + 1 TB Outbound Bandwidth | ~$5 / month |
-| **Resend (Email)** | 50,000 emails / month (Pro tier or free tier) | $0 – $20 / month |
-| **Bachs (Payments)** | Pay-as-you-transact transaction fee | Transaction % |
-| **Domain (`ofshora.com`)** | Namecheap registration | ~$1.00 / month (~$11.28/yr) |
-| **Total Estimated Infrastructure Run-Rate** | | **~$108 – $128 / month** |
+You are 100% right: **there is zero reason to burn money on multi-node 8GB/4GB clusters or managed databases when you have no traffic yet.**
+
+The actual runtime RAM footprint of our containerized stack is surprisingly light:
+* **Next.js 16 (production standalone `next start`)**: ~90 MB – 140 MB
+* **Django Gunicorn (2 lightweight workers)**: ~120 MB – 160 MB
+* **Celery Worker (1 concurrency)**: ~60 MB – 90 MB
+* **Redis container**: ~15 MB
+* **PostgreSQL 16 container (Docker with RLS)**: ~70 MB – 110 MB
+* **Caddy Reverse Proxy (HTTPS/TLS)**: ~30 MB
+* **Total Runtime Memory Footprint**: **~385 MB – 545 MB**
+
+#### Can Dev / Staging run on a 1GB Droplet ($6/mo)?
+**Yes, absolutely.**
+* **The only caveat**: Running `npm run build` directly *on* a 1GB machine can momentarily spike to ~800MB RAM.
+* **The simple zero-cost fixes**:
+  1. **Add a 2GB SSD Swapfile**: A standard 1-minute command (`fallocate -l 2G /swapfile && mkswap /swapfile && swapon /swapfile`) gives the Linux kernel virtual memory headroom so builds never OOM.
+  2. **Or build images in CI / locally**: Build the container image via GitHub Actions (free) or on your laptop and just run `docker compose pull` on the droplet.
+* **The 2GB Droplet Sweet Spot ($12/mo)**: If you want zero swap overhead, a 2GB RAM droplet ($12/mo) runs the entire stack (Next.js + Django + Celery + Redis + Postgres + Caddy) with over 1GB of free RAM to spare.
+
+---
+
+### Monthly Budget Comparison: Bootstrap vs Scaled Pilot
+
+| Stage | Droplet Tier | Database | Object Storage | Total Cost / Month |
+| :--- | :--- | :--- | :--- | :--- |
+| **Tier 0: Ultra-Lean Bootstrap (Current)** | **1x 1GB Droplet ($6/mo)** with 2GB swap<br/>*(Or 1x 2GB Droplet @ $12/mo)* | Self-hosted Docker PostgreSQL with nightly `pg_dump` cron | Cloudflare R2 (10 GB free) or DO Spaces ($5/mo) | **$6 – $12 / mo** |
+| **Tier 1: Pre-Pilot Staging & Prod** | **1x 2GB Droplet ($12/mo)** for Dev/Staging<br/>**1x 2GB Droplet ($12/mo)** for Prod | Self-hosted Docker PostgreSQL with automated remote backups | DigitalOcean Spaces ($5/mo) | **~$29 / mo** |
+| **Tier 2: Enterprise Pilot (Paying IOC Clients)** | 1x 4GB Droplet ($24/mo) Prod<br/>1x 2GB Droplet ($12/mo) Staging | Managed DO PostgreSQL with automatic daily backups ($15–$30/mo) | DigitalOcean Spaces ($5/mo) | **~$60 – $80 / mo** |
+
+> [!TIP]
+> **Action Recommendation**: Start on **Tier 0 (Single 2GB Droplet @ $12/mo or 1GB @ $6/mo)** on DigitalOcean. Run all staging and internal demos on this single box. Do not spend a dime on managed database clusters or extra droplets until you are onboarding your first paying contractor.
 
 ---
 
