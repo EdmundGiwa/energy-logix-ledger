@@ -271,15 +271,48 @@ export type PipeInspection = { id: string; asset: string; reference: string; ins
 export type PipeCpPoint = { id: string; asset: string; reference: string; kp: string; potential_mv: string; electrode: string; surveyed_at: string; surveyor_name: string };
 export type PipeRowObservation = { id: string; asset: string; reference: string; kp: string; category: string; severity: string; status: string; observed_at: string; observer_name: string; description: string };
 
+export type PipeIntegrityDossier = {
+  asset: { id: string; reference: string; name: string; fluid_type: "liquid" | "gas"; governing_code: string; is_active: boolean };
+  integrity_summary: {
+    integrity_score: number;
+    status: "satisfactory" | "requires_action" | "critical";
+    governing_standards: string[];
+    latest_hydrotest_passed: string | null;
+    hydrotest_pressure_bar: string | null;
+    hydrotest_hold_minutes: number | null;
+    min_remaining_life_years: string;
+    max_corrosion_rate_mm_yr: string;
+    cp_compliance_percent: number;
+    total_cp_survey_points: number;
+    open_row_anomalies: number;
+    critical_row_anomalies: number;
+  };
+  pig_operations: {
+    total_runs: number;
+    completed_runs: number;
+    latest_run_reference: string | null;
+    latest_pig_type: string | null;
+    latest_status: string | null;
+  };
+  records: {
+    inspections_count: number;
+    rejected_inspections: number;
+    hydrotests_count: number;
+    cp_points_count: number;
+    row_observations_count: number;
+  };
+};
+
 export const pipeIntegrityApi = {
   assets: (params = "") => apiRequest<Paginated<PipeAsset>>(`/pipeintegrity/assets/${params ? `?${params}` : ""}`),
+  dossier: (assetId: string) => apiRequest<PipeIntegrityDossier>(`/pipeintegrity/assets/${assetId}/dossier/`),
   createAsset: (payload: Record<string, unknown>) => apiRequest<PipeAsset>("/pipeintegrity/assets/", { method: "POST", body: JSON.stringify(payload) }),
   pigRuns: (params = "") => apiRequest<Paginated<PipePigRun>>(`/pipeintegrity/pig-runs/${params ? `?${params}` : ""}`),
   createPigRun: (payload: Record<string, unknown>) => apiRequest<PipePigRun>("/pipeintegrity/pig-runs/", { method: "POST", body: JSON.stringify(payload) }),
   transitionPig: (id: string, action: string, version: number, reason: string) => apiRequest<PipePigRun>(`/pipeintegrity/pig-runs/${id}/actions/${action}/`, { method: "POST", body: JSON.stringify({ version, reason }) }),
   hydrotests: (params = "") => apiRequest<Paginated<PipeHydrotest>>(`/pipeintegrity/hydrotests/${params ? `?${params}` : ""}`),
   createHydrotest: (payload: Record<string, unknown>) => apiRequest<PipeHydrotest>("/pipeintegrity/hydrotests/", { method: "POST", body: JSON.stringify(payload) }),
-  transitionHydrotest: (id: string, action: string, version: number, reason: string) => apiRequest<PipeHydrotest>(`/pipeintegrity/hydrotests/${id}/actions/${action}/`, { method: "POST", body: JSON.stringify({ version, reason }) }),
+  transitionHydrotest: (id: string, action: string, version: number, reason: string, updates?: Record<string, unknown>) => apiRequest<PipeHydrotest>(`/pipeintegrity/hydrotests/${id}/actions/${action}/`, { method: "POST", body: JSON.stringify({ version, reason, updates }) }),
   inspections: (params = "") => apiRequest<Paginated<PipeInspection>>(`/pipeintegrity/inspections/${params ? `?${params}` : ""}`),
   cpSurveyPoints: (params = "") => apiRequest<Paginated<PipeCpPoint>>(`/pipeintegrity/cp-survey-points/${params ? `?${params}` : ""}`),
   rowObservations: (params = "") => apiRequest<Paginated<PipeRowObservation>>(`/pipeintegrity/row-observations/${params ? `?${params}` : ""}`),

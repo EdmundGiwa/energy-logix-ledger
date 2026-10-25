@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    AssetIntegrityDossierView,
     AssetListCreateView,
     CPSurveyPointListCreateView,
     HydrotestDetailView,
@@ -16,6 +17,7 @@ from .views import (
 
 urlpatterns = [
     path("assets/", AssetListCreateView.as_view(), name="pipeline-asset-list"),
+    path("assets/<uuid:public_id>/dossier/", AssetIntegrityDossierView.as_view(), name="pipeline-asset-dossier"),
     path("pig-runs/", PigRunListCreateView.as_view(), name="pipeline-pig-run-list"),
     path("pig-runs/<uuid:public_id>/", PigRunDetailView.as_view(), name="pipeline-pig-run-detail"),
     path("pig-runs/<uuid:public_id>/actions/<str:action>/", PigRunTransitionView.as_view(), name="pipeline-pig-run-transition"),

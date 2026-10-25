@@ -68,6 +68,7 @@ class HydrotestSerializer(serializers.ModelSerializer):
 class TransitionSerializer(serializers.Serializer):
     version = serializers.IntegerField(min_value=1)
     reason = serializers.CharField(max_length=500, trim_whitespace=True)
+    updates = serializers.DictField(required=False, default=dict)
 
 
 class PipelineAuditSerializer(serializers.ModelSerializer):

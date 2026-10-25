@@ -93,7 +93,45 @@ class PipelineIntegrityAPITests(APITestCase):
             "asset_id": str(asset.public_id), "inspection_type": "visual", "subject_reference": "KP 1",
             "inspected_at": "2026-10-20T10:00:00Z", "inspector_name": "A. Bello",
         }
-        self.assertEqual(self.client.post(reverse("pipeline-inspection-list"), payload, format="json").status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(self.client.post(reverse("pipeline-cp-survey-point-list"), {
             "asset_id": str(asset.public_id), "kp": "1", "potential_mv": "-800", "surveyed_at": "2026-10-20T10:00:00Z", "surveyor_name": "A. Bello",
         }, format="json").status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_asset_integrity_dossier_generation_and_tenant_isolation(self):
+        asset = self.create_asset()
+        # Create passing hydrotest
+        hydro = self.client.post(reverse("pipeline-hydrotest-list"), {
+            "asset_id": str(asset.public_id), "test_pressure_bar": "142.400", "hold_duration_minutes": 1440,
+        }, format="json")
+        hydro_id = hydro.data["id"]
+        self.client.post(reverse("pipeline-hydrotest-transition", args=(hydro_id, "start")), {"version": 1, "reason": "Pressurizing"}, format="json")
+        self.client.post(reverse("pipeline-hydrotest-transition", args=(hydro_id, "pass")), {
+            "version": 2, "reason": "Hold complete, zero pressure drop", "updates": {"pressure_drop_bar": "0.000"},
+        }, format="json")
+
+        # Create CP point (-950 mV is within NACE standard)
+        self.client.post(reverse("pipeline-cp-survey-point-list"), {
+            "asset_id": str(asset.public_id), "kp": "10.000", "potential_mv": "-950.000",
+            "surveyed_at": "2026-10-20T11:00:00Z", "surveyor_name": "C. Eze",
+        }, format="json")
+
+        # Create NDT scan
+        self.client.post(reverse("pipeline-inspection-list"), {
+            "asset_id": str(asset.public_id), "inspection_type": "ut", "subject_reference": "Elbow 12",
+            "nominal_wall_thickness_mm": "14.300", "measured_wall_thickness_mm": "13.900",
+            "corrosion_rate_mm_per_year": "0.0400", "remaining_life_years": "25.000",
+            "inspected_at": "2026-10-20T10:00:00Z", "inspector_name": "A. Bello", "result": "accepted",
+        }, format="json")
+
+        # Fetch dossier
+        res = self.client.get(reverse("pipeline-asset-dossier", args=(str(asset.public_id),)))
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data["integrity_summary"]["status"], "satisfactory")
+        self.assertEqual(res.data["integrity_summary"]["cp_compliance_percent"], 100.0)
+        self.assertEqual(res.data["integrity_summary"]["latest_hydrotest_passed"], hydro.data["reference"])
+
+        # Bravo cannot access Alpha's dossier
+        self.client.force_login(self.bravo_user)
+        denied_res = self.client.get(reverse("pipeline-asset-dossier", args=(str(asset.public_id),)))
+        self.assertEqual(denied_res.status_code, status.HTTP_404_NOT_FOUND)
+

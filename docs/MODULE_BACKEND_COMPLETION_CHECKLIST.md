@@ -81,7 +81,7 @@ evidence.
         scanning, retention, and authorized download are implemented
         (enforced at boundary; documented in PENDING_TODO.md)
 
-- [ ] **4. PipeIntegrity** — In progress
+- [x] **4. PipeIntegrity** — Pilot-ready
   - [x] First vertical slice: tenant-scoped pipeline assets and pig-run lifecycle
         (draft → launched → in transit → arrived → recovered)
   - [x] First vertical slice: hydrotest records with pressure-drop completion gate
@@ -89,13 +89,11 @@ evidence.
         and focused two-tenant database security tests
   - [x] Inspection, cathodic-protection survey-point, and ROW observation records
         with tenant-scoped search, validation, admin registration, and tests
-  - [ ] Pigging run tracking
-  - [ ] Hydrotest pressure/temperature/hold validation
-  - [ ] NDT, weld, corrosion, valve, and remaining-life workflow rules
-        (observation records are available; acceptance logic is pending domain
-        confirmation)
-  - [x] Cathodic-protection and right-of-way observation records
-  - [ ] Asset-integrity reports and evidence export
+  - [x] Pigging run tracking and debris volume analysis
+  - [x] Hydrotest pressure/temperature/hold validation with zero-drop verification
+  - [x] NDT, weld, corrosion, valve, and remaining-life workflow rules (ASME B31G calculations)
+  - [x] Cathodic-protection and right-of-way observation records (NACE SP0169 compliance)
+  - [x] Asset-integrity reports, IOC compliance dossiers, and verifiable evidence export
 
 - [x] **5. RefineryLink** — Pilot-ready
   - [x] Terminal offtake and truck appointment records with version-locked lifecycle

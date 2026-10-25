@@ -16,7 +16,7 @@ from .serializers import (
     AssetSerializer, CPSurveyPointSerializer, HydrotestSerializer, InspectionRecordSerializer, PigRunSerializer,
     PipelineAuditSerializer, ROWObservationSerializer, TransitionSerializer,
 )
-from .services import audit, transition_hydrotest, transition_pig
+from .services import audit, build_asset_integrity_dossier, transition_hydrotest, transition_pig
 
 
 class PipelinePagination(PageNumberPagination):
@@ -232,3 +232,12 @@ class ROWObservationListCreateView(EvidenceListCreateView):
     search_fields = ("category", "observer_name", "description")
     filter_field = "status"
     filter_choices = ROWObservation.Status.values
+
+
+class AssetIntegrityDossierView(APIView):
+    def get(self, request, public_id):
+        membership = resolve_membership(request)
+        asset = asset_for_membership(membership, public_id)
+        dossier = build_asset_integrity_dossier(asset=asset, organization=membership.organization)
+        return Response(dossier)
+
