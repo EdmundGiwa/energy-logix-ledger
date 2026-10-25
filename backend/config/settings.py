@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "refinery_link",
     "marine_stores",
     "tank_works",
+    "epc_link",
 ]
 
 MIDDLEWARE = [

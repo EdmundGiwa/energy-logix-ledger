@@ -119,13 +119,15 @@ evidence.
   - [x] Crew man-hours and equipment utilization ledger with consumables tracking
   - [x] PostgreSQL RLS on all 5 tables, immutable audit triggers, and two-tenant database security test coverage
 
-- [ ] **8. EPC-Link** — Not started
-  - [ ] Material requisitions and pipe-yard inventory
-  - [ ] Heat numbers, MTCs, wall thickness, bay locations, and QR tags
-  - [ ] Vendor qualification and procurement approvals
-  - [ ] Nigerian-content readiness and export packs
-  - [ ] NOGIC-JQS/NCDMB integrations remain accurately represented as export
-        or manual-upload workflows until API access is confirmed
+- [x] **8. EPC-Link** — Pilot-ready
+  - [x] Material requisitions with approval workflow, WBS codes, and version-locking
+  - [x] Pipe-yard inventory with outer diameter, wall thickness, schedule, and bay/rack positioning
+  - [x] Heat numbers, mill manufacturers, MTC 3.1 & 3.2 certificates, and metallurgical test values
+  - [x] QR code tagging and mobile-scannable inventory identification
+  - [x] Approved Vendor List (AVL) qualification categories and audit ratings (A/B/C)
+  - [x] Material issuance against approved requisitions with automatic yard quantity decrementing
+  - [x] Automated Nigerian Content (NCDMB / NOGIC-JQS) spend engine and JSON export dossier
+  - [x] PostgreSQL RLS on all 6 tables, immutable audit triggers, and two-tenant database security test coverage
 
 - [ ] **9. Compliance Shield** — Not started
   - [ ] Regulatory and certificate register

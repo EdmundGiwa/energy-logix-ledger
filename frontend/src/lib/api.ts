@@ -796,4 +796,167 @@ export const tankWorksApi = {
     apiRequest<CrewEquipmentUtilization>("/tankworks/utilization/", { method: "POST", body: JSON.stringify(payload) }),
 };
 
+export type ApprovedVendor = {
+  id: string;
+  vendor_code: string;
+  vendor_name: string;
+  category: "tubulars" | "valves" | "structural" | "fittings_flanges" | "services";
+  status: "active" | "probation" | "blacklisted";
+  audit_rating: "A" | "B" | "C";
+  nogic_jqs_id: string;
+  nuprc_permit_ref: string;
+  iso_certification: string;
+  contact_email: string;
+  contact_phone: string;
+  notes: string;
+  created_at: string;
+};
+
+export type MaterialRequisition = {
+  id: string;
+  requisition_number: string;
+  project_name: string;
+  client_name: string;
+  wbs_code: string;
+  priority: "routine" | "urgent" | "emergency";
+  status: "draft" | "submitted" | "approved" | "rejected" | "fulfilled" | "cancelled";
+  required_date: string;
+  delivery_location: string;
+  estimated_cost_minor: number;
+  currency: string;
+  version: number;
+  requested_by_name: string;
+  approved_by_name: string | null;
+  approved_at: string | null;
+  notes: string;
+  allowed_actions: string[];
+  created_at: string;
+};
+
+export type PipeYardItem = {
+  id: string;
+  item_tag: string;
+  material_type: "line_pipe" | "casing_tubing" | "structural" | "flanges_fittings" | "valves" | "consumables";
+  grade_specification: string;
+  outer_diameter_inches: string | null;
+  wall_thickness_mm: string | null;
+  schedule: string;
+  length_meters: string;
+  quantity: string;
+  unit_of_measure: string;
+  heat_number: string;
+  mill_manufacturer: string;
+  mtc_number: string;
+  mtc_type: "en_10204_3_1" | "en_10204_3_2" | "standard_mill";
+  yield_strength_mpa: string | null;
+  tensile_strength_mpa: string | null;
+  impact_test_joules: string | null;
+  yard_location: string;
+  bay_rack_position: string;
+  qr_tag: string;
+  status: "available" | "reserved" | "issued" | "quarantine";
+  vendor_id: string | null;
+  vendor_name: string | null;
+  reservation_id: string | null;
+  reservation_number: string | null;
+  unit_cost_minor: number;
+  currency: string;
+  nigerian_content_percent: string;
+  notes: string;
+  created_at: string;
+};
+
+export type MaterialIssueSlipItem = {
+  id: string;
+  yard_item_id: string;
+  item_tag: string;
+  material_type: string;
+  grade_specification: string;
+  heat_number: string;
+  quantity_issued: string;
+  unit_of_measure: string;
+  notes: string;
+};
+
+export type MaterialIssueSlip = {
+  id: string;
+  issue_slip_number: string;
+  requisition_id: string;
+  requisition_number: string;
+  issued_to: string;
+  contractor_name: string;
+  issued_date: string;
+  receiver_signature_ref: string;
+  issued_by_name: string;
+  items: MaterialIssueSlipItem[];
+  notes: string;
+  created_at: string;
+};
+
+export type NigerianContentReport = {
+  organization_name: string;
+  generated_at: string;
+  inventory_summary: {
+    total_unique_tags: number;
+    total_quantity_stock: string;
+    total_inventory_value_minor: number;
+    overall_nigerian_content_percent: string;
+  };
+  mtc_compliance: {
+    mtc_3_1_or_3_2_coverage_percent: string;
+    breakdown: { mtc_type: string; count: number }[];
+  };
+  material_type_distribution: {
+    material_type: string;
+    count: number;
+    total_qty: string;
+  }[];
+  vendor_governance: {
+    total_approved_vendors: number;
+    active_qualified_vendors: number;
+    nogic_jqs_registered_vendors: number;
+  };
+};
+
+export type EpcLinkSummary = {
+  total_yard_items: number;
+  available_yard_items: number;
+  reserved_yard_items: number;
+  total_requisitions: number;
+  pending_requisitions: number;
+  approved_requisitions: number;
+  total_vendors: number;
+  active_vendors: number;
+  total_issue_slips: number;
+  overall_nigerian_content_percent: string;
+};
+
+export const epcLinkApi = {
+  summary: () => apiRequest<EpcLinkSummary>("/epclink/summary/"),
+  vendors: (params = "") =>
+    apiRequest<Paginated<ApprovedVendor>>(`/epclink/vendors/${params ? `?${params}` : ""}`),
+  createVendor: (payload: Record<string, unknown>) =>
+    apiRequest<ApprovedVendor>("/epclink/vendors/", { method: "POST", body: JSON.stringify(payload) }),
+  requisitions: (params = "") =>
+    apiRequest<Paginated<MaterialRequisition>>(`/epclink/requisitions/${params ? `?${params}` : ""}`),
+  requisition: (id: string) => apiRequest<MaterialRequisition>(`/epclink/requisitions/${id}/`),
+  createRequisition: (payload: Record<string, unknown>) =>
+    apiRequest<MaterialRequisition>("/epclink/requisitions/", { method: "POST", body: JSON.stringify(payload) }),
+  transitionRequisition: (id: string, action: string, version: number, reason = "") =>
+    apiRequest<MaterialRequisition>(`/epclink/requisitions/${id}/actions/${action}/`, {
+      method: "POST",
+      body: JSON.stringify({ version, reason }),
+    }),
+  yardItems: (params = "") =>
+    apiRequest<Paginated<PipeYardItem>>(`/epclink/yard-items/${params ? `?${params}` : ""}`),
+  yardItem: (id: string) => apiRequest<PipeYardItem>(`/epclink/yard-items/${id}/`),
+  createYardItem: (payload: Record<string, unknown>) =>
+    apiRequest<PipeYardItem>("/epclink/yard-items/", { method: "POST", body: JSON.stringify(payload) }),
+  issueSlips: (params = "") =>
+    apiRequest<Paginated<MaterialIssueSlip>>(`/epclink/issue-slips/${params ? `?${params}` : ""}`),
+  issueMaterials: (payload: Record<string, unknown>) =>
+    apiRequest<MaterialIssueSlip>("/epclink/issue-slips/", { method: "POST", body: JSON.stringify(payload) }),
+  nigerianContentReport: () => apiRequest<NigerianContentReport>("/epclink/nigerian-content-report/"),
+};
+
 
