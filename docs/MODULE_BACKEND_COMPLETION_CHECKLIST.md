@@ -147,11 +147,12 @@ evidence.
   - [x] PostgreSQL RLS on all 6 tables, immutable audit triggers, and two-tenant database security test coverage
   - [ ] External payment provider webhooks (Paystack / Flutterwave) remain in sandbox mode until production merchant keys and callback signatures are configured (documented in PENDING_TODO.md)
 
-- [ ] **11. Client Portal** — Not started
-  - [ ] Explicit external-user identity and tenant/customer boundary
-  - [ ] Read-only approved BDNs, PODs, certificates, and inspection reports
-  - [ ] Expiring document links and download audit
-  - [ ] No access to drafts, internal notes, or unrelated tenant records
+- [x] **11. Client Portal** — Pilot-ready
+  - [x] Explicit external-user identity and tenant/customer boundary via ClientPortalProfile
+  - [x] Read-only approved BDNs, PODs, zero-drop hydrotest certs, inspection reports, compliance evidence, and commercial invoices
+  - [x] Cryptographic SHA-256 seal verification and immutable audit access log
+  - [x] Strict tenant & client isolation: no access to drafts, internal notes, or unrelated tenant/client records
+  - [x] PostgreSQL RLS on all 3 tables, access log immutability triggers, and two-tenant database security test coverage
 
 - [ ] **12. Owner Dashboard** — Not started
   - [ ] Read-optimized projections from authoritative module services

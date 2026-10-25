@@ -17,4 +17,5 @@ urlpatterns = [
     path("api/v1/epclink/", include("epc_link.urls")),
     path("api/v1/compliance/", include("compliance_shield.urls")),
     path("api/v1/billing/", include("billing.urls")),
+    path("api/v1/portal/", include("client_portal.urls")),
 ]

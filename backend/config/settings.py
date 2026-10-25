@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "epc_link",
     "compliance_shield",
     "billing",
+    "client_portal",
 ]
 
 MIDDLEWARE = [

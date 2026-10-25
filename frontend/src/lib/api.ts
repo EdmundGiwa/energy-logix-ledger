@@ -1252,4 +1252,75 @@ export const billingApi = {
     }),
 };
 
+export type SharedDeliverablePackage = {
+  public_id: string;
+  client_name: string;
+  title: string;
+  deliverable_type: "bunker_bdn" | "haulage_pod" | "hydrotest_dossier" | "inspection_report" | "compliance_evidence" | "commercial_invoice";
+  source_reference: string;
+  summary_metadata: Record<string, unknown>;
+  verification_seal: string;
+  expires_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ClientPortalProfile = {
+  public_id: string;
+  username: string;
+  user_email: string;
+  client_name: string;
+  client_customer_code: string;
+  allowed_modules: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ClientPortalAccessLog = {
+  public_id: string;
+  user_email: string;
+  client_name: string;
+  action: string;
+  resource_type: string;
+  resource_reference: string;
+  ip_address: string;
+  user_agent: string;
+  metadata: Record<string, unknown>;
+  accessed_at: string;
+};
+
+export type ClientPortalSummary = {
+  is_client_user: boolean;
+  client_name: string | null;
+  total_deliverables: number;
+  total_access_events: number;
+  active_client_profiles: number;
+  deliverables_by_type: Record<string, number>;
+};
+
+export const clientPortalApi = {
+  summary: () => apiRequest<ClientPortalSummary>("/portal/summary/"),
+  feed: (params = "") =>
+    apiRequest<Paginated<SharedDeliverablePackage>>(`/portal/feed/${params ? `?${params}` : ""}`),
+  package: (id: string) => apiRequest<SharedDeliverablePackage>(`/portal/packages/${id}/`),
+  verifyPackage: (id: string) =>
+    apiRequest<{
+      public_id: string;
+      source_reference: string;
+      verification_seal: string;
+      is_valid: boolean;
+      verified_at: string;
+    }>(`/portal/packages/${id}/verify/`),
+  createPackage: (payload: Record<string, unknown>) =>
+    apiRequest<SharedDeliverablePackage>("/portal/packages/", { method: "POST", body: JSON.stringify(payload) }),
+  profiles: () => apiRequest<ClientPortalProfile[]>("/portal/profiles/"),
+  createProfile: (payload: Record<string, unknown>) =>
+    apiRequest<ClientPortalProfile>("/portal/profiles/", { method: "POST", body: JSON.stringify(payload) }),
+  updateProfile: (id: string, payload: Record<string, unknown>) =>
+    apiRequest<ClientPortalProfile>(`/portal/profiles/${id}/`, { method: "PATCH", body: JSON.stringify(payload) }),
+  auditLogs: (params = "") =>
+    apiRequest<Paginated<ClientPortalAccessLog>>(`/portal/audit-logs/${params ? `?${params}` : ""}`),
+};
+
 
