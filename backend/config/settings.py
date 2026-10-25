@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "pipeline_integrity",
     "refinery_link",
     "marine_stores",
+    "tank_works",
 ]
 
 MIDDLEWARE = [

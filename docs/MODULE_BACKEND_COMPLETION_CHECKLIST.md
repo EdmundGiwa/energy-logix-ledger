@@ -111,12 +111,13 @@ evidence.
   - [x] Orders, issue/delivery receipts, version locking, and receiving sign-off
   - [x] Inventory movement audit triggers, PostgreSQL RLS, and two-tenant database security test coverage
 
-- [ ] **7. TankWorks** — Not started
-  - [ ] Field-job creation, scope, estimates, and costing
-  - [ ] Confined-space permit linkage to SafePass
-  - [ ] Sludge/waste manifests
-  - [ ] Cleaning, blasting, recoating, DFT, and adhesion inspections
-  - [ ] Crew hours and equipment utilization
+- [x] **7. TankWorks** — Pilot-ready
+  - [x] Field-job creation, scope, estimates, and costing with version locking
+  - [x] Confined-space permit linkage to SafePass with atmospheric gas test clearance gate
+  - [x] Sludge and hazardous waste manifests with NESREA chain-of-custody sign-off
+  - [x] Abrasive blasting (SA 2.5), internal recoating, SSPC-PA 2 DFT readings, and ASTM D4541 adhesion tests
+  - [x] Crew man-hours and equipment utilization ledger with consumables tracking
+  - [x] PostgreSQL RLS on all 5 tables, immutable audit triggers, and two-tenant database security test coverage
 
 - [ ] **8. EPC-Link** — Not started
   - [ ] Material requisitions and pipe-yard inventory

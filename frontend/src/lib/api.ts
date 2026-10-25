@@ -653,4 +653,147 @@ export const marineStoresApi = {
     apiRequest<Paginated<InventoryMovement>>(`/marinestores/movements/${params ? `?${params}` : ""}`),
 };
 
+export type TankFieldJob = {
+  id: string;
+  job_number: string;
+  client_name: string;
+  terminal_or_facility: string;
+  tank_identifier: string;
+  tank_capacity_m3: string | null;
+  scope_of_work: "evac_cleaning" | "blast_coat" | "full_refurb" | "inspect_repair";
+  status: "draft" | "permit_pending" | "active" | "inspection" | "completed" | "cancelled";
+  safepass_permit_ref: string;
+  gas_test_cleared: boolean;
+  estimated_cost_minor: number;
+  actual_cost_minor: number;
+  currency: string;
+  version: number;
+  started_at: string | null;
+  completed_at: string | null;
+  notes: string;
+  allowed_actions: string[];
+  waste_manifests?: SludgeWasteManifest[];
+  coating_inspections?: CoatingInspection[];
+  audit_events?: TankWorksAuditEvent[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type SludgeWasteManifest = {
+  id: string;
+  job_id: string;
+  job_number: string;
+  manifest_number: string;
+  waste_classification: "hydrocarbon_sludge" | "contaminated_water" | "spent_grit" | "rust_scale";
+  quantity: string;
+  unit_of_measure: string;
+  transporter_name: string;
+  vehicle_registration: string;
+  driver_name: string;
+  nesrea_permit_number: string;
+  disposal_facility: string;
+  treatment_method: string;
+  is_consignment_signed: boolean;
+  dispatched_at: string;
+  disposed_at: string | null;
+  notes: string;
+  created_at: string;
+};
+
+export type CoatingInspection = {
+  id: string;
+  job_id: string;
+  job_number: string;
+  surface_location: string;
+  blast_standard: string;
+  surface_profile_microns: string;
+  coating_system: string;
+  specified_dft_microns: number;
+  measured_min_dft_microns: number;
+  measured_avg_dft_microns: number;
+  measured_max_dft_microns: number;
+  dft_passed: boolean;
+  adhesion_test_method: string;
+  adhesion_result_mpa: string | null;
+  ambient_temp_c: string | null;
+  steel_temp_c: string | null;
+  relative_humidity_percent: string | null;
+  dew_point_c: string | null;
+  inspector_name: string;
+  nace_level: string;
+  inspection_date: string;
+  passed: boolean;
+  notes: string;
+  created_at: string;
+};
+
+export type CrewEquipmentUtilization = {
+  id: string;
+  job_id: string;
+  job_number: string;
+  entry_date: string;
+  personnel_role: string;
+  headcount: number;
+  man_hours: string;
+  equipment_description: string;
+  equipment_hours: string;
+  consumables_used: string;
+  created_at: string;
+};
+
+export type TankWorksAuditEvent = {
+  id: string;
+  actor_name: string;
+  action: string;
+  from_status: string;
+  to_status: string;
+  reason: string;
+  metadata: Record<string, unknown>;
+  created_at: string;
+};
+
+export type TankWorksSummary = {
+  total_jobs: number;
+  active_jobs: number;
+  permit_pending_jobs: number;
+  completed_jobs: number;
+  total_waste_evacuated_qty: string;
+  total_coating_inspections: number;
+  passed_coating_inspections: number;
+  total_man_hours: string;
+  total_equipment_hours: string;
+};
+
+export const tankWorksApi = {
+  summary: () => apiRequest<TankWorksSummary>("/tankworks/summary/"),
+  jobs: (params = "") =>
+    apiRequest<Paginated<TankFieldJob>>(`/tankworks/jobs/${params ? `?${params}` : ""}`),
+  job: (id: string) => apiRequest<TankFieldJob>(`/tankworks/jobs/${id}/`),
+  createJob: (payload: Record<string, unknown>) =>
+    apiRequest<TankFieldJob>("/tankworks/jobs/", { method: "POST", body: JSON.stringify(payload) }),
+  transitionJob: (
+    id: string,
+    action: string,
+    version: number,
+    reason = "",
+    permit_data?: { safepass_permit_ref?: string; gas_test_cleared?: boolean },
+  ) =>
+    apiRequest<TankFieldJob>(`/tankworks/jobs/${id}/actions/${action}/`, {
+      method: "POST",
+      body: JSON.stringify({ version, reason, permit_data }),
+    }),
+  manifests: (params = "") =>
+    apiRequest<Paginated<SludgeWasteManifest>>(`/tankworks/manifests/${params ? `?${params}` : ""}`),
+  recordManifest: (payload: Record<string, unknown>) =>
+    apiRequest<SludgeWasteManifest>("/tankworks/manifests/", { method: "POST", body: JSON.stringify(payload) }),
+  inspections: (params = "") =>
+    apiRequest<Paginated<CoatingInspection>>(`/tankworks/inspections/${params ? `?${params}` : ""}`),
+  recordInspection: (payload: Record<string, unknown>) =>
+    apiRequest<CoatingInspection>("/tankworks/inspections/", { method: "POST", body: JSON.stringify(payload) }),
+  utilization: (params = "") =>
+    apiRequest<Paginated<CrewEquipmentUtilization>>(`/tankworks/utilization/${params ? `?${params}` : ""}`),
+  logUtilization: (payload: Record<string, unknown>) =>
+    apiRequest<CrewEquipmentUtilization>("/tankworks/utilization/", { method: "POST", body: JSON.stringify(payload) }),
+};
+
 
