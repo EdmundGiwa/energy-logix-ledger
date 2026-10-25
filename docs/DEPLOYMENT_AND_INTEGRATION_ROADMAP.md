@@ -8,11 +8,11 @@ This document outlines the environment tiers, external 3rd-party services, cloud
 
 ### Domain Acquisition
 * **Domain**: `ofshora.com`
-* **Price**: ~$11.28 / year on Namecheap.
-* **Assessment & Recommendation**: **Acquire immediately.**
+* **Status**: **Acquired & Active** (Registered via Namecheap, Order #217696275).
+* **Assessment**:
   * In the energy, maritime, and B2B oilfield sector, owning an exact `.com` domain delivers immediate credibility with IOC procurement desks (Chevron, Shell, TotalEnergies, NNPC), regulators (NUPRC, NMDPRA, NIMASA), and enterprise clients.
-  * The single-"f" spelling ("Ofshora") is a crisp 7-letter brand that is easy to type, avoids verbal spelling ambiguity ("is it one 'f' or two?"), and provides clean brand memorability.
-  * **Action**: Purchase `ofshora.com` now. If `offshora.com` or `offshora.io` are ever acquired later, configure them as 301 redirects to `ofshora.com`.
+  * The single-"f" spelling ("Ofshora") is a crisp 7-letter brand that is easy to type, eliminates verbal spelling confusion ("is it one 'f' or two?"), and provides high brand recall.
+  * **Routing Strategy**: All platform routes (`staging.ofshora.com`, `app.ofshora.com`, `api.ofshora.com`) are anchored on this domain. If `offshora.com` or `offshora.io` are ever acquired as defensive assets, configure them as 301 redirects to `ofshora.com`.
 
 ---
 
@@ -158,7 +158,7 @@ Here is the complete list of external services and integrations required across 
 ## 5. Pre-Deployment Readiness & Action Checklist
 
 ### Phase 1: Immediate Decisions (Review with Co-founder)
-- [ ] **Domain**: Purchase `ofshora.com` on Namecheap ($11.28/yr).
+- [x] **Domain**: Purchased `ofshora.com` on Namecheap (Order #217696275).
 - [ ] **Hosting Account**: Create a team organization on DigitalOcean.
 - [ ] **Payment Merchant Account**: Register at [bachs.io](https://bachs.io) to obtain sandbox and live API credentials.
 - [ ] **Email Service**: Register at [resend.com](https://resend.com) and add DNS records for `ofshora.com`.
