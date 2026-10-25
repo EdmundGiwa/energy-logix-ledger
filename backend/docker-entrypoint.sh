@@ -8,6 +8,7 @@ export DATABASE_PASSWORD="$POSTGRES_PASSWORD"
 python /app/provision_database.py --create-role
 python manage.py migrate --noinput
 python /app/provision_database.py --grant
+python manage.py collectstatic --noinput
 case "$*" in
   *"manage.py test"*)
     exec "$@"
