@@ -110,56 +110,44 @@ Here is the complete list of external services and integrations required across 
 ```
                               [ Cloudflare DNS & SSL ]
                                         │
-                         https://app.ofshora.com (Frontend)
-                         https://api.ofshora.com (Backend)
-                                        │
            ┌────────────────────────────┴────────────────────────────┐
            ▼                                                         ▼
 ┌─────────────────────────────────┐       ┌─────────────────────────────────┐
-│     Droplet: Staging Host       │       │    Droplet: Production Host     │
-│  • Next.js 16 (Port 3000)       │       │  • Next.js 16 (Port 3000)       │
-│  • Django Gunicorn (Port 8000)  │       │  • Django Gunicorn (Port 8000)  │
-│  • Celery Worker & Beat         │       │  • Celery Worker & Beat         │
-│  • Redis Container (broker)     │       │  • Redis Container (broker)     │
-│  • Caddy / Traefik (HTTPS/TLS)  │       │  • Caddy / Traefik (HTTPS/TLS)  │
-└────────────────┬────────────────┘       └────────────────┬────────────────┘
-                 │                                         │
-                 ▼                                         ▼
-┌─────────────────────────────────┐       ┌─────────────────────────────────┐
-│ DigitalOcean Managed DB         │       │ DigitalOcean Managed DB         │
-│ PostgreSQL 16 (Staging)         │       │ PostgreSQL 16 (Production)      │
-│  • Automated Backups            │       │  • Daily Backups + Point-In-Time│
-│  • SSL Connection Pooling       │       │  • Standby Node (High Avail)    │
-│  • PostgreSQL RLS Enforced      │       │  • PostgreSQL RLS Enforced      │
-└─────────────────────────────────┘       └─────────────────────────────────┘
-                 │                                         │
-                 ▼                                         ▼
-┌─────────────────────────────────┐       ┌─────────────────────────────────┐
-│ DigitalOcean Spaces (Staging)   │       │ DigitalOcean Spaces (Production)│
-│ Private encrypted S3 bucket     │       │ Private encrypted S3 bucket     │
-└─────────────────────────────────┘       └─────────────────────────────────┘
+│        Vercel (Frontend)        │       │    DigitalOcean 1GB Droplet     │
+│  • Next.js 16 Edge / Serverless │       │  (Dedicated Backend API & DB)   │
+│  • https://staging.ofshora.com  │       │  • Django Gunicorn (Port 8000)  │
+│  • Automated Git CI/CD & CDN    │       │  • Celery Worker & Beat         │
+│  • Zero compute cost on Droplet │       │  • Redis container (broker)     │
+└─────────────────────────────────┘       │  • PostgreSQL 16 container (RLS)│
+                                          │  • Caddy (SSL for api-staging)  │
+                                          │  • https://api-staging.ofshora  │
+                                          └────────────────┬────────────────┘
+                                                           │
+                                                           ▼
+                                          ┌─────────────────────────────────┐
+                                          │   Cloudflare R2 Bucket (Vault)  │
+                                          │  • ofshora-vault-dev (10GB free)│
+                                          │  • Zero egress fees             │
+                                          └─────────────────────────────────┘
 ```
 
-### Lean Bootstrap Architecture (Pre-Traffic / MVP Phase: $6 – $12 / month)
+### Lean Bootstrap Architecture (Pre-Traffic / MVP Phase: $6 / month)
 
-You are 100% right: **there is zero reason to burn money on multi-node 8GB/4GB clusters or managed databases when you have no traffic yet.**
+With the **frontend hosted on Vercel** and the **1GB Droplet dedicated strictly to the backend API, DB, and asynchronous workers**, memory pressure drops to almost nothing. 
 
-The actual runtime RAM footprint of our containerized stack is surprisingly light:
-* **Next.js 16 (production standalone `next start`)**: ~90 MB – 140 MB
+The actual runtime RAM footprint on the droplet is extremely lean:
 * **Django Gunicorn (2 lightweight workers)**: ~120 MB – 160 MB
-* **Celery Worker (1 concurrency)**: ~60 MB – 90 MB
+* **Celery Worker (1 concurrency)**: ~60 MB – 80 MB
 * **Redis container**: ~15 MB
-* **PostgreSQL 16 container (Docker with RLS)**: ~70 MB – 110 MB
-* **Caddy Reverse Proxy (HTTPS/TLS)**: ~30 MB
-* **Total Runtime Memory Footprint**: **~385 MB – 545 MB**
+* **PostgreSQL 16 container (Docker with RLS)**: ~60 MB – 90 MB
+* **Caddy Reverse Proxy (HTTPS/TLS)**: ~25 MB
+* **Total Runtime Memory Footprint**: **~280 MB – 370 MB**
 
-#### Can Dev / Staging run on a 1GB Droplet ($6/mo)?
-**Yes, absolutely.**
-* **The only caveat**: Running `npm run build` directly *on* a 1GB machine can momentarily spike to ~800MB RAM.
-* **The simple zero-cost fixes**:
-  1. **Add a 2GB SSD Swapfile**: A standard 1-minute command (`fallocate -l 2G /swapfile && mkswap /swapfile && swapon /swapfile`) gives the Linux kernel virtual memory headroom so builds never OOM.
-  2. **Or build images in CI / locally**: Build the container image via GitHub Actions (free) or on your laptop and just run `docker compose pull` on the droplet.
-* **The 2GB Droplet Sweet Spot ($12/mo)**: If you want zero swap overhead, a 2GB RAM droplet ($12/mo) runs the entire stack (Next.js + Django + Celery + Redis + Postgres + Caddy) with over 1GB of free RAM to spare.
+#### Can the Backend run comfortably on a 1GB Droplet ($6/mo)?
+**Yes, exceptionally well.**
+* With only ~350 MB in use, the droplet has **over 600 MB of free headroom** at all times.
+* The 2GB SSD swapfile gives extra peace of mind for any unexpected query or migration spikes.
+* **No Next.js build overhead on the server**: Since Vercel builds and hosts the frontend, the droplet never has to run resource-heavy Node.js builds!
 
 ---
 
