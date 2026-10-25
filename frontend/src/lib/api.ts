@@ -480,3 +480,144 @@ export const refineryLinkApi = {
     apiRequest<RefineryQualityCert>("/refinerylink/quality-certs/", { method: "POST", body: JSON.stringify(payload) }),
 };
 
+export type MarineCatalogueItem = {
+  id: string;
+  item_code: string;
+  name: string;
+  category: "ship_spares" | "lubricants" | "provisions" | "medical" | "gases" | "safety_ppe";
+  unit_of_measure: string;
+  brand: string;
+  impa_code: string;
+  minimum_stock_level: number;
+  is_active: boolean;
+  total_stock_on_hand: string | number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type StoreInventoryItem = {
+  id: string;
+  item_id: string;
+  item_code: string;
+  item_name: string;
+  unit_of_measure: string;
+  location: string;
+  batch_or_lot_number: string;
+  serial_number: string;
+  quantity_on_hand: string;
+  unit_cost_minor: number;
+  currency: string;
+  expires_on: string | null;
+  storage_condition: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type RefrigerantCylinder = {
+  id: string;
+  cylinder_serial: string;
+  gas_type: string;
+  tare_weight_kg: string;
+  gross_weight_kg: string;
+  net_gas_weight_kg: string;
+  status: "full" | "in_service" | "empty" | "recovered";
+  assigned_vessel_or_facility: string;
+  marpol_compliant: boolean;
+  recovery_logged_at: string | null;
+  environmental_notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type StoreOrderItem = {
+  id: string;
+  catalogue_item_id: string;
+  item_code: string;
+  item_name: string;
+  unit_of_measure: string;
+  quantity_requested: string;
+  quantity_delivered: string;
+  unit_price_minor: number;
+  currency: string;
+  notes: string;
+};
+
+export type StoreOrder = {
+  id: string;
+  order_number: string;
+  vessel_or_installation: string;
+  destination: string;
+  status: "draft" | "approved" | "dispatched" | "delivered" | "cancelled";
+  requested_delivery_date: string;
+  delivered_at: string | null;
+  receiving_officer_name: string;
+  receiving_signature_ref: string;
+  total_minor: number;
+  currency: string;
+  version: number;
+  allowed_actions: string[];
+  line_items: StoreOrderItem[];
+  notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type InventoryMovement = {
+  id: string;
+  item_id: string;
+  item_code: string;
+  item_name: string;
+  movement_type: "receipt" | "issuance" | "adjustment" | "recovery";
+  quantity_delta: string;
+  resulting_quantity: string;
+  location: string;
+  actor_name: string;
+  reason: string;
+  created_at: string;
+};
+
+export type MarineStoresSummary = {
+  total_catalogue_items: number;
+  total_active_catalogue_items: number;
+  low_stock_alerts_count: number;
+  total_refrigerant_cylinders: number;
+  in_service_cylinders: number;
+  marpol_compliant_cylinders: number;
+  total_orders: number;
+  pending_orders: number;
+  dispatched_orders: number;
+  delivered_orders: number;
+  recent_movements: InventoryMovement[];
+};
+
+export const marineStoresApi = {
+  summary: () => apiRequest<MarineStoresSummary>("/marinestores/summary/"),
+  catalogue: (params = "") =>
+    apiRequest<MarineCatalogueItem[]>(`/marinestores/catalogue/${params ? `?${params}` : ""}`),
+  createCatalogueItem: (payload: Record<string, unknown>) =>
+    apiRequest<MarineCatalogueItem>("/marinestores/catalogue/", { method: "POST", body: JSON.stringify(payload) }),
+  inventory: (params = "") =>
+    apiRequest<StoreInventoryItem[]>(`/marinestores/inventory/${params ? `?${params}` : ""}`),
+  recordReceipt: (payload: Record<string, unknown>) =>
+    apiRequest<StoreInventoryItem>("/marinestores/inventory/", { method: "POST", body: JSON.stringify(payload) }),
+  cylinders: (params = "") =>
+    apiRequest<RefrigerantCylinder[]>(`/marinestores/cylinders/${params ? `?${params}` : ""}`),
+  createCylinder: (payload: Record<string, unknown>) =>
+    apiRequest<RefrigerantCylinder>("/marinestores/cylinders/", { method: "POST", body: JSON.stringify(payload) }),
+  updateCylinder: (id: string, payload: Record<string, unknown>) =>
+    apiRequest<RefrigerantCylinder>(`/marinestores/cylinders/${id}/`, { method: "PATCH", body: JSON.stringify(payload) }),
+  orders: (params = "") =>
+    apiRequest<Paginated<StoreOrder>>(`/marinestores/orders/${params ? `?${params}` : ""}`),
+  order: (id: string) => apiRequest<StoreOrder>(`/marinestores/orders/${id}/`),
+  createOrder: (payload: Record<string, unknown>) =>
+    apiRequest<StoreOrder>("/marinestores/orders/", { method: "POST", body: JSON.stringify(payload) }),
+  transitionOrder: (id: string, action: string, version: number, reason = "", delivery_data?: Record<string, string>) =>
+    apiRequest<StoreOrder>(`/marinestores/orders/${id}/actions/${action}/`, {
+      method: "POST",
+      body: JSON.stringify({ version, reason, delivery_data }),
+    }),
+  movements: (params = "") =>
+    apiRequest<Paginated<InventoryMovement>>(`/marinestores/movements/${params ? `?${params}` : ""}`),
+};
+
+

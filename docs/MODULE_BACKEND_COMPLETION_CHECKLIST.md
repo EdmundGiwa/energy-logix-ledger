@@ -97,7 +97,7 @@ evidence.
   - [x] Cathodic-protection and right-of-way observation records
   - [ ] Asset-integrity reports and evidence export
 
-- [ ] **5. RefineryLink** — Pilot-ready
+- [x] **5. RefineryLink** — Pilot-ready
   - [x] Terminal offtake and truck appointment records with version-locked lifecycle
   - [x] Holding-park queue manager, driver accreditation, slot assignment, and RFID/e-Call-Up tracking
   - [x] Tank gauging (manual ullage & ATG), GOV/NSV conversion, and continuous custody transfer reconciliation
@@ -107,11 +107,11 @@ evidence.
   - [x] Government and external refinery live integrations remain optional standalone queue identifiers until confirmed
 
 
-- [ ] **6. MarineStores** — Not started
-  - [ ] Catalogue, stock, lot/serial, expiry, and unit controls
-  - [ ] Lubricants, provisions, spares, PPE, medical supplies, and gases
-  - [ ] Orders, issue/delivery receipts, and receiving acknowledgement
-  - [ ] Inventory movement audit and tenant isolation
+- [x] **6. MarineStores** — Pilot-ready
+  - [x] Catalogue, stock, lot/serial, expiry, and unit controls
+  - [x] Lubricants, provisions, spares, PPE, medical supplies, and MARPOL Annex VI refrigerant gases
+  - [x] Orders, issue/delivery receipts, version locking, and receiving sign-off
+  - [x] Inventory movement audit triggers, PostgreSQL RLS, and two-tenant database security test coverage
 
 - [ ] **7. TankWorks** — Not started
   - [ ] Field-job creation, scope, estimates, and costing
