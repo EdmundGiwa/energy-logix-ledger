@@ -57,20 +57,20 @@ evidence.
 
 ### Operational modules
 
-- [ ] **1. BunkerFlow** — Pilot-ready
-  - [ ] Nomination → sounding → review → BDN → approval → issue workflow
-  - [ ] Styled BDN export and audit history
-  - [ ] Tenant isolation, admin controls, and regression coverage
+- [x] **1. BunkerFlow** — Pilot-ready
+  - [x] Nomination → sounding → review → BDN → approval → issue workflow
+  - [x] Styled BDN export and audit history
+  - [x] Tenant isolation, admin controls, and regression coverage
 
-- [ ] **2. HaulTrac** — Pilot-ready
-  - [ ] Fleet draft and reusable fleet records
-  - [ ] Dispatch → weighbridge readings → e-Waybill → trip tracking
-  - [ ] Discharge, proof of delivery, receiver acknowledgement, and closure
-  - [ ] Styled delivery export and audit history
-  - [ ] External weighbridge integrations remain clearly unavailable until
+- [x] **2. HaulTrac** — Pilot-ready
+  - [x] Fleet draft and reusable fleet records
+  - [x] Dispatch → weighbridge readings → e-Waybill → trip tracking
+  - [x] Discharge, proof of delivery, receiver acknowledgement, and closure
+  - [x] Styled delivery export and audit history
+  - [x] External weighbridge integrations remain clearly unavailable until
         provider contracts and API access are confirmed.
 
-- [ ] **3. SafePass** — Pilot-ready
+- [x] **3. SafePass** — Pilot-ready
   - [x] Workforce and credential records
   - [x] Mobilization readiness and expiry rules
   - [x] Permit-to-Work lifecycle and approval authority
