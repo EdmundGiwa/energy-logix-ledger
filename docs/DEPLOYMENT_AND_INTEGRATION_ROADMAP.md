@@ -184,14 +184,16 @@ The actual runtime RAM footprint of our containerized stack is surprisingly ligh
 - [ ] **Payment Merchant Account**: Register at [bachs.io](https://bachs.io) to obtain sandbox and live API credentials.
 - [ ] **Email Service**: Register at [resend.com](https://resend.com) and add DNS records for `ofshora.com`.
 
-### Phase 2: Staging Deployment
-- [ ] Provision DigitalOcean Droplet (Ubuntu 24.04 LTS) for Staging.
+### Phase 2: Staging Deployment (Approved: 1GB Droplet + 2GB Swap + Cloudflare R2)
+- [ ] Provision DigitalOcean Basic Droplet ($6/month, 1 vCPU, 1 GB RAM, 25 GB NVMe, Ubuntu 24.04 LTS).
+- [ ] Configure 2GB SSD swapfile and set `vm.swappiness=10`.
 - [ ] Configure DNS records on Cloudflare:
   * `staging.ofshora.com` → Droplet IP
   * `api-staging.ofshora.com` → Droplet IP
-- [ ] Provision Managed PostgreSQL cluster with non-superuser role `petroledger_app`.
-- [ ] Deploy Docker Compose stack with Caddy automated Let's Encrypt SSL.
-- [ ] Run database migrations and seed test tenant organizations.
+- [ ] Provision Cloudflare R2 Bucket: `ofshora-vault-dev` (10 GB free tier, S3-compatible, $0 egress).
+- [ ] Deploy containerized PostgreSQL 16 + Redis + Celery + Django + Next.js + Caddy via Docker Compose.
+- [ ] Run database migrations and seed initial test tenant organizations.
+- [ ] Configure automated daily `pg_dump` backup cron syncing database snapshot to Cloudflare R2.
 - [ ] Execute smoke test across all 12 modules on `staging.ofshora.com`.
 
 ### Phase 3: Pilot & Production Gate
