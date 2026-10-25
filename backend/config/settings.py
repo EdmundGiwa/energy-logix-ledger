@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "marine_stores",
     "tank_works",
     "epc_link",
+    "compliance_shield",
 ]
 
 MIDDLEWARE = [

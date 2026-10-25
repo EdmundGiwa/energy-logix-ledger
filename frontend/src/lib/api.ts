@@ -959,4 +959,129 @@ export const epcLinkApi = {
   nigerianContentReport: () => apiRequest<NigerianContentReport>("/epclink/nigerian-content-report/"),
 };
 
+export type RegulatoryCertificate = {
+  id: string;
+  public_id: string;
+  regulator: string;
+  certificate_type: string;
+  certificate_number: string;
+  issuing_authority: string;
+  issue_date: string;
+  expiry_date: string;
+  status: "valid" | "expiring_soon" | "expired" | "renewal_in_progress" | "suspended";
+  days_to_expiry: number;
+  urgency_tier: "ok" | "upcoming_90d" | "notice_60d" | "warning_30d" | "critical_7d" | "expired";
+  document_reference: string;
+  verified_by_name: string;
+  verified_at: string | null;
+  renewal_tracking_number: string;
+  version: number;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AuditNonConformance = {
+  id: string;
+  public_id: string;
+  audit_id: string;
+  ncr_number: string;
+  severity: "minor" | "major" | "ofi";
+  finding_description: string;
+  root_cause_analysis: string;
+  corrective_action_plan: string;
+  target_closure_date: string;
+  closed_at: string | null;
+  status: "open" | "in_progress" | "closed" | "verified";
+  assigned_to: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type IsoManagementSystemAudit = {
+  id: string;
+  public_id: string;
+  standard: string;
+  audit_type: string;
+  audit_scope: string;
+  certification_body: string;
+  lead_auditor: string;
+  audit_date: string;
+  next_audit_due: string;
+  overall_outcome: string;
+  open_ncrs_count: number;
+  closed_ncrs_count: number;
+  certificate_number: string;
+  ncrs: AuditNonConformance[];
+  notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ComplianceEvidencePack = {
+  id: string;
+  public_id: string;
+  pack_name: string;
+  target_stakeholder: string;
+  status: string;
+  dossier_data: Record<string, unknown>;
+  compiled_by_name: string;
+  compiled_at: string;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type ComplianceSummary = {
+  total_certificates: number;
+  valid_certificates: number;
+  expiring_soon_certificates: number;
+  expired_certificates: number;
+  renewal_pending_certificates: number;
+  critical_alerts_7d: number;
+  warning_alerts_30d: number;
+  notice_alerts_60d: number;
+  upcoming_alerts_90d: number;
+  total_iso_audits: number;
+  open_ncrs_count: number;
+  total_evidence_packs: number;
+};
+
+export const complianceApi = {
+  summary: () => apiRequest<ComplianceSummary>("/compliance/summary/"),
+  certificates: (params = "") =>
+    apiRequest<Paginated<RegulatoryCertificate>>(`/compliance/certificates/${params ? `?${params}` : ""}`),
+  certificate: (id: string) => apiRequest<RegulatoryCertificate>(`/compliance/certificates/${id}/`),
+  createCertificate: (payload: Record<string, unknown>) =>
+    apiRequest<RegulatoryCertificate>("/compliance/certificates/", { method: "POST", body: JSON.stringify(payload) }),
+  updateCertificate: (id: string, payload: Record<string, unknown>) =>
+    apiRequest<RegulatoryCertificate>(`/compliance/certificates/${id}/`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  certificateAction: (id: string, action: string, payload: Record<string, unknown>) =>
+    apiRequest<RegulatoryCertificate>(`/compliance/certificates/${id}/actions/${action}/`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  isoAudits: (params = "") =>
+    apiRequest<Paginated<IsoManagementSystemAudit>>(`/compliance/iso-audits/${params ? `?${params}` : ""}`),
+  createIsoAudit: (payload: Record<string, unknown>) =>
+    apiRequest<IsoManagementSystemAudit>("/compliance/iso-audits/", { method: "POST", body: JSON.stringify(payload) }),
+  logNcr: (payload: Record<string, unknown>) =>
+    apiRequest<AuditNonConformance>("/compliance/ncrs/", { method: "POST", body: JSON.stringify(payload) }),
+  closeNcr: (id: string, reason = "") =>
+    apiRequest<AuditNonConformance>(`/compliance/ncrs/${id}/close/`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
+  evidencePacks: (params = "") =>
+    apiRequest<Paginated<ComplianceEvidencePack>>(`/compliance/evidence-packs/${params ? `?${params}` : ""}`),
+  compileEvidencePack: (payload: Record<string, unknown>) =>
+    apiRequest<ComplianceEvidencePack>("/compliance/evidence-packs/", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+};
+
 

@@ -129,11 +129,13 @@ evidence.
   - [x] Automated Nigerian Content (NCDMB / NOGIC-JQS) spend engine and JSON export dossier
   - [x] PostgreSQL RLS on all 6 tables, immutable audit triggers, and two-tenant database security test coverage
 
-- [ ] **9. Compliance Shield** — Not started
-  - [ ] Regulatory and certificate register
-  - [ ] 90/60/30/7-day expiry alerts
-  - [ ] Evidence packs by regulator and customer
-  - [ ] ISO audit evidence and immutable history
+- [x] **9. Compliance Shield** — Pilot-ready
+  - [x] Regulatory and certificate register across NUPRC, NMDPRA, NIMASA, Cabotage, FMEnv, NCDMB, and FIRS
+  - [x] 90/60/30/7-day statutory expiry alerting engine with critical stop-work risk ribbons
+  - [x] Renewal lifecycle tracking (application submission, tracking number, and verification sign-off)
+  - [x] Evidence packs and tamper-evident pre-qualification dossiers by regulator and customer
+  - [x] ISO 9001, ISO 14001, ISO 45001, and API Spec Q1/Q2 audit management with NCR tracking and sign-off
+  - [x] PostgreSQL RLS on all 5 tables, immutable audit triggers, and two-tenant database security test coverage
 
 - [ ] **10. Billing & Commercial** — Not started
   - [ ] Job costing from approved operational records
