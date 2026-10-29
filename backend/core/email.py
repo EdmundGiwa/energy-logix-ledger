@@ -7,11 +7,55 @@ from typing import List, Optional, Union
 
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.utils import timezone
 
 logger = logging.getLogger("ofshora.email")
 
 DEFAULT_FROM = "Ofshora <notifications@send.ofshora.com>"
 DEFAULT_REPLY_TO = "support@ofshora.com"
+
+
+def _record_email_logs(
+    *,
+    recipients: List[str],
+    sender: str,
+    subject: str,
+    email_type: str,
+    provider: str,
+    provider_message_id: Optional[str] = None,
+    status: str,
+    error_message: Optional[str] = None,
+    recipient_user=None,
+    organization=None,
+    metadata: Optional[dict] = None,
+):
+    """
+    Safely creates EmailLog audit records for dispatched emails without raising exceptions.
+    """
+    try:
+        from core.models import EmailLog
+
+        sent_at = timezone.now() if status in (EmailLog.Status.SENT, EmailLog.Status.DELIVERED) else None
+        log_objects = [
+            EmailLog(
+                recipient_email=email,
+                recipient_user=recipient_user,
+                organization=organization,
+                sender=sender,
+                subject=subject,
+                email_type=email_type,
+                provider=provider,
+                provider_message_id=provider_message_id,
+                status=status,
+                error_message=error_message,
+                metadata=metadata or {},
+                sent_at=sent_at,
+            )
+            for email in recipients
+        ]
+        EmailLog.objects.bulk_create(log_objects)
+    except Exception as exc:
+        logger.warning("Could not persist EmailLog for %s: %s", recipients, exc)
 
 
 def get_resend_api_key() -> Optional[str]:
@@ -143,6 +187,17 @@ def render_base_email(
 </html>"""
 
 
+def _get_user_primary_org(user):
+    """Safely retrieves the primary active organization for a user, or None."""
+    if not user:
+        return None
+    try:
+        membership = user.memberships.filter(is_active=True).first()
+        return membership.organization if membership else None
+    except Exception:
+        return None
+
+
 def send_transactional_email(
     *,
     to: Union[str, List[str]],
@@ -151,10 +206,15 @@ def send_transactional_email(
     text_content: Optional[str] = None,
     from_email: str = DEFAULT_FROM,
     reply_to: str = DEFAULT_REPLY_TO,
+    recipient_user=None,
+    organization=None,
+    email_type: str = "other",
+    metadata: Optional[dict] = None,
 ) -> bool:
     """
     Dispatches a transactional email through Resend API (send.ofshora.com).
     Falls back gracefully to Django's in-memory/console backend during tests or local development.
+    Persists an EmailLog record for audit and operational tracking.
     """
     recipients = [to] if isinstance(to, str) else list(to)
     api_key = get_resend_api_key()
@@ -173,9 +233,32 @@ def send_transactional_email(
             msg.attach_alternative(html_content, "text/html")
             msg.send(fail_silently=False)
             logger.info("Dispatched email via Django test/local backend to %s", recipients)
+            _record_email_logs(
+                recipients=recipients,
+                sender=from_email,
+                subject=subject,
+                email_type=email_type,
+                provider="django_test",
+                status="sent",
+                recipient_user=recipient_user,
+                organization=organization,
+                metadata=metadata,
+            )
             return True
         except Exception as exc:
             logger.warning("Local email fallback failed: %s", exc)
+            _record_email_logs(
+                recipients=recipients,
+                sender=from_email,
+                subject=subject,
+                email_type=email_type,
+                provider="django_test",
+                status="failed",
+                error_message=str(exc),
+                recipient_user=recipient_user,
+                organization=organization,
+                metadata=metadata,
+            )
             return False
 
     # Production delivery via Resend HTTPS API
@@ -206,13 +289,56 @@ def send_transactional_email(
         with urllib.request.urlopen(req, timeout=10) as response:
             resp_body = response.read().decode("utf-8")
             logger.info("Email delivered via Resend: %s (status: %d)", resp_body, response.status)
+            provider_message_id = None
+            try:
+                parsed = json.loads(resp_body)
+                provider_message_id = parsed.get("id")
+            except Exception:
+                pass
+
+            _record_email_logs(
+                recipients=recipients,
+                sender=from_email,
+                subject=subject,
+                email_type=email_type,
+                provider="resend",
+                provider_message_id=provider_message_id,
+                status="sent",
+                recipient_user=recipient_user,
+                organization=organization,
+                metadata=metadata,
+            )
             return True
     except urllib.error.HTTPError as err:
         err_msg = err.read().decode("utf-8") if err.fp else str(err)
         logger.error("Resend delivery failed with HTTP %d: %s", err.code, err_msg)
+        _record_email_logs(
+            recipients=recipients,
+            sender=from_email,
+            subject=subject,
+            email_type=email_type,
+            provider="resend",
+            status="failed",
+            error_message=f"HTTP {err.code}: {err_msg}",
+            recipient_user=recipient_user,
+            organization=organization,
+            metadata=metadata,
+        )
         return False
     except Exception as err:
         logger.error("Unexpected failure sending email via Resend: %s", err)
+        _record_email_logs(
+            recipients=recipients,
+            sender=from_email,
+            subject=subject,
+            email_type=email_type,
+            provider="resend",
+            status="failed",
+            error_message=str(err),
+            recipient_user=recipient_user,
+            organization=organization,
+            metadata=metadata,
+        )
         return False
 
 
@@ -277,6 +403,9 @@ If you did not request this, contact support@ofshora.com.
         subject=title,
         html_content=full_html,
         text_content=text_content,
+        recipient_user=user,
+        organization=_get_user_primary_org(user),
+        email_type="verification_otp",
     )
 
 
@@ -341,6 +470,9 @@ If you did not request this, no action is needed. Your account remains secure.
         subject=title,
         html_content=full_html,
         text_content=text_content,
+        recipient_user=user,
+        organization=_get_user_primary_org(user),
+        email_type="password_reset",
     )
 
 
@@ -397,4 +529,7 @@ If you did not make this change, please contact support@ofshora.com immediately.
         subject=title,
         html_content=full_html,
         text_content=text_content,
+        recipient_user=user,
+        organization=_get_user_primary_org(user),
+        email_type="security_alert",
     )
