@@ -1,5 +1,7 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError
 from django.middleware.csrf import get_token
 from django.utils.decorators import method_decorator
@@ -13,8 +15,24 @@ from organizations.services import register_organization_owner
 from organizations.db_context import set_tenant_actor
 
 from .models import AuthenticationEvent
-from .serializers import CurrentUserSerializer, LoginSerializer, RegistrationSerializer
-from .services import record_authentication_event
+from .serializers import (
+    CurrentUserSerializer,
+    EmailVerificationConfirmSerializer,
+    EmailVerificationRequestSerializer,
+    LoginSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    RegistrationSerializer,
+)
+from .services import (
+    confirm_email_verification_code,
+    confirm_password_reset,
+    create_and_send_email_verification_otp,
+    record_authentication_event,
+    request_password_reset,
+)
+
+User = get_user_model()
 
 
 def session_response(user):
@@ -58,6 +76,14 @@ class RegisterView(APIView):
             user=result.user,
             organization=result.organization,
         )
+
+        # Automatically dispatch email verification OTP code
+        try:
+            create_and_send_email_verification_otp(result.user, request=request)
+        except Exception:
+            # Failure to send email during registration should not roll back account creation
+            pass
+
         return Response(session_response(result.user), status=status.HTTP_201_CREATED)
 
 
@@ -130,3 +156,106 @@ class CurrentUserView(APIView):
 
     def get(self, request):
         return Response(session_response(request.user))
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class EmailVerificationRequestView(APIView):
+    """Requests or resends a 6-digit email verification OTP."""
+    permission_classes = (AllowAny,)
+    throttle_scope = "email_verification"
+
+    def post(self, request):
+        serializer = EmailVerificationRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data.get("email")
+
+        target_user = request.user if request.user.is_authenticated else None
+        if not target_user and email:
+            target_user = User.objects.filter(email__iexact=email, is_active=True).first()
+
+        if not target_user:
+            return Response(
+                {"detail": "Unable to locate an active account for verification."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if target_user.is_email_verified:
+            return Response({"detail": "Email is already verified.", "is_email_verified": True})
+
+        create_and_send_email_verification_otp(target_user, request=request)
+        return Response({"detail": f"Verification code sent to {target_user.email}."})
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class EmailVerificationConfirmView(APIView):
+    """Validates the 6-digit OTP and marks user's email as verified."""
+    permission_classes = (AllowAny,)
+    throttle_scope = "email_verification"
+
+    def post(self, request):
+        serializer = EmailVerificationConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        code = serializer.validated_data["code"]
+        email = serializer.validated_data.get("email")
+
+        target_user = request.user if request.user.is_authenticated else None
+        if not target_user and email:
+            target_user = User.objects.filter(email__iexact=email, is_active=True).first()
+
+        if not target_user:
+            return Response(
+                {"detail": "Unable to locate account for verification."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            confirm_email_verification_code(user=target_user, code=code, request=request)
+        except DjangoValidationError as exc:
+            return Response({"detail": exc.message}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "detail": "Email verified successfully.",
+            "is_email_verified": True,
+        })
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class PasswordResetRequestView(APIView):
+    """Requests a secure password reset link sent via email."""
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+    throttle_scope = "password_reset"
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = serializer.validated_data["email"]
+
+        request_password_reset(email=email, request=request)
+        return Response({
+            "detail": "If an active account exists with this email address, a password reset link has been dispatched."
+        })
+
+
+@method_decorator(csrf_protect, name="dispatch")
+class PasswordResetConfirmView(APIView):
+    """Sets a new password using a verified password reset token."""
+    authentication_classes = ()
+    permission_classes = (AllowAny,)
+    throttle_scope = "password_reset"
+
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data["token"]
+        password = serializer.validated_data["password"]
+
+        try:
+            confirm_password_reset(token=token, new_password=password, request=request)
+        except DjangoValidationError as exc:
+            msg = exc.messages[0] if hasattr(exc, "messages") else str(exc)
+            return Response({"detail": msg}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "detail": "Your password has been successfully reset. You may now sign in."
+        })

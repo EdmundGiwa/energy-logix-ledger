@@ -71,7 +71,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "email", "first_name", "last_name", "name", "memberships")
+        fields = ("id", "email", "first_name", "last_name", "name", "is_email_verified", "memberships")
 
     def get_name(self, obj):
         return obj.get_full_name() or obj.email
@@ -79,3 +79,47 @@ class CurrentUserSerializer(serializers.ModelSerializer):
     def get_memberships(self, obj):
         memberships = obj.memberships.select_related("organization").filter(is_active=True, organization__status="active")
         return CurrentMembershipSerializer(memberships, many=True).data
+
+
+class EmailVerificationRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=254, required=False)
+
+    def validate_email(self, value):
+        if value:
+            return User.objects.normalize_email(value).strip().lower()
+        return value
+
+
+class EmailVerificationConfirmSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=12, trim_whitespace=True)
+    email = serializers.EmailField(max_length=254, required=False)
+
+    def validate_code(self, value):
+        digits = "".join(ch for ch in value if ch.isdigit())
+        if len(digits) != 6:
+            raise serializers.ValidationError("Verification code must be exactly 6 digits.")
+        return digits
+
+    def validate_email(self, value):
+        if value:
+            return User.objects.normalize_email(value).strip().lower()
+        return value
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=254)
+
+    def validate_email(self, value):
+        return User.objects.normalize_email(value).strip().lower()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField(max_length=128, trim_whitespace=True)
+    password = serializers.CharField(max_length=128, trim_whitespace=False, write_only=True)
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(list(exc.messages))
+        return value

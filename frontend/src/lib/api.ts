@@ -22,6 +22,7 @@ export type CurrentUser = {
   first_name: string;
   last_name: string;
   name: string;
+  is_email_verified?: boolean;
   memberships: Membership[];
 };
 
@@ -95,6 +96,26 @@ export const authApi = {
   }) => apiRequest<CurrentUser>("/auth/register/", { method: "POST", body: JSON.stringify(payload) }),
   refresh: () => apiRequest<CurrentUser>("/auth/session/refresh/", { method: "POST" }),
   logout: () => apiRequest<void>("/auth/logout/", { method: "POST" }),
+  requestEmailVerification: (payload?: { email?: string }) =>
+    apiRequest<{ detail: string; is_email_verified?: boolean }>("/auth/verify-email/request/", {
+      method: "POST",
+      body: JSON.stringify(payload ?? {}),
+    }),
+  confirmEmailVerification: (payload: { code: string; email?: string }) =>
+    apiRequest<{ detail: string; is_email_verified: boolean }>("/auth/verify-email/confirm/", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  requestPasswordReset: (payload: { email: string }) =>
+    apiRequest<{ detail: string }>("/auth/password-reset/request/", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+  confirmPasswordReset: (payload: { token: string; password: string }) =>
+    apiRequest<{ detail: string }>("/auth/password-reset/confirm/", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
 };
 
 export type BunkerStatus =

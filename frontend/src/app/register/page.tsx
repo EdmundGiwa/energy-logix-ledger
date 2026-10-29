@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogoMark, Wordmark } from "@/components/landing/icons";
 import { ApiError, authApi } from "@/lib/api";
-import { BRAND_FULL } from "@/lib/brand";
 
 const roles = [
   "Managing Director",
@@ -32,30 +31,75 @@ export default function RegisterPage() {
   const [selectedTier, setSelectedTier] = useState("starter");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // OTP Verification state
+  const [verificationStep, setVerificationStep] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const router = useRouter();
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     setSubmitting(true);
     const data = new FormData(event.currentTarget);
+    const emailVal = String(data.get("email") ?? "").trim();
     try {
       await authApi.register({
         first_name: String(data.get("first_name") ?? ""),
         last_name: String(data.get("last_name") ?? ""),
-        email: String(data.get("email") ?? ""),
+        email: emailVal,
         organization_name: String(data.get("organization_name") ?? ""),
         job_title: String(data.get("job_title") ?? ""),
         requested_plan: selectedTier,
         password: String(data.get("password") ?? ""),
         terms_accepted: data.get("terms_accepted") === "on",
       });
-      router.replace("/dashboard");
-      router.refresh();
+      setRegisteredEmail(emailVal);
+      setVerificationStep(true);
+      setResendCooldown(60);
     } catch (requestError) {
       setError(requestError instanceof ApiError ? requestError.message : "Unable to create your account. Please try again.");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleVerify(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setVerifyError("");
+    setVerifying(true);
+    try {
+      await authApi.confirmEmailVerification({ code: otpCode, email: registeredEmail });
+      router.replace("/dashboard");
+      router.refresh();
+    } catch (err) {
+      setVerifyError(err instanceof ApiError ? err.message : "Invalid verification code. Please check and try again.");
+    } finally {
+      setVerifying(false);
+    }
+  }
+
+  async function handleResendCode() {
+    if (resendCooldown > 0) return;
+    setVerifyError("");
+    try {
+      await authApi.requestEmailVerification({ email: registeredEmail });
+      setResendCooldown(60);
+    } catch (err) {
+      setVerifyError(err instanceof ApiError ? err.message : "Unable to resend verification code.");
     }
   }
 
@@ -109,7 +153,7 @@ export default function RegisterPage() {
           </div>
 
           <p className="text-[12px] text-slate-600">
-            © {new Date().getFullYear()} {BRAND_FULL}
+            © {new Date().getFullYear()} Ofshora
           </p>
         </div>
       </div>
@@ -125,195 +169,279 @@ export default function RegisterPage() {
             <Wordmark />
           </div>
 
-          {/* Heading */}
-          <div>
-            <span className="inline-flex items-center gap-2 rounded-lg border border-emerald-200/90 bg-emerald-50/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-800">
-              <span className="h-1.5 w-1.5 rounded-sm bg-emerald-600" />
-              Get started
-            </span>
-            <h1 className="mt-4 text-[1.65rem] font-extrabold tracking-[-0.03em] text-slate-900">
-              Create your account
-            </h1>
-            <p className="mt-2 text-[14.5px] text-slate-500">
-              Set up your organization on Offshora in minutes.
-            </p>
-          </div>
-
-          {/* Form */}
-          <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
-            {error && (
-              <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] text-rose-700">
-                {error}
-              </div>
-            )}
-            {/* Name row */}
-            <div className="grid grid-cols-2 gap-3">
+          {verificationStep ? (
+            /* ── Step 2: Verification Code ── */
+            <div className="space-y-6 pt-6">
               <div>
-                <label htmlFor="reg-first" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
-                  First name
-                </label>
-                <input
-                  id="reg-first"
-                  name="first_name"
-                  type="text"
-                  required
-                  placeholder="Emeka"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
-                />
+                <span className="inline-flex items-center gap-2 rounded-lg border border-emerald-200/90 bg-emerald-50/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-800">
+                  <span className="h-1.5 w-1.5 rounded-sm bg-emerald-600" />
+                  Step 2 of 2
+                </span>
+                <h1 className="mt-4 text-[1.65rem] font-extrabold tracking-[-0.03em] text-slate-900">
+                  Verify your email
+                </h1>
+                <p className="mt-2 text-[14.5px] text-slate-500">
+                  We sent a 6-digit confirmation code to <strong className="text-slate-900">{registeredEmail}</strong>.
+                </p>
               </div>
-              <div>
-                <label htmlFor="reg-last" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
-                  Last name
-                </label>
-                <input
-                  id="reg-last"
-                  name="last_name"
-                  type="text"
-                  required
-                  placeholder="Okafor"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
-                />
-              </div>
-            </div>
 
-            <div>
-              <label htmlFor="reg-email" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
-                Work email
-              </label>
-              <input
-                id="reg-email"
-                name="email"
-                type="email"
-                required
-                autoComplete="email"
-                placeholder="you@company.com"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
-              />
-            </div>
+              <form onSubmit={handleVerify} className="space-y-5">
+                {verifyError && (
+                  <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] text-rose-700">
+                    {verifyError}
+                  </div>
+                )}
 
-            <div>
-              <label htmlFor="reg-company" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
-                Company name
-              </label>
-              <input
-                id="reg-company"
-                name="organization_name"
-                type="text"
-                required
-                placeholder="Edflo Energy Services"
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
-              />
-            </div>
+                <div>
+                  <label htmlFor="otp-input" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+                    6-Digit Verification Code
+                  </label>
+                  <input
+                    id="otp-input"
+                    type="text"
+                    required
+                    maxLength={6}
+                    autoFocus
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                    placeholder="123456"
+                    className="w-full text-center tracking-[0.5em] text-2xl font-mono font-bold rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-slate-900 placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
+                  />
+                  <p className="mt-1.5 text-xs text-slate-400">
+                    Code expires in 15 minutes. Check spam or promotions if you don&apos;t see it.
+                  </p>
+                </div>
 
-            <div>
-              <label htmlFor="reg-role" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
-                Your role
-              </label>
-              <select
-                id="reg-role"
-                name="job_title"
-                required
-                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100 appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 fill=%22%2394a3b8%22 viewBox=%220 0 16 16%22><path d=%22M4 6l4 4 4-4%22 stroke=%22%2394a3b8%22 stroke-width=%221.5%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>')] bg-no-repeat bg-[right_12px_center]"
-              >
-                <option value="">Select your role</option>
-                {roles.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Tier selector */}
-            <div>
-              <label className="block text-[13px] font-semibold text-slate-700 mb-2">
-                Preferred tier
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                {tiers.map((t) => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setSelectedTier(t.id)}
-                    className={`rounded-xl border px-3 py-2.5 text-left transition-all duration-200 ${
-                      selectedTier === t.id
-                        ? "border-emerald-400 bg-emerald-50/60 ring-[3px] ring-emerald-100"
-                        : "border-slate-200 bg-white hover:border-slate-300"
-                    }`}
-                  >
-                    <p className={`text-[13px] font-semibold ${selectedTier === t.id ? "text-emerald-800" : "text-slate-700"}`}>
-                      {t.label}
-                    </p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">{t.desc}</p>
-                    <p className={`text-[11px] font-bold mt-1 ${selectedTier === t.id ? "text-emerald-600" : "text-slate-400"}`}>
-                      {t.price}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="reg-password" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="reg-password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  minLength={8}
-                  autoComplete="new-password"
-                  placeholder="Min. 8 characters"
-                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-14 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
-                />
                 <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[12px] font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition"
+                  type="submit"
+                  disabled={verifying || otpCode.length !== 6}
+                  className="btn-green flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-[14px] font-semibold disabled:opacity-50"
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {verifying ? "Verifying…" : "Verify & Continue →"}
                 </button>
-              </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={handleResendCode}
+                    disabled={resendCooldown > 0}
+                    className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 disabled:text-slate-400 transition"
+                  >
+                    {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend code"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      router.replace("/dashboard");
+                      router.refresh();
+                    }}
+                    className="text-xs text-slate-400 hover:text-slate-600 transition"
+                  >
+                    Verify later →
+                  </button>
+                </div>
+              </form>
             </div>
+          ) : (
+            /* ── Step 1: Registration Form ── */
+            <>
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-lg border border-emerald-200/90 bg-emerald-50/80 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-800">
+                  <span className="h-1.5 w-1.5 rounded-sm bg-emerald-600" />
+                  Get started
+                </span>
+                <h1 className="mt-4 text-[1.65rem] font-extrabold tracking-[-0.03em] text-slate-900">
+                  Create your account
+                </h1>
+                <p className="mt-2 text-[14.5px] text-slate-500">
+                  Set up your organization on Ofshora in minutes.
+                </p>
+              </div>
 
-            <label className="flex items-start gap-2.5 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                name="terms_accepted"
-                required
-                className="mt-0.5 h-[18px] w-[18px] rounded-md border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
-              />
-              <span className="text-[13px] text-slate-500 leading-snug">
-                I agree to the{" "}
-                <a href="#" className="font-semibold text-emerald-600 hover:text-emerald-700">Terms of Service</a>
-                {" "}and{" "}
-                <a href="#" className="font-semibold text-emerald-600 hover:text-emerald-700">Privacy Policy</a>.
-              </span>
-            </label>
+              <form className="mt-7 space-y-5" onSubmit={handleSubmit}>
+                {error && (
+                  <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-[13px] text-rose-700">
+                    {error}
+                  </div>
+                )}
+                {/* Name row */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="reg-first" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+                      First name
+                    </label>
+                    <input
+                      id="reg-first"
+                      name="first_name"
+                      type="text"
+                      required
+                      placeholder="Emeka"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="reg-last" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+                      Last name
+                    </label>
+                    <input
+                      id="reg-last"
+                      name="last_name"
+                      type="text"
+                      required
+                      placeholder="Okonkwo"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
+                    />
+                  </div>
+                </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="btn-green flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-[14px] font-semibold"
-            >
-              {submitting ? "Creating account…" : "Create account"}
-            </button>
-          </form>
+                {/* Work Email */}
+                <div>
+                  <label htmlFor="reg-email" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+                    Work email
+                  </label>
+                  <input
+                    id="reg-email"
+                    name="email"
+                    type="email"
+                    required
+                    placeholder="emeka@company.com"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
+                  />
+                </div>
 
-          <div className="mt-7 flex items-center gap-4">
-            <div className="flex-1 h-px bg-slate-200" />
-            <span className="text-[12px] text-slate-400 font-medium whitespace-nowrap">
-              Already have an account?
-            </span>
-            <div className="flex-1 h-px bg-slate-200" />
-          </div>
+                {/* Organization name */}
+                <div>
+                  <label htmlFor="reg-org" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+                    Organization name
+                  </label>
+                  <input
+                    id="reg-org"
+                    name="organization_name"
+                    type="text"
+                    required
+                    placeholder="Delta Maritime Logistics Ltd"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
+                  />
+                </div>
 
-          <Link
-            href="/login"
-            className="btn-ghost mt-4 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-[14px] font-semibold"
-          >
-            Sign in
-          </Link>
+                {/* Role / Job Title */}
+                <div>
+                  <label htmlFor="reg-role" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+                    Your role
+                  </label>
+                  <select
+                    id="reg-role"
+                    name="job_title"
+                    defaultValue="Managing Director"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
+                  >
+                    {roles.map((r) => (
+                      <option key={r} value={r}>
+                        {r}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label htmlFor="reg-password" className="block text-[13px] font-semibold text-slate-700 mb-1.5">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="reg-password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      placeholder="Minimum 8 characters"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 pr-14 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-emerald-400 focus:ring-[3px] focus:ring-emerald-100"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-[12px] font-semibold text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition"
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Pilot Tier Selection */}
+                <div>
+                  <label className="block text-[13px] font-semibold text-slate-700 mb-2">
+                    Select your pilot tier
+                  </label>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {tiers.map((tier) => {
+                      const selected = selectedTier === tier.id;
+                      return (
+                        <button
+                          key={tier.id}
+                          type="button"
+                          onClick={() => setSelectedTier(tier.id)}
+                          className={`text-left p-3 rounded-xl border transition-all duration-150 ${
+                            selected
+                              ? "border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-200/80 shadow-sm"
+                              : "border-slate-200 bg-white hover:border-slate-300"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-[13px] font-bold text-slate-900">{tier.label}</span>
+                            <span className="text-[12px] font-semibold text-emerald-700">{tier.price}</span>
+                          </div>
+                          <p className="text-[11.5px] text-slate-500 mt-1 leading-snug">{tier.desc}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Terms agreement */}
+                <div className="flex items-start gap-2.5">
+                  <input
+                    id="terms"
+                    name="terms_accepted"
+                    type="checkbox"
+                    required
+                    className="mt-1 h-[18px] w-[18px] rounded-md border-slate-300 text-emerald-600 focus:ring-emerald-500 accent-emerald-600"
+                  />
+                  <label htmlFor="terms" className="text-[13px] text-slate-600 leading-snug">
+                    I agree to the{" "}
+                    <Link href="#" className="font-semibold text-emerald-600 hover:text-emerald-700 underline">
+                      Terms of Service
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="#" className="font-semibold text-emerald-600 hover:text-emerald-700 underline">
+                      Privacy Policy
+                    </Link>
+                    .
+                  </label>
+                </div>
+
+                {/* Submit */}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="btn-green flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-[14px] font-semibold"
+                >
+                  {submitting ? "Creating your account…" : "Create your account →"}
+                </button>
+
+                {/* Sign in link */}
+                <p className="text-center text-[13.5px] text-slate-500 pt-2">
+                  Already have an account?{" "}
+                  <Link
+                    href="/login"
+                    className="font-semibold text-emerald-600 hover:text-emerald-700 transition"
+                  >
+                    Sign in
+                  </Link>
+                </p>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>

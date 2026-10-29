@@ -135,8 +135,15 @@ REST_FRAMEWORK = {
         "login": "10/minute",
         "registration": "5/hour",
         "session_refresh": "30/hour",
+        "email_verification": "6/hour",
+        "password_reset": "5/hour",
     },
 }
+
+RESEND_KEY = os.getenv("RESEND_KEY") or os.getenv("RESEND_API_KEY")
+DEFAULT_FROM_EMAIL = "Ofshora <notifications@send.ofshora.com>"
+FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
+EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend" if DEBUG else "django.core.mail.backends.console.EmailBackend"
 
 CORS_ALLOWED_ORIGINS = env_list("DJANGO_CORS_ALLOWED_ORIGINS", "http://localhost:3000")
 CORS_ALLOW_CREDENTIALS = True

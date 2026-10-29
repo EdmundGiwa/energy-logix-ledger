@@ -46,7 +46,7 @@ evidence.
 ### Shared platform foundations
 
 - [ ] **Shared platform hardening** — In progress
-  - [ ] Email ownership verification and account-change verification
+  - [x] Email ownership verification and account-change verification (Resend transactional integration, 6-digit verification OTP, secure token password recovery, security alerts)
   - [ ] MFA policy and privileged-user challenge flow
   - [ ] Tenant context, PostgreSQL RLS, and fail-closed authorization
   - [ ] Immutable audit foundation
