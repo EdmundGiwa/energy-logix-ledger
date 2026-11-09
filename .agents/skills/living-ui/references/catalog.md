@@ -5,6 +5,7 @@ Check here first before querying external sources.
 
 | Name | Category | Path | Dependencies | Origin | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| StoryStageControls | `marketing` | `resources/components/marketing/story-stage-controls.tsx` | react | internal | Segmented story progress rail, 16:9 vs 9:16 TikTok aspect switcher, playback transport, and native dialog slide directory |
 | PetroLedgerLabeledSidebar | `navigation` | `resources/components/navigation/petroledger-labeled-sidebar.tsx` | react,next | 21st.dev/wensity/sidebar#31454 | Compact grouped PetroLedger desktop icon rail that reveals module labels on hover or keyboard focus, with active-route emphasis and quick tools |
 | WorkflowActionDialog | `overlays` | `resources/components/overlays/workflow-action-dialog.tsx` | react | 21st.dev/shadcn/alert-dialog#705 | Accessible native-dialog confirmation form for audited workflow transitions with stage-specific context and required reasons |
 | StemGauge | `data-display` | `resources/components/data-display/stem-gauge.tsx` | react | 21st.dev/thegridcn/energy-meter#24473 | Segmented animated fill gauge for a bunker stem's delivered-vs-nominated MT, dark HUD readout matching this app's AstmCalculatorModal/e-BDN panels |

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Icon, LogoMark, Wordmark } from "./icons";
 import { NewBadge, NewDot } from "@/components/ui/NewBadge";
@@ -73,6 +74,12 @@ export function Navbar() {
         </ul>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/pitch"
+            className="hidden items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-1.5 text-[13px] font-semibold text-emerald-800 transition hover:bg-emerald-100/80 sm:inline-flex"
+          >
+            <Icon.Play size={12} /> Pitch deck
+          </Link>
           <a
             href="/login"
             className="hidden rounded-lg px-3.5 py-2 text-[13.5px] font-medium text-slate-600 transition hover:text-slate-900 sm:block"
@@ -109,6 +116,13 @@ export function Navbar() {
               <span className="flex items-center gap-2">{l.label}{l.isNew && <NewBadge size="xs" />}</span> <Icon.Chevron size={16} className="text-slate-400" />
             </a>
           ))}
+          <Link
+            href="/pitch"
+            onClick={() => setOpen(false)}
+            className="flex items-center justify-between rounded-lg px-4 py-3 font-semibold text-emerald-800 hover:bg-emerald-50/60"
+          >
+            <span className="flex items-center gap-2"><Icon.Play size={14} /> Pitch deck</span> <Icon.Chevron size={16} className="text-emerald-600" />
+          </Link>
           <a
             href="#contact"
             onClick={() => setOpen(false)}

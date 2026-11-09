@@ -550,3 +550,101 @@ input[type="range"]::-moz-range-thumb {
   .new-badge::after,
   .new-dot::after { animation: none; }
 }
+
+/* ---------- Pitch Deck & TikTok Story Stage ---------- */
+.story-progress-bar {
+  animation-name: progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
+
+.pitch-stage-vt {
+  view-transition-name: pitch-stage;
+}
+
+@keyframes pitch-slide-to-left {
+  to {
+    opacity: 0;
+    transform: translateX(-48px) scale(0.985);
+  }
+}
+@keyframes pitch-slide-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(48px) scale(0.985);
+  }
+}
+@keyframes pitch-slide-to-right {
+  to {
+    opacity: 0;
+    transform: translateX(48px) scale(0.985);
+  }
+}
+@keyframes pitch-slide-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-48px) scale(0.985);
+  }
+}
+
+::view-transition-group(pitch-stage) {
+  animation-duration: 0.42s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+html:active-view-transition-type(forward)::view-transition-old(pitch-stage) {
+  animation-name: pitch-slide-to-left;
+}
+html:active-view-transition-type(forward)::view-transition-new(pitch-stage) {
+  animation-name: pitch-slide-from-right;
+}
+html:active-view-transition-type(backward)::view-transition-old(pitch-stage) {
+  animation-name: pitch-slide-to-right;
+}
+html:active-view-transition-type(backward)::view-transition-new(pitch-stage) {
+  animation-name: pitch-slide-from-left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(pitch-stage) {
+    animation: none !important;
+  }
+}
+
+@keyframes pitch-enter-fwd {
+  from {
+    opacity: 0;
+    transform: translate3d(26px, 0, 0) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+@keyframes pitch-enter-back {
+  from {
+    opacity: 0;
+    transform: translate3d(-26px, 0, 0) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+.pitch-enter-fwd {
+  animation: pitch-enter-fwd 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+.pitch-enter-back {
+  animation: pitch-enter-back 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
