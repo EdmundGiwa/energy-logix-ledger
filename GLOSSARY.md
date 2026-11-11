@@ -447,6 +447,22 @@ Nigerian Upstream Petroleum Regulatory Commission. The regulator for upstream pe
 
 National Environmental Standards and Regulations Enforcement Agency. A Nigerian federal agency responsible for enforcing environmental standards and regulations within its statutory mandate. Confirm the responsible authority for each waste stream and operation.
 
+## Ugandan regulation and local content
+
+These terms appear in Book-a-Demo copy for Ugandan prospects. Offshora has no Uganda-specific compliance features yet. **Verify before implementation** against current Ugandan law and the regulator.
+
+### PAU
+
+Petroleum Authority of Uganda. The regulator for Uganda's upstream petroleum sector, including oversight of national content in projects such as Tilenga, Kingfisher and EACOP.
+
+### NSD
+
+National Suppliers Database. A PAU-run register of companies and individuals eligible to supply goods and services to Uganda's oil and gas sector. Registration and renewal rules change over time; confirm on pau.go.ug.
+
+### NEMA
+
+National Environment Management Authority (Uganda). The environmental regulator that approves environmental and social impact assessments (ESIAs) and licenses activities such as waste handling.
+
 ## Commercial and project controls
 
 ### BOQ — Bill of Quantities

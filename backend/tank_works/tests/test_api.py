@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from organizations.models import Membership, Organization
+from organizations.testing import enable_modules
 from tank_works.models import (
     CoatingInspection,
     CrewEquipmentUtilization,
@@ -21,6 +22,7 @@ class TankWorksAPITests(APITestCase):
         self.bravo_user = User.objects.create_user(username="tank-bravo@test.local", email="tank-bravo@test.local", password="password")
         self.alpha = Organization.objects.create(name="Alpha Tank Cleaning Ltd", slug="alpha-tank")
         self.bravo = Organization.objects.create(name="Bravo Industrial Services", slug="bravo-tank")
+        enable_modules(self.alpha, self.bravo, modules=["tankworks"])
         Membership.objects.create(user=self.alpha_user, organization=self.alpha, role=Membership.Role.OWNER)
         Membership.objects.create(user=self.bravo_user, organization=self.bravo, role=Membership.Role.OWNER)
         self.client.force_login(self.alpha_user)

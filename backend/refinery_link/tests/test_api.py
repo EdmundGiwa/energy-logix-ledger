@@ -5,6 +5,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from organizations.models import Membership, Organization
+from organizations.testing import enable_modules
 from refinery_link.models import (
     BatchQualityCertificate,
     DepotTank,
@@ -24,6 +25,7 @@ class RefineryLinkAPITests(APITestCase):
         self.bravo_user = User.objects.create_user(username="refinery-bravo@test.local", email="refinery-bravo@test.local", password="password")
         self.alpha = Organization.objects.create(name="Alpha Depot", slug="alpha-depot")
         self.bravo = Organization.objects.create(name="Bravo Depot", slug="bravo-depot")
+        enable_modules(self.alpha, self.bravo, modules=["refinerylink"])
         Membership.objects.create(user=self.alpha_user, organization=self.alpha, role=Membership.Role.OWNER)
         Membership.objects.create(user=self.bravo_user, organization=self.bravo, role=Membership.Role.OWNER)
         self.client.force_login(self.alpha_user)

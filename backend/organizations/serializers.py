@@ -1,14 +1,35 @@
 from rest_framework import serializers
 
-from .models import Membership, Organization
+from .models import Membership, ModuleAccessRequest, Organization
+from .modules import MODULES
 
 
 class OrganizationSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="public_id", read_only=True)
+    enabled_modules = serializers.SerializerMethodField()
 
     class Meta:
         model = Organization
-        fields = ("id", "name", "slug", "status", "requested_plan")
+        fields = ("id", "name", "slug", "status", "requested_plan", "enabled_modules")
+
+    def get_enabled_modules(self, obj):
+        from .services import enabled_modules
+
+        return sorted(enabled_modules(obj))
+
+
+class ModuleAccessRequestSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(source="public_id", read_only=True)
+
+    class Meta:
+        model = ModuleAccessRequest
+        fields = ("id", "module", "message", "status", "created_at")
+        read_only_fields = ("id", "status", "created_at")
+
+
+class ModuleAccessRequestCreateSerializer(serializers.Serializer):
+    module = serializers.ChoiceField(choices=list(MODULES))
+    message = serializers.CharField(max_length=500, required=False, allow_blank=True, default="")
 
 
 class MembershipSerializer(serializers.ModelSerializer):

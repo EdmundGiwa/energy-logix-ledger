@@ -264,12 +264,12 @@ export function Pricing() {
                   </ul>
 
                   <a
-                    href="#contact"
+                    href="/book-demo"
                     className={`mt-7 flex h-11 items-center justify-center gap-1.5 rounded-xl text-[13.5px] font-semibold transition ${
                       t.featured ? "btn-green text-white" : "btn-ghost text-slate-800"
                     }`}
                   >
-                    {t.from ? "Custom quote" : "Start a pilot"} <Icon.Arrow size={15} />
+                    {t.from ? "Custom quote" : "Book a demo"} <Icon.Arrow size={15} />
                   </a>
                 </div>
               </Reveal>
@@ -288,10 +288,10 @@ export function Pricing() {
                 </p>
               </div>
               <a
-                href="#contact"
+                href="/book-demo"
                 className="btn-green inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-[14.5px] font-semibold text-white shadow-sm"
               >
-                Book pilot <Icon.Arrow size={16} />
+                Book a demo <Icon.Arrow size={16} />
               </a>
             </div>
           </div>

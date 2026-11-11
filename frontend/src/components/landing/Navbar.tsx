@@ -3,133 +3,101 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Icon, LogoMark, Wordmark } from "./icons";
-import { NewBadge, NewDot } from "@/components/ui/NewBadge";
+import { Corners } from "./primitives";
 
 const links = [
-  { href: "#offshore", label: "Offshore", isNew: true },
+  { href: "#stories", label: "Platform" },
+  { href: "#how", label: "How it works" },
   { href: "#modules", label: "Modules" },
-  { href: "#platform", label: "Platform" },
-  { href: "#corridor", label: "Corridor" },
   { href: "#compliance", label: "Compliance" },
   { href: "#pricing", label: "Pricing" },
-  { href: "#roadmap", label: "Roadmap" },
+  { href: "/pitch", label: "Pitch deck" },
 ];
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState("");
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
+    const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) if (e.isIntersecting) setActive(`#${e.target.id}`);
-      },
-      { rootMargin: "-45% 0px -50% 0px" }
-    );
-    links.forEach((l) => {
-      const el = document.querySelector(l.href);
-      if (el) io.observe(el);
-    });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      io.disconnect();
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50 px-3 pt-3 sm:px-6">
-      <nav
-        className={`mx-auto flex max-w-[1440px] items-center justify-between rounded-2xl px-4 py-2.5 transition-all duration-300 ${
-          scrolled
-            ? "bg-white/90 backdrop-blur-md border border-slate-200 shadow-[0_4px_24px_rgba(0,0,0,0.06)]"
-            : "bg-white/70 backdrop-blur-sm border border-slate-200/60 shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
-        }`}
-      >
-        <a href="#top" className="flex items-center gap-3" aria-label="Offshora home">
-          <LogoMark size={36} />
-          <Wordmark />
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-[background,border-color,backdrop-filter] duration-300 ${
+        scrolled || open ? "border-b border-slate-200/80 bg-white/85 backdrop-blur-md" : "border-b border-transparent"
+      }`}
+    >
+      <nav className="mx-auto flex h-[76px] max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:px-10" aria-label="Main">
+        <a href="#top" className="flex shrink-0 items-center gap-2.5" aria-label="Offshora home">
+          <LogoMark size={34} />
+          <Wordmark size="sm" />
         </a>
 
-        <ul className="hidden items-center gap-1 rounded-xl bg-slate-100/70 p-1 border border-slate-200/70 lg:flex">
-          {links.map((l) => (
+        <ul className="hidden items-center gap-7 lg:flex">
+          {links.map((l, i) => (
             <li key={l.href}>
-              <a
-                href={l.href}
-                className={`relative flex items-center gap-1.5 rounded-lg px-3.5 py-1.5 text-[13.5px] font-medium transition ${
-                  active === l.href
-                    ? "bg-white text-slate-900 font-semibold shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
+              <a href={l.href} className="group relative text-[14px] text-slate-600 transition hover:text-[#0a0f14]">
                 {l.label}
-                {l.isNew && <NewDot className="relative" />}
+                <sup className="font-label ml-0.5 text-[9px] text-slate-400 transition group-hover:text-emerald-600">{String(i + 1).padStart(2, "0")}</sup>
               </a>
             </li>
           ))}
         </ul>
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/pitch"
-            className="hidden items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50/80 px-3 py-1.5 text-[13px] font-semibold text-emerald-800 transition hover:bg-emerald-100/80 sm:inline-flex"
-          >
-            <Icon.Play size={12} /> Pitch deck
+        <div className="flex items-center gap-2.5">
+          <Link href="/login" className="hidden rounded-lg px-4 py-2.5 text-[14px] text-slate-700 transition hover:bg-slate-100 sm:block">
+            Login
           </Link>
-          <a
-            href="/login"
-            className="hidden rounded-lg px-3.5 py-2 text-[13.5px] font-medium text-slate-600 transition hover:text-slate-900 sm:block"
-          >
-            Sign in
-          </a>
-          <a
-            href="/register"
-            className="btn-green hidden items-center gap-1.5 rounded-xl px-4 py-2 text-[13.5px] font-semibold sm:inline-flex"
-          >
-            Start a pilot <Icon.ArrowUpRight size={15} />
-          </a>
+          <Link href="/book-demo" className="corners corners-hover cta-block hidden text-[14.5px] text-slate-500 sm:inline-flex">
+            <Corners />
+            <span className="arrow">
+              <Icon.ArrowUpRight size={17} />
+            </span>
+            <span className="text-[#0a0f14]">Book a demo</span>
+          </Link>
           <button
             type="button"
-            aria-label="Toggle menu"
+            aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
             onClick={() => setOpen((o) => !o)}
-            className="grid h-10 w-10 place-items-center rounded-xl bg-slate-100 text-slate-800 border border-slate-200 lg:hidden"
+            className="grid h-11 w-11 place-items-center rounded-lg text-[#0a0f14] transition hover:bg-slate-100 lg:hidden"
           >
-            {open ? <Icon.X size={18} /> : <Icon.Menu size={18} />}
+            <span className={`text-[30px] font-light leading-none transition-transform duration-300 ${open ? "rotate-45" : ""}`}>+</span>
           </button>
         </div>
       </nav>
 
       {open && (
-        <div className="rise mx-auto mt-2 max-w-[1440px] rounded-2xl border border-slate-200 bg-white p-3 shadow-xl lg:hidden">
-          {links.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              onClick={() => setOpen(false)}
-              className="flex items-center justify-between rounded-lg px-4 py-3 font-medium text-slate-800 hover:bg-slate-50"
-            >
-              <span className="flex items-center gap-2">{l.label}{l.isNew && <NewBadge size="xs" />}</span> <Icon.Chevron size={16} className="text-slate-400" />
-            </a>
-          ))}
-          <Link
-            href="/pitch"
-            onClick={() => setOpen(false)}
-            className="flex items-center justify-between rounded-lg px-4 py-3 font-semibold text-emerald-800 hover:bg-emerald-50/60"
-          >
-            <span className="flex items-center gap-2"><Icon.Play size={14} /> Pitch deck</span> <Icon.Chevron size={16} className="text-emerald-600" />
-          </Link>
-          <a
-            href="#contact"
-            onClick={() => setOpen(false)}
-            className="btn-green mt-2 flex items-center justify-center gap-1.5 rounded-xl px-4 py-3 font-semibold"
-          >
-            Start a 60-day pilot <Icon.ArrowUpRight size={16} />
-          </a>
+        <div className="rise border-t border-slate-200/80 bg-white px-5 pb-6 pt-2 lg:hidden">
+          <ul>
+            {links.map((l, i) => (
+              <li key={l.href} className="border-b border-slate-100">
+                <a href={l.href} onClick={() => setOpen(false)} className="font-display flex items-baseline justify-between py-4 text-[1.6rem] text-[#0a0f14]">
+                  {l.label}
+                  <span className="font-label text-[11px] text-slate-400">{String(i + 1).padStart(2, "0")}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-5 grid grid-cols-2 gap-2">
+            <Link href="/login" className="rounded-xl border border-slate-200 py-3 text-center text-[14.5px]">
+              Login
+            </Link>
+            <Link href="/book-demo" className="btn-ink rounded-xl py-3 text-center text-[14.5px]">
+              Book a demo
+            </Link>
+          </div>
         </div>
       )}
     </header>

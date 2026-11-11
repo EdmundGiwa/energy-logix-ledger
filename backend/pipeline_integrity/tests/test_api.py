@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from organizations.models import Membership, Organization
+from organizations.testing import enable_modules
 from pipeline_integrity.models import CPSurveyPoint, InspectionRecord, PipelineAsset, ROWObservation
 
 
@@ -14,6 +15,7 @@ class PipelineIntegrityAPITests(APITestCase):
         self.bravo_user = User.objects.create_user(username="pipe-bravo@test.local", email="pipe-bravo@test.local", password="password")
         self.alpha = Organization.objects.create(name="Alpha Pipeline", slug="pipe-alpha")
         self.bravo = Organization.objects.create(name="Bravo Pipeline", slug="pipe-bravo")
+        enable_modules(self.alpha, self.bravo, modules=["pipeintegrity"])
         Membership.objects.create(user=self.alpha_user, organization=self.alpha, role=Membership.Role.OWNER)
         Membership.objects.create(user=self.bravo_user, organization=self.bravo, role=Membership.Role.OWNER)
         self.client.force_login(self.alpha_user)

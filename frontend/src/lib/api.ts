@@ -6,6 +6,16 @@ export type Organization = {
   slug: string;
   status: "active" | "suspended";
   requested_plan: "micro" | "starter" | "growth" | "enterprise";
+  /** Module keys this organization can use: the core set plus purchased modules. */
+  enabled_modules: string[];
+};
+
+export type ModuleAccessRequest = {
+  id: string;
+  module: string;
+  message: string;
+  status: "open" | "approved" | "declined";
+  created_at: string;
 };
 
 export type Membership = {
@@ -84,16 +94,6 @@ export const authApi = {
   me: () => apiRequest<CurrentUser>("/auth/me/"),
   login: (payload: { email: string; password: string; remember_me: boolean }) =>
     apiRequest<CurrentUser>("/auth/login/", { method: "POST", body: JSON.stringify(payload) }),
-  register: (payload: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    password: string;
-    organization_name: string;
-    job_title: string;
-    requested_plan: string;
-    terms_accepted: boolean;
-  }) => apiRequest<CurrentUser>("/auth/register/", { method: "POST", body: JSON.stringify(payload) }),
   refresh: () => apiRequest<CurrentUser>("/auth/session/refresh/", { method: "POST" }),
   logout: () => apiRequest<void>("/auth/logout/", { method: "POST" }),
   requestEmailVerification: (payload?: { email?: string }) =>
@@ -1408,3 +1408,9 @@ export const ownerDashboardApi = {
 };
 
 
+
+export const organizationApi = {
+  moduleRequests: () => apiRequest<ModuleAccessRequest[]>("/organizations/current/module-requests/"),
+  requestModule: (payload: { module: string; message?: string }) =>
+    apiRequest<ModuleAccessRequest>("/organizations/current/module-requests/", { method: "POST", body: JSON.stringify(payload) }),
+};

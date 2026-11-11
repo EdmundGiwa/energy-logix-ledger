@@ -1,3 +1,5 @@
+"use client";
+
 import { Icon } from "./icons";
 import { Reveal, SectionHeading, Spotlight } from "./primitives";
 

@@ -7,8 +7,9 @@ import { MobileSidebar } from "@/components/dashboard/MobileSidebar";
 import { StatusBar } from "@/components/dashboard/StatusBar";
 import { AstmCalculatorModal } from "@/components/dashboard/AstmCalculatorModal";
 import { CommandPalette } from "@/components/dashboard/CommandPalette";
-import { DashboardBackdrop } from "@/components/dashboard/Patterns";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { EntitlementsProvider } from "@/components/dashboard/Entitlements";
+import { ModuleGate } from "@/components/dashboard/ModuleGate";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -29,23 +30,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <AuthProvider>
-    <div className="relative isolate flex min-h-screen flex-col bg-[#f2f3f5] text-slate-900">
-      <DashboardBackdrop />
-      <AstmCalculatorModal open={astmOpen} onClose={() => setAstmOpen(false)} />
-      <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} onOpenAstm={() => setAstmOpen(true)} />
-      <MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <EntitlementsProvider>
+        <div className="dash relative isolate flex min-h-screen flex-col bg-[#f7f8f9] text-[#0a0f14]">
+          <div aria-hidden className="hero-wash pointer-events-none fixed inset-x-0 top-0 -z-10 h-[380px] opacity-60 [mask-image:linear-gradient(to_bottom,#000,transparent)]" />
+          <AstmCalculatorModal open={astmOpen} onClose={() => setAstmOpen(false)} />
+          <CommandPalette open={searchOpen} onClose={() => setSearchOpen(false)} onOpenAstm={() => setAstmOpen(true)} />
+          <MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} onOpenSearch={() => setSearchOpen(true)} onOpenAstm={() => setAstmOpen(true)} />
 
-      <Topbar onOpenSearch={() => setSearchOpen(true)} onOpenAstm={() => setAstmOpen(true)} onOpenMenu={() => setMobileOpen(true)} />
+          <div className="hidden lg:block">
+            <Sidebar onOpenSearch={() => setSearchOpen(true)} onOpenAstm={() => setAstmOpen(true)} />
+          </div>
 
-      <div className="hidden lg:block">
-        <Sidebar onOpenSearch={() => setSearchOpen(true)} onOpenAstm={() => setAstmOpen(true)} />
-      </div>
-
-      <div className="relative z-10 flex flex-1 flex-col lg:pl-[92px]">
-        <main className="flex-1 px-3 pb-6 pt-2 sm:px-4 lg:pl-0 lg:pr-4">{children}</main>
-        <StatusBar onOpenAstm={() => setAstmOpen(true)} />
-      </div>
-    </div>
+          <div className="relative flex min-w-0 flex-1 flex-col lg:pl-[260px]">
+            <Topbar onOpenSearch={() => setSearchOpen(true)} onOpenAstm={() => setAstmOpen(true)} onOpenMenu={() => setMobileOpen(true)} />
+            <main className="flex-1 px-3 py-5 sm:px-6 lg:px-8 lg:py-7">
+              <ModuleGate>{children}</ModuleGate>
+            </main>
+            <StatusBar onOpenAstm={() => setAstmOpen(true)} />
+          </div>
+        </div>
+      </EntitlementsProvider>
     </AuthProvider>
   );
 }

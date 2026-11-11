@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
 import { Icon } from "@/components/landing/icons";
-import { CountUp } from "@/components/landing/primitives";
-import { CardContours, SeismicBand } from "@/components/dashboard/Patterns";
+import { BlurText, CountUp } from "@/components/landing/primitives";
+import { CardContours } from "@/components/dashboard/Patterns";
+import { useEntitlements } from "@/components/dashboard/Entitlements";
+import { moduleNav } from "@/components/dashboard/Sidebar";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
   ExecutiveExceptionAlert,
@@ -89,7 +91,7 @@ const fleet: { name: string; id: string; status: string; icon: IconC; a: [string
 
 function Card({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   return (
-    <section className={`rise min-w-0 rounded-[28px] bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.03)] ${className}`} style={{ animationDelay: `${delay}s` }}>
+    <section className={`rise min-w-0 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-[0_1px_2px_rgba(10,15,20,0.03)] ${className}`} style={{ animationDelay: `${delay}s` }}>
       {children}
     </section>
   );
@@ -728,25 +730,36 @@ function Devices() {
 
 export default function DashboardPage() {
   const [greeting, setGreeting] = useState("Welcome back");
+  const [today, setToday] = useState("");
   const { user } = useAuth();
+  const { enabled } = useEntitlements();
+  const mine = moduleNav.filter((m) => m.module && enabled.has(m.module));
+  const primary = mine.find((m) => !["compliance_shield", "billing", "owner_dashboard"].includes(m.module ?? ""));
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const h = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hour12: false, timeZone: "Africa/Lagos" }).format(new Date()));
       setGreeting(h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening");
+      setToday(new Intl.DateTimeFormat("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "Africa/Lagos" }).format(new Date()));
     }, 0);
     return () => window.clearTimeout(timer);
   }, []);
 
   return (
-    <div className="mx-auto max-w-[1520px] space-y-4">
-      <header className="relative flex flex-wrap items-end justify-between gap-4 px-1 pb-2 pt-3">
-        <SeismicBand className="absolute -top-6 right-[8%] hidden h-[150px] w-[58%] lg:block" />
-        <div className="relative">
-          <h1 className="text-[2rem] font-semibold tracking-tight text-slate-900 sm:text-[2.4rem]">{greeting}, {user.first_name || user.name}</h1>
-          <p className="mt-1 text-[15px] text-slate-500">Here is what is moving across your vessels, lines and trucks today.</p>
+    <div className="mx-auto max-w-[1520px] space-y-5">
+      <header className="flex flex-wrap items-end justify-between gap-5 pb-2">
+        <div className="min-w-0">
+          <p className="font-label text-[11.5px] uppercase text-slate-500">{today}</p>
+          <h1 className="mt-2 text-[2.3rem] leading-[1.04] text-[#0a0f14] sm:text-[2.9rem]">
+            <BlurText>
+              <>
+                {greeting}, <span className="text-emerald-600">{user.first_name || user.name}.</span>
+              </>
+            </BlurText>
+          </h1>
+          <p className="mt-2 text-[15.5px] text-slate-600">Here is what is moving across your operation today.</p>
         </div>
-        <div className="relative flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={async () => {
@@ -757,18 +770,36 @@ export default function DashboardPage() {
                 alert("Packaging signed Executive Board Brief with SHA-256 audit seal...");
               }
             }}
-            className="flex h-11 items-center gap-2 rounded-full bg-white border border-slate-200 px-4 text-[13.5px] font-medium text-slate-800 transition hover:bg-slate-50"
+            className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[14px] text-[#0a0f14] transition hover:border-slate-300"
           >
             <Icon.FileText size={16} /> Board brief
           </button>
-          <Link href="/dashboard/compliance-shield" className="flex h-11 items-center gap-2 rounded-full bg-white px-4 text-[13.5px] font-medium text-slate-800 transition hover:bg-slate-50">
-            <Icon.FileText size={16} /> Audit pack
+          <Link href="/dashboard/compliance-shield" className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[14px] text-[#0a0f14] transition hover:border-slate-300">
+            <Icon.Shield size={16} /> Audit pack
           </Link>
-          <Link href="/dashboard/bunkerflow" className="flex h-11 items-center gap-2 rounded-full bg-[#0b1523] px-4 text-[13.5px] font-medium text-white transition hover:bg-slate-800">
-            + New record
+          <Link href={primary?.href ?? "/dashboard/compliance-shield"} className="btn-ink group flex h-11 items-center gap-2 rounded-xl px-4 text-[14px]">
+            New record <Icon.Arrow size={15} className="transition group-hover:translate-x-0.5" />
           </Link>
         </div>
       </header>
+
+      <nav aria-label="Your modules" className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+        {mine.map((m) => {
+          const ModIcon = m.icon;
+          return (
+            <Link
+              key={m.href}
+              href={m.href}
+              className="group flex shrink-0 items-center gap-2.5 rounded-xl border border-slate-200/80 bg-white py-2 pl-2 pr-4 text-[13.5px] text-[#0a0f14] transition hover:border-emerald-300 hover:shadow-sm"
+            >
+              <span className="grid h-8 w-8 place-items-center rounded-lg bg-[#0a0f14] text-emerald-300 transition group-hover:bg-emerald-600 group-hover:text-white">
+                <ModIcon size={15} />
+              </span>
+              {m.label}
+            </Link>
+          );
+        })}
+      </nav>
 
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1fr_1fr]">
         <Receivables />

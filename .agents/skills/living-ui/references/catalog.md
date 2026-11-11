@@ -5,6 +5,9 @@ Check here first before querying external sources.
 
 | Name | Category | Path | Dependencies | Origin | Description |
 | :--- | :--- | :--- | :--- | :--- | :--- |
+| ScrollSpySteps | `marketing` | `resources/components/marketing/scroll-spy-steps.tsx` | react,next | internal | Sticky left step labels that highlight as each numbered step crosses mid-viewport, dashed rail, hairline-split copy, crop-mark photo with zoom-settle |
+| StackedStoryCards | `marketing` | `resources/components/marketing/stacked-story-cards.tsx` | react,next | internal | Scroll-pinned feature cards that stack, scale back and dim as the next slides over; n/N tag, blur-in headline, live record panel on the top card only; desktop-only stacking, reduced-motion safe |
+| DemoSlotPicker | `inputs` | `resources/components/inputs/demo-slot-picker.tsx` | react | internal | Monday-first month calendar plus time list in crop-mark frames; display-type month, mono weekdays, ink selected day, prospect zone with WAT/EAT alongside, keyboard and aria-pressed accessible |
 | StoryStageControls | `marketing` | `resources/components/marketing/story-stage-controls.tsx` | react | internal | Segmented story progress rail, 16:9 vs 9:16 TikTok aspect switcher, playback transport, and native dialog slide directory |
 | PetroLedgerLabeledSidebar | `navigation` | `resources/components/navigation/petroledger-labeled-sidebar.tsx` | react,next | 21st.dev/wensity/sidebar#31454 | Compact grouped PetroLedger desktop icon rail that reveals module labels on hover or keyboard focus, with active-route emphasis and quick tools |
 | WorkflowActionDialog | `overlays` | `resources/components/overlays/workflow-action-dialog.tsx` | react | 21st.dev/shadcn/alert-dialog#705 | Accessible native-dialog confirmation form for audited workflow transitions with stage-specific context and required reasons |

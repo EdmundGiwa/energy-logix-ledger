@@ -1044,7 +1044,7 @@ function ModuleModal({ m, onClose, onStep }: { m: Module; onClose: () => void; o
             >
               <Icon.Chevron size={16} />
             </button>
-            <a href="#contact" onClick={onClose} className="btn-green inline-flex h-9 items-center gap-1.5 rounded-xl px-4 text-[13px] font-semibold text-white">
+            <a href="/book-demo" onClick={onClose} className="btn-green inline-flex h-9 items-center gap-1.5 rounded-xl px-4 text-[13px] font-semibold text-white">
               Pilot this module <Icon.Arrow size={14} />
             </a>
           </div>

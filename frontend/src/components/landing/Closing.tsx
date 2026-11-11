@@ -1,162 +1,107 @@
 "use client";
 
-import Image from "next/image";
-import { useState } from "react";
-import { Icon, LogoMark, Wordmark } from "./icons";
-import { Reveal } from "./primitives";
-import { BRAND, BRAND_FULL } from "@/lib/brand";
+import Link from "next/link";
+import { BRAND } from "@/lib/brand";
+import { LogoMark, Wordmark } from "./icons";
+import { BlurText, Corners, Reveal } from "./primitives";
+import { SegmentForm } from "./SegmentForm";
 
-const hubs = [
-  { city: "Lagos", coord: "6.4550° N, 3.3841° E" },
-  { city: "Port Harcourt", coord: "4.8156° N, 7.0498° E" },
-  { city: "Warri", coord: "5.5160° N, 5.7500° E" },
-  { city: "Onne", coord: "4.7238° N, 7.1517° E" },
+function PanelCurves() {
+  const d = "M0 0 C 0 120, 120 140, 120 260 S 0 400, 0 520";
+  return (
+    <svg aria-hidden className="pointer-events-none absolute inset-0 hidden h-full w-full md:block" viewBox="0 0 1200 520" preserveAspectRatio="none">
+      {[120, 210].map((x, i) => (
+        <g key={x}>
+          <path d={d} transform={`translate(${x} 0)`} pathLength={1} className="draw-path" fill="none" stroke="rgba(5,150,105,0.35)" strokeWidth="1" style={{ animationDelay: `${i * 0.25}s` }} />
+          <path d={d} transform={`translate(${1200 - x} 0) scale(-1 1)`} pathLength={1} className="draw-path" fill="none" stroke="rgba(5,150,105,0.35)" strokeWidth="1" style={{ animationDelay: `${0.15 + i * 0.25}s` }} />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+const columns = [
+  {
+    h: "Sections",
+    l: [
+      ["Platform", "#stories"],
+      ["How it works", "#how"],
+      ["Modules", "#modules"],
+      ["Compliance", "#compliance"],
+      ["Pricing", "#pricing"],
+      ["Pitch deck", "/pitch"],
+    ],
+  },
+  {
+    h: "Modules",
+    l: [
+      ["BunkerFlow", "#modules"],
+      ["HaulTrac", "#modules"],
+      ["PipeIntegrity", "#modules"],
+      ["EPC-Link", "#modules"],
+      ["SafePass", "#modules"],
+      ["Compliance Shield", "#modules"],
+    ],
+  },
+  {
+    h: "Company",
+    l: [
+      ["Book a demo", "/book-demo"],
+      ["Sign in", "/login"],
+      ["Security", "#security"],
+      ["Roadmap", "#roadmap"],
+      ["support@ofshora.com", "mailto:support@ofshora.com"],
+    ],
+  },
 ];
 
-const input =
-  "mt-1.5 h-12 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-4 text-[15px] text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20";
-
 export function Closing() {
-  const [sent, setSent] = useState(false);
-  const [email, setEmail] = useState("");
-
   return (
     <>
-      <section id="contact" className="relative scroll-mt-24 px-5 py-20 sm:px-8">
-        <Reveal className="relative isolate mx-auto max-w-[1240px] overflow-hidden rounded-3xl border border-slate-200/80 bg-gradient-to-br from-emerald-50/30 via-white to-slate-50 shadow-xl shadow-slate-900/5">
-          <Image src="/images/rig-dusk.jpg" alt="Offshore platform at dusk" fill sizes="100vw" className="-z-10 object-cover object-[70%_40%] opacity-[0.06] mix-blend-multiply" />
-          <div className="absolute -bottom-40 right-10 -z-10 h-[420px] w-[620px] rounded-full bg-emerald-100/60 blur-[120px]" />
-          <div className="grid gap-10 p-6 sm:p-12 lg:grid-cols-[1.15fr_0.85fr] lg:p-16">
-            <div className="flex flex-col">
-              <LogoMark size={48} />
-              <h2 className="mt-8 text-[2rem] font-extrabold leading-[1.08] tracking-[-0.035em] text-slate-900 sm:text-4xl lg:text-[3rem]">
-                Put every litre <span className="text-emerald-600">on record.</span>
-              </h2>
-              <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-slate-600">
-                Pick one module and one KPI. We run a 60-day paid pilot on your vessels, lines or trucks, then report the result back to you
-                in audited numbers.
+      <section id="contact" className="scroll-mt-24 px-4 py-16 sm:px-8 sm:py-24">
+        <div className="hero-wash relative isolate mx-auto max-w-[1280px] overflow-hidden rounded-[28px] px-5 py-20 text-center sm:px-10 sm:py-28">
+          <div aria-hidden className="tile-pattern absolute inset-0 -z-10" />
+          <PanelCurves />
+          <div className="corners relative mx-auto max-w-[760px] px-4 py-8 text-slate-400 sm:px-10">
+            <Corners />
+            <h2 className="font-display text-[2.4rem] leading-[1.04] text-[#0a0f14] sm:text-[3.4rem] lg:text-[3.9rem]">
+              <BlurText>
+                <>
+                  Put every <span className="text-emerald-600">litre, line and permit</span> on record.
+                </>
+              </BlurText>
+            </h2>
+            <Reveal delay={200}>
+              <p className="mx-auto mt-5 max-w-[520px] text-[16px] text-slate-600 sm:text-[17px]">
+                Book a 45-minute demo built around what you run. We show only the modules you need.
               </p>
-              <div className="mt-8 grid max-w-xl gap-3 sm:grid-cols-3">
-                {[
-                  ["1", "Pick a module", "BunkerFlow, HaulTrac or SafePass"],
-                  ["2", "Agree one KPI", "Shrinkage, TAT or reconciliation time"],
-                  ["3", "Measure for 60 days", "Pilot fee credited if you convert"],
-                ].map(([n, t, d]) => (
-                  <div key={n} className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm">
-                    <span className="grid h-7 w-7 place-items-center rounded-lg bg-emerald-50 text-[12px] font-extrabold text-emerald-700 border border-emerald-200/60">{n}</span>
-                    <p className="mt-3 text-[14px] font-bold text-slate-900">{t}</p>
-                    <p className="mt-0.5 text-[12px] text-slate-500">{d}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-auto flex flex-wrap gap-2 pt-10">
-                {hubs.map((h) => (
-                  <div key={h.city} className="rounded-lg border border-slate-200/80 bg-white/90 px-3.5 py-2 shadow-sm">
-                    <p className="text-[13px] font-semibold text-slate-800">
-                      {h.city}
-                    </p>
-                    <p className="mt-0.5 font-mono text-[10px] text-slate-500">{h.coord}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-lg shadow-slate-900/5 sm:p-8 self-center">
-              {sent ? (
-                <div className="rise py-8 text-center">
-                  <span className="mx-auto grid h-14 w-14 place-items-center rounded-xl bg-emerald-100 text-emerald-700">
-                    <Icon.Check size={28} strokeWidth={2.4} />
-                  </span>
-                  <p className="mt-5 text-xl font-extrabold text-slate-900">Request received</p>
-                  <p className="mt-2 text-sm text-slate-500">
-                    We&apos;ll contact <span className="font-semibold text-slate-900">{email}</span> within one business day to scope your pilot.
-                  </p>
-                </div>
-              ) : (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setSent(true);
-                  }}
-                  className="space-y-4"
-                >
-                  <div>
-                    <p className="text-xl font-extrabold text-slate-900">Start a 60-day pilot</p>
-                    <p className="mt-1 text-[13px] text-slate-500">Or book a private demo on your own data.</p>
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="text-[12px] font-semibold text-slate-700">Full name</span>
-                      <input required type="text" placeholder="Adaeze Okafor" className={input} />
-                    </label>
-                    <label className="block">
-                      <span className="text-[12px] font-semibold text-slate-700">Company</span>
-                      <input required type="text" placeholder="Delta Marine Services Ltd" className={input} />
-                    </label>
-                  </div>
-                  <label className="block">
-                    <span className="text-[12px] font-semibold text-slate-700">Work email</span>
-                    <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ops@company.com" className={input} />
-                  </label>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="text-[12px] font-semibold text-slate-700">Your business</span>
-                      <select className={input}>
-                        <option>Multi-service contractor</option>
-                        <option>Bulk haulage</option>
-                        <option>Marine fuel & lubes</option>
-                        <option>Pipeline integrity & NDT</option>
-                        <option>Depot or terminal</option>
-                      </select>
-                    </label>
-                    <label className="block">
-                      <span className="text-[12px] font-semibold text-slate-700">Pilot KPI</span>
-                      <select className={input}>
-                        <option>Shrinkage %</option>
-                        <option>Turnaround time</option>
-                        <option>Reconciliation time</option>
-                        <option>Permit compliance</option>
-                      </select>
-                    </label>
-                  </div>
-                  <button type="submit" className="btn-green flex h-12 w-full items-center justify-center gap-2 rounded-xl text-[15px] font-bold text-white shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30 transition">
-                    Request pilot
-                  </button>
-                  <p className="text-center text-[11px] text-slate-500">No commitment. Your data stays confidential under NDPA 2023.</p>
-                </form>
-              )}
-            </div>
+            </Reveal>
           </div>
-        </Reveal>
+          <Reveal delay={300}>
+            <SegmentForm id="closing-segment" className="relative mt-8" />
+            <p className="font-label relative mt-5 text-[12px] text-slate-500">Google Meet · Zoom · Teams · WhatsApp · On-site</p>
+          </Reveal>
+        </div>
       </section>
 
-      <footer className="border-t border-slate-200 bg-slate-50/70">
-        <div className="mx-auto grid max-w-[1240px] gap-10 px-5 py-14 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <footer className="px-5 pb-10 pt-12 sm:px-8 lg:px-10">
+        <div className="mx-auto grid max-w-[1360px] gap-12 md:grid-cols-[1.2fr_1fr_1fr_1fr]">
           <div>
-            <div className="flex items-center gap-3">
-              <LogoMark size={34} />
+            <Link href="#top" className="flex items-center gap-3" aria-label="Offshora home">
+              <LogoMark size={40} />
               <Wordmark />
-            </div>
-            <p className="mt-5 max-w-xs text-[13px] leading-relaxed text-slate-600">
-              <span className="font-semibold text-slate-900">Every litre, every line, on record.</span> One operating system for
-              energy service contractors.
-            </p>
+            </Link>
+            <p className="mt-6 max-w-[280px] text-[15px] text-[#0a0f14]">{BRAND.tagline}</p>
+            <p className="mt-2 max-w-[300px] text-[13.5px] leading-relaxed text-slate-500">One operating system for the contractors who move energy.</p>
           </div>
-          {[
-            { h: "Modules", l: ["BunkerFlow", "PipeIntegrity", "RefineryLink", "HaulTrac", "EPC-Link", "SafePass"] },
-            { h: "More modules", l: ["MarineStores", "TankWorks", "Compliance Shield", "Billing", "Client Portal", "Owner Dashboard"] },
-            { h: "Company", l: ["Platform", "Compliance", "Pricing", "Roadmap", "Security", "Contact"] },
-          ].map((c) => (
+          {columns.map((c) => (
             <div key={c.h}>
-              <p className="text-[11.5px] font-bold uppercase tracking-[0.16em] text-slate-400">{c.h}</p>
-              <ul className="mt-4 space-y-2.5">
-                {c.l.map((x) => (
-                  <li key={x}>
-                    <a
-                      href={c.h === "Company" ? `#${x === "Platform" ? "platform" : x.toLowerCase()}` : "#modules"}
-                      className="text-[13px] text-slate-600 transition hover:text-emerald-600"
-                    >
-                      {x}
+              <p className="font-display text-[2rem] leading-none text-slate-500">{c.h}</p>
+              <ul className="mt-7 space-y-3.5">
+                {c.l.map(([label, href]) => (
+                  <li key={label}>
+                    <a href={href} className="text-[15px] text-slate-700 transition hover:text-emerald-600">
+                      {label}
                     </a>
                   </li>
                 ))}
@@ -164,16 +109,11 @@ export function Closing() {
             </div>
           ))}
         </div>
-        <div className="border-t border-slate-200/80">
-          <div className="mx-auto flex max-w-[1240px] flex-col gap-2 px-5 py-6 text-[12px] text-slate-500 sm:px-8 md:flex-row md:items-center md:justify-between">
-            <p>© {new Date().getFullYear()} {BRAND_FULL}. {BRAND.tagline}</p>
-            <p className="text-slate-400">
-              NDPA 2023 · ISO 27001 readiness · SOC 2 Type II compliant pipeline
-            </p>
-          </div>
+        <div className="mx-auto mt-20 flex max-w-[1360px] flex-col gap-2 border-t border-slate-200 pt-6 text-[13.5px] text-slate-500 md:flex-row md:items-center md:justify-between">
+          <p>© {new Date().getFullYear()} {BRAND.name} · From Lagos</p>
+          <p className="font-label text-[12px] text-slate-400">Personal data handled under the Nigeria Data Protection Act 2023</p>
         </div>
       </footer>
     </>
   );
 }
-

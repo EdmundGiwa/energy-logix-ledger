@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import { useId } from "react";
 import { BRAND } from "@/lib/brand";
 
 type IconProps = SVGProps<SVGSVGElement> & { size?: number };
@@ -410,37 +411,26 @@ export const Icon = {
 };
 
 /**
- * Offshora mark: the "O" of the name framing an offshore platform on open water.
- * Navy-to-teal tile, slate ring, mint platform, emerald sea.
+ * Offshora mark: the "O" is a hand-off loop (emerald arc passing to slate) around an
+ * energy drop with a check: every litre, every hand-off, on record. Deliberately not
+ * offshore-specific so it fits haulage, depots, bunkering, EPC and pipeline work.
  */
 export function LogoMark({ size = 36, className = "" }: { size?: number; className?: string }) {
+  // Unique per instance: a hidden copy (e.g. the desktop-only panel) must not own the gradients.
+  const uid = useId().replace(/:/g, "");
+  const id = (name: string) => `ofx-${name}-${uid}`;
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" className={className} aria-hidden>
       <defs>
-        <linearGradient id="os-tile" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#0b1523" />
-          <stop offset="1" stopColor="#0a3d3a" />
-        </linearGradient>
-        <linearGradient id="os-sea" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#10b981" />
-          <stop offset="1" stopColor="#065f46" />
-        </linearGradient>
-        <clipPath id="os-ring">
-          <circle cx="24" cy="24" r="11.8" />
-        </clipPath>
+        <linearGradient id={id("tile")} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#0b1523"/><stop offset="1" stopColor="#0f2742"/></linearGradient>
+        <linearGradient id={id("arc")} x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#6ee7b7"/><stop offset="1" stopColor="#059669"/></linearGradient>
+        <linearGradient id={id("drop")} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ffffff"/><stop offset="1" stopColor="#a7f3d0"/></linearGradient>
       </defs>
-      <rect x="1" y="1" width="46" height="46" rx="12" fill="url(#os-tile)" stroke="rgba(15,23,42,0.12)" />
-      <g clipPath="url(#os-ring)">
-        <path d="M19 24v6M23 24v6M27 24v6" stroke="#a7f3d0" strokeWidth="1.7" />
-        <path d="M16.5 22.2h15v2.2h-15z" fill="#a7f3d0" />
-        <path d="M18 22.2l2.9-7.4 2.9 7.4z" fill="#a7f3d0" />
-        <path d="M25.6 18.4h5v3.8h-5z" fill="#a7f3d0" />
-        <path d="M28.8 18.4v-3" stroke="#a7f3d0" strokeWidth="1.2" />
-        <path d="M8 28.6q2.5-1.5 5 0t5 0 5 0 5 0 5 0 5 0 5 0V40H8z" fill="url(#os-sea)" />
-        <path d="M8 28.6q2.5-1.5 5 0t5 0 5 0 5 0 5 0 5 0 5 0" fill="none" stroke="#6ee7b7" strokeWidth="1.3" strokeLinecap="round" />
-        <path d="M10 32.6q2.5-1.2 5 0t5 0 5 0 5 0 5 0 5 0" fill="none" stroke="#34d399" strokeWidth="1" strokeLinecap="round" opacity="0.6" />
-      </g>
-      <circle cx="24" cy="24" r="13.6" fill="none" stroke="#e2e8f0" strokeWidth="3.6" />
+      <rect x="1" y="1" width="46" height="46" rx="12" fill={`url(#${id("tile")})`}/>
+      <circle cx="24" cy="24" r="13.5" fill="none" stroke={`url(#${id("arc")})`} strokeWidth="4" strokeLinecap="round" strokeDasharray="54 30.82" transform="rotate(-90 24 24)"/>
+      <circle cx="24" cy="24" r="13.5" fill="none" stroke="#e2e8f0" strokeWidth="4" strokeLinecap="round" strokeDasharray="17.5 67.32" strokeDashoffset="-61" transform="rotate(-90 24 24)"/>
+      <path d="M24 15.6c3.3 4.1 5.5 7.1 5.5 10a5.5 5.5 0 0 1-11 0c0-2.9 2.2-5.9 5.5-10z" fill={`url(#${id("drop")})`}/>
+      <path d="M21.5 25.7l1.8 1.8 3.3-3.5" fill="none" stroke="#047857" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
   );
 }

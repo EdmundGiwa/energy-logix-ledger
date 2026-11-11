@@ -13,6 +13,7 @@ from marine_stores.models import (
     StoreOrderItem,
 )
 from organizations.models import Membership, Organization
+from organizations.testing import enable_modules
 
 User = get_user_model()
 
@@ -23,6 +24,7 @@ class MarineStoresAPITests(APITestCase):
         self.bravo_user = User.objects.create_user(username="marine-bravo@test.local", email="marine-bravo@test.local", password="password")
         self.alpha = Organization.objects.create(name="Alpha Marine Services", slug="alpha-marine")
         self.bravo = Organization.objects.create(name="Bravo Marine Logistics", slug="bravo-marine")
+        enable_modules(self.alpha, self.bravo, modules=["marinestores"])
         Membership.objects.create(user=self.alpha_user, organization=self.alpha, role=Membership.Role.OWNER)
         Membership.objects.create(user=self.bravo_user, organization=self.bravo, role=Membership.Role.OWNER)
         self.client.force_login(self.alpha_user)

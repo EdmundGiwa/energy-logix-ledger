@@ -301,7 +301,7 @@ export function PitchDeck() {
               <span>Download .pptx</span>
             </a>
             <Link
-              href="/register"
+              href="/book-demo"
               className="hero-btn inline-flex min-h-9 items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-extrabold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
             >
               Book 60-Day Pilot <Icon.ArrowUpRight size={14} />

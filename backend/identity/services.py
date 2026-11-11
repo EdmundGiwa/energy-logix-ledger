@@ -12,6 +12,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from core.email import (
+    send_account_invite_email,
     send_password_changed_alert_email,
     send_password_reset_email,
     send_verification_otp_email,
@@ -19,6 +20,8 @@ from core.email import (
 from .models import AuthenticationEvent, EmailVerificationCode, PasswordResetToken
 
 logger = logging.getLogger("ofshora.identity")
+
+INVITE_TTL = timedelta(days=7)
 User = get_user_model()
 
 
@@ -230,9 +233,16 @@ def confirm_password_reset(*, token: str, new_password: str, request=None) -> Us
 
     user = reset_record.user
     validate_password(new_password, user=user)
+    is_invite = reset_record.purpose == PasswordResetToken.Purpose.INVITE
 
     user.set_password(new_password)
-    user.save(update_fields=["password"])
+    update_fields = ["password"]
+    if not user.is_email_verified:
+        # The link was delivered to this address, which proves the user controls it.
+        user.is_email_verified = True
+        user.email_verified_at = timezone.now()
+        update_fields += ["is_email_verified", "email_verified_at"]
+    user.save(update_fields=update_fields)
 
     reset_record.is_used = True
     reset_record.save(update_fields=["is_used"])
@@ -240,16 +250,52 @@ def confirm_password_reset(*, token: str, new_password: str, request=None) -> Us
     # Invalidate any other outstanding reset tokens for this user
     PasswordResetToken.objects.filter(user=user, is_used=False).update(is_used=True)
 
-    send_password_changed_alert_email(
-        user=user,
-        action_description="Your Ofshora account password was successfully reset.",
-    )
+    if not is_invite:
+        send_password_changed_alert_email(
+            user=user,
+            action_description="Your Offshora account password was successfully reset.",
+        )
 
     record_authentication_event(
         request=request,
-        event_type=AuthenticationEvent.EventType.PASSWORD_RESET_SUCCESS,
+        event_type=(
+            AuthenticationEvent.EventType.INVITE_ACCEPTED if is_invite else AuthenticationEvent.EventType.PASSWORD_RESET_SUCCESS
+        ),
         outcome=AuthenticationEvent.Outcome.SUCCESS,
         user=user,
     )
 
     return user
+
+
+def send_account_invite(*, user, organization, invited_by=None) -> bool:
+    """Issue a 7-day set-your-password link for a newly provisioned user and email it.
+
+    Any earlier unused links for the user are revoked, so a resend always leaves exactly
+    one working link.
+    """
+    raw_token = secrets.token_urlsafe(48)
+    with transaction.atomic():
+        PasswordResetToken.objects.filter(user=user, is_used=False).update(is_used=True)
+        PasswordResetToken.objects.create(
+            user=user,
+            token_hash=hash_secret(raw_token),
+            purpose=PasswordResetToken.Purpose.INVITE,
+            expires_at=timezone.now() + INVITE_TTL,
+        )
+        record_authentication_event(
+            request=None,
+            event_type=AuthenticationEvent.EventType.INVITE_SENT,
+            outcome=AuthenticationEvent.Outcome.SUCCESS,
+            user=user,
+            organization=organization,
+        )
+    frontend_base = getattr(settings, "FRONTEND_BASE_URL", "http://localhost:3000").rstrip("/")
+    invite_url = f"{frontend_base}/reset-password?token={raw_token}&invite=1"
+    return send_account_invite_email(
+        user=user,
+        organization=organization,
+        invite_url=invite_url,
+        invited_by=invited_by,
+        expires_in_days=INVITE_TTL.days,
+    )

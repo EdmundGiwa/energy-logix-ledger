@@ -38,50 +38,13 @@ class AuthenticationApiTests(APITestCase):
         response = client.get(reverse("auth-csrf"))
         client.credentials(HTTP_X_CSRFTOKEN=response.data["csrf_token"])
 
-    def test_registration_atomically_creates_owner_and_session(self):
+    def test_public_registration_is_closed(self):
+        """Accounts are invite-only: Offshora staff provision customers after a demo."""
         client = self.csrf_client()
-
-        response = client.post(reverse("auth-register"), self.registration_payload, format="json")
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        user = User.objects.get(email="ada@example.com")
-        organization = Organization.objects.get(name="Delta Energy Services")
-        membership = Membership.objects.get(user=user, organization=organization)
-        self.assertEqual(membership.role, Membership.Role.OWNER)
-        self.assertNotEqual(membership.role, self.registration_payload["job_title"])
-        self.assertTrue(AuthenticationEvent.objects.filter(user=user, event_type="register", outcome="success").exists())
-        self.assertEqual(client.get(reverse("auth-me")).status_code, status.HTTP_200_OK)
-
-        # Verification code was created & email dispatched
-        self.assertTrue(EmailVerificationCode.objects.filter(user=user, is_used=False).exists())
-        self.assertFalse(user.is_email_verified)
-        self.assertGreater(len(mail.outbox), 0)
-        self.assertIn("Ofshora verification code", mail.outbox[0].subject)
-
-    def test_registration_requires_csrf_and_terms(self):
-        no_csrf = APIClient(enforce_csrf_checks=True)
-        self.assertEqual(no_csrf.post(reverse("auth-register"), self.registration_payload, format="json").status_code, status.HTTP_403_FORBIDDEN)
-
-        client = self.csrf_client()
-        payload = {**self.registration_payload, "terms_accepted": False}
-        response = client.post(reverse("auth-register"), payload, format="json")
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(User.objects.count(), 0)
+        response = client.post("/api/v1/auth/register/", self.registration_payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertFalse(User.objects.filter(email="ada@example.com").exists())
         self.assertEqual(Organization.objects.count(), 0)
-
-    def test_duplicate_email_does_not_create_second_organization(self):
-        client = self.csrf_client()
-        self.assertEqual(client.post(reverse("auth-register"), self.registration_payload, format="json").status_code, status.HTTP_201_CREATED)
-        self.refresh_csrf_header(client)
-        client.post(reverse("auth-logout"), format="json")
-        self.refresh_csrf_header(client)
-        response = client.post(
-            reverse("auth-register"),
-            {**self.registration_payload, "organization_name": "Another Company"},
-            format="json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(Organization.objects.count(), 1)
 
     def test_login_refresh_current_user_and_logout(self):
         user = User.objects.create_user(username="owner@example.com", email="owner@example.com", password="Strong-pass-2026!")

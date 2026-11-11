@@ -8,6 +8,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from organizations.models import Membership, Organization
+from organizations.testing import enable_modules
 
 from bunkering.models import BunkerAuditEvent, BunkerDeliveryNote, Nomination, Sounding
 
@@ -22,6 +23,7 @@ class BunkerFlowAPITests(APITestCase):
         self.viewer = User.objects.create_user(username="viewer@alpha.test", email="viewer@alpha.test", password="password")
         self.alpha = Organization.objects.create(name="Alpha Energy", slug="alpha-energy")
         self.bravo = Organization.objects.create(name="Bravo Energy", slug="bravo-energy")
+        enable_modules(self.alpha, self.bravo, modules=["bunkerflow"])
         Membership.objects.create(user=self.owner, organization=self.alpha, role=Membership.Role.OWNER)
         Membership.objects.create(user=self.other_owner, organization=self.bravo, role=Membership.Role.OWNER)
         Membership.objects.create(user=self.viewer, organization=self.alpha, role=Membership.Role.VIEWER)

@@ -35,7 +35,14 @@ class EmailVerificationCode(models.Model):
 
 
 class PasswordResetToken(models.Model):
+    """One-time link to set a password: a reset for existing users, or a first-time invite."""
+
+    class Purpose(models.TextChoices):
+        RESET = "reset", "Password reset"
+        INVITE = "invite", "Account invitation"
+
     public_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    purpose = models.CharField(max_length=20, choices=Purpose.choices, default=Purpose.RESET)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="password_reset_tokens")
     token_hash = models.CharField(max_length=128)
     expires_at = models.DateTimeField()
@@ -62,6 +69,8 @@ class AuthenticationEvent(models.Model):
         EMAIL_VERIFIED = "email_verified", "Email verified"
         PASSWORD_RESET_REQUEST = "pw_reset_req", "Password reset requested"
         PASSWORD_RESET_SUCCESS = "pw_reset_success", "Password reset completed"
+        INVITE_SENT = "invite_sent", "Account invitation sent"
+        INVITE_ACCEPTED = "invite_accepted", "Account invitation accepted"
 
     class Outcome(models.TextChoices):
         SUCCESS = "success", "Success"

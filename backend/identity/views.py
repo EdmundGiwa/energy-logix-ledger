@@ -11,7 +11,6 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from organizations.services import register_organization_owner
 from organizations.db_context import set_tenant_actor
 
 from .models import AuthenticationEvent
@@ -22,7 +21,6 @@ from .serializers import (
     LoginSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
-    RegistrationSerializer,
 )
 from .services import (
     confirm_email_verification_code,
@@ -46,45 +44,6 @@ class CsrfView(APIView):
 
     def get(self, request):
         return Response({"csrf_token": get_token(request)})
-
-
-@method_decorator(csrf_protect, name="dispatch")
-class RegisterView(APIView):
-    authentication_classes = ()
-    permission_classes = (AllowAny,)
-    throttle_scope = "registration"
-
-    def post(self, request):
-        serializer = RegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
-        data.pop("terms_accepted")
-        try:
-            result = register_organization_owner(**data)
-        except IntegrityError:
-            return Response(
-                {"email": ["An account with this email already exists."]},
-                status=status.HTTP_409_CONFLICT,
-            )
-        auth_login(request, result.user)
-        request.session.set_expiry(0)
-        set_tenant_actor(user_id=result.user.pk)
-        record_authentication_event(
-            request=request,
-            event_type=AuthenticationEvent.EventType.REGISTER,
-            outcome=AuthenticationEvent.Outcome.SUCCESS,
-            user=result.user,
-            organization=result.organization,
-        )
-
-        # Automatically dispatch email verification OTP code
-        try:
-            create_and_send_email_verification_otp(result.user, request=request)
-        except Exception:
-            # Failure to send email during registration should not roll back account creation
-            pass
-
-        return Response(session_response(result.user), status=status.HTTP_201_CREATED)
 
 
 @method_decorator(csrf_protect, name="dispatch")

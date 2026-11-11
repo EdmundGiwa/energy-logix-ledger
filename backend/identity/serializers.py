@@ -10,35 +10,6 @@ from organizations.serializers import OrganizationSerializer
 User = get_user_model()
 
 
-class RegistrationSerializer(serializers.Serializer):
-    first_name = serializers.CharField(max_length=150)
-    last_name = serializers.CharField(max_length=150)
-    email = serializers.EmailField(max_length=254)
-    password = serializers.CharField(max_length=128, trim_whitespace=False, write_only=True)
-    organization_name = serializers.CharField(max_length=200)
-    job_title = serializers.CharField(max_length=120)
-    requested_plan = serializers.ChoiceField(choices=Organization.Plan.choices)
-    terms_accepted = serializers.BooleanField()
-
-    def validate_email(self, value):
-        normalized = User.objects.normalize_email(value).strip().lower()
-        if User.objects.filter(email__iexact=normalized).exists():
-            raise serializers.ValidationError("An account with this email already exists.")
-        return normalized
-
-    def validate_terms_accepted(self, value):
-        if not value:
-            raise serializers.ValidationError("You must accept the terms and privacy notice.")
-        return value
-
-    def validate_password(self, value):
-        try:
-            validate_password(value)
-        except DjangoValidationError as exc:
-            raise serializers.ValidationError(list(exc.messages))
-        return value
-
-
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
     password = serializers.CharField(max_length=128, trim_whitespace=False, write_only=True)

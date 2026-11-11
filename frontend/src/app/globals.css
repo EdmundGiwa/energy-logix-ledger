@@ -648,3 +648,182 @@ html:active-view-transition-type(backward)::view-transition-new(pitch-stage) {
     animation: none;
   }
 }
+
+/* ================================================================== */
+/* Landing v2 · editorial grid system                                  */
+/* Light display type, crop-mark frames, hairline rules, blur-in words */
+/* ================================================================== */
+.landing {
+  --l-ink: #0a0f14;
+  --l-muted: #5b6672;
+  --l-line: #e6e9ec;
+  --l-accent: #059669;
+  --l-accent-soft: #ecfdf5;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--l-ink);
+}
+.landing .font-display,
+.font-display {
+  font-family: var(--font-fustat), var(--font-inter), sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  font-feature-settings: "ss01" 1;
+}
+.font-label {
+  font-family: var(--font-dm-mono), ui-monospace, monospace;
+  letter-spacing: 0.02em;
+}
+
+/* Crop-mark corners: four 9px L-marks around an element */
+.corners { position: relative; }
+.corners > .corner {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-color: currentColor;
+  pointer-events: none;
+  opacity: 0.55;
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s ease;
+}
+.corners > .corner.tl { top: 0; left: 0; border-top: 1.2px solid; border-left: 1.2px solid; }
+.corners > .corner.tr { top: 0; right: 0; border-top: 1.2px solid; border-right: 1.2px solid; }
+.corners > .corner.bl { bottom: 0; left: 0; border-bottom: 1.2px solid; border-left: 1.2px solid; }
+.corners > .corner.br { bottom: 0; right: 0; border-bottom: 1.2px solid; border-right: 1.2px solid; }
+.corners-hover:hover > .corner { opacity: 1; }
+.corners-hover:hover > .corner.tl { transform: translate(-3px, -3px); }
+.corners-hover:hover > .corner.tr { transform: translate(3px, -3px); }
+.corners-hover:hover > .corner.bl { transform: translate(-3px, 3px); }
+.corners-hover:hover > .corner.br { transform: translate(3px, 3px); }
+
+/* Hairline section rule with a plus marker at its centre */
+.rule-plus {
+  position: relative;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--l-line, #e6e9ec) 8%, var(--l-line, #e6e9ec) 92%, transparent);
+}
+.rule-plus::after {
+  content: "+";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -54%);
+  font: 300 15px/1 var(--font-inter), sans-serif;
+  color: #0a0f14;
+  background: #fff;
+  padding: 0 6px;
+}
+
+/* Word-by-word blur-in */
+.bw {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(0.18em);
+  transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.9s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: filter, opacity;
+}
+.is-in .bw { opacity: 1; filter: blur(0); transform: none; }
+
+/* Ring bullet used before section kickers */
+.ring-dot {
+  display: inline-grid;
+  place-items: center;
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 999px;
+  border: 0.09em solid #0a0f14;
+  box-shadow: 0 0 0 0.12em #d1fae5;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.ring-dot::after { content: ""; width: 0.2em; height: 0.2em; border-radius: 999px; background: #0a0f14; }
+
+/* Hero wash: soft emerald/teal light with a faint tile pattern */
+.hero-wash {
+  background:
+    radial-gradient(60% 55% at 50% -8%, rgba(16, 185, 129, 0.28), transparent 70%),
+    radial-gradient(38% 42% at 12% 4%, rgba(45, 212, 191, 0.22), transparent 70%),
+    radial-gradient(38% 42% at 90% 6%, rgba(14, 165, 233, 0.16), transparent 70%),
+    #fff;
+}
+.tile-pattern {
+  background-image:
+    linear-gradient(to right, rgba(5, 150, 105, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(5, 150, 105, 0.07) 1px, transparent 1px);
+  background-size: 104px 104px;
+  mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.55) 45%, transparent 85%);
+}
+
+/* Self-drawing decorative curves */
+.draw-path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw-path 2.6s cubic-bezier(0.65, 0, 0.35, 1) 0.3s forwards;
+}
+@keyframes draw-path { to { stroke-dashoffset: 0; } }
+
+/* Infinite horizontal marquee (content duplicated twice) */
+.marquee-track { display: flex; width: max-content; animation: marquee-x 48s linear infinite; }
+.marquee-track:hover { animation-play-state: paused; }
+@keyframes marquee-x { to { transform: translateX(-50%); } }
+.edge-fade {
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+/* Primary CTA: ink pill with emerald arrow block */
+.cta-block {
+  align-items: center;
+  gap: 14px;
+  padding: 6px 18px 6px 6px;
+  background: #f4f6f7;
+  color: #0a0f14;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+.cta-block .arrow {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: #059669;
+  color: #fff;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.cta-block:hover { background: #ecfdf5; }
+.cta-block:hover .arrow { transform: translateX(3px); }
+
+.btn-ink {
+  background: #0a0f14;
+  color: #fff;
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+.btn-ink:hover { background: #047857; }
+.btn-ink:active { transform: scale(0.98); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bw { opacity: 1; filter: none; transform: none; }
+  .draw-path { stroke-dashoffset: 0; animation: none; }
+  .marquee-track { animation: none; }
+}
+
+/* Landing accent words: solid emerald instead of the old ink→emerald gradient */
+.landing .text-gradient {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: #059669;
+}
+
+/* ================================================================== */
+/* Dashboard · same type system as the landing page                   */
+/* ================================================================== */
+.dash {
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+/* Page titles across every module page pick up the light display face. */
+.dash main h1 {
+  font-family: var(--font-fustat), var(--font-inter), sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.045em;
+}

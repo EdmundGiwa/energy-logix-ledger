@@ -8,6 +8,7 @@ from rest_framework.test import APITestCase
 
 from hse.models import Credential, SafetyProcedure, Worker
 from organizations.models import Membership, Organization
+from organizations.testing import enable_modules
 
 
 class SafePassAPITests(APITestCase):
@@ -17,6 +18,7 @@ class SafePassAPITests(APITestCase):
         self.other = User.objects.create_user(username="hse-bravo@test.local", email="hse-bravo@test.local", password="password")
         self.alpha = Organization.objects.create(name="Alpha Energy", slug="hse-alpha")
         self.bravo = Organization.objects.create(name="Bravo Energy", slug="hse-bravo")
+        enable_modules(self.alpha, self.bravo, modules=["safepass"])
         Membership.objects.create(user=self.owner, organization=self.alpha, role=Membership.Role.OWNER)
         Membership.objects.create(user=self.other, organization=self.bravo, role=Membership.Role.OWNER)
         self.client.force_login(self.owner)

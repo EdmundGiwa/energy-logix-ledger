@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "compliance_shield",
     "billing",
     "client_portal",
+    "demo_requests",
     "owner_dashboard",
 ]
 
@@ -133,16 +134,30 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "100/hour",
         "login": "10/minute",
-        "registration": "5/hour",
         "session_refresh": "30/hour",
         "email_verification": "6/hour",
         "password_reset": "5/hour",
+        "demo_request": "5/hour",
+        "module_request": "20/hour",
     },
 }
 
 RESEND_KEY = os.getenv("RESEND_KEY") or os.getenv("RESEND_API_KEY")
-DEFAULT_FROM_EMAIL = "Ofshora <notifications@send.ofshora.com>"
+DEFAULT_FROM_EMAIL = "Offshora <notifications@send.ofshora.com>"
 FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
+# Book-a-Demo calendar. Slot times are in TIMEZONE; WEEKDAYS uses Monday=0.
+# Public holidays are not excluded yet: cancel affected bookings in admin.
+DEMO_BOOKING = {
+    "TIMEZONE": "Africa/Lagos",
+    "WEEKDAYS": [0, 1, 2, 3, 4],
+    "START_TIMES": ["09:00", "10:00", "11:00", "12:00", "14:00", "15:00", "16:00"],
+    "DURATION_MINUTES": 45,
+    "HORIZON_DAYS": 21,
+    "MIN_NOTICE_HOURS": 12,
+    "NOTIFY_EMAILS": env_list("DEMO_REQUEST_NOTIFY_EMAILS", "support@ofshora.com"),
+}
+# Inbox for sales alerts (new module requests). Defaults to the demo-booking inbox.
+SALES_NOTIFY_EMAILS = DEMO_BOOKING["NOTIFY_EMAILS"]
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend" if DEBUG else "django.core.mail.backends.console.EmailBackend"
 
 CORS_ALLOWED_ORIGINS = env_list("DJANGO_CORS_ALLOWED_ORIGINS", "http://localhost:3000")

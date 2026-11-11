@@ -881,7 +881,7 @@ export function SlideVisual({ kind, compact = false }: { kind: SlideVisualKind; 
 
           <div className="grid grid-cols-2 gap-2.5">
             <Link
-              href="/register"
+              href="/book-demo"
               className="hero-btn inline-flex min-h-11 items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-extrabold"
             >
               Start 60-Day Pilot <Icon.Arrow size={14} />

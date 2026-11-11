@@ -9,6 +9,7 @@ from client_portal.models import (
     SharedDeliverablePackage,
 )
 from organizations.models import Membership, Organization
+from organizations.testing import enable_modules
 
 User = get_user_model()
 
@@ -38,6 +39,7 @@ class ClientPortalAPITests(APITestCase):
 
         self.alpha = Organization.objects.create(name="Alpha Marine Energy", slug="alpha-marine")
         self.bravo = Organization.objects.create(name="Bravo Deepwater", slug="bravo-deepwater")
+        enable_modules(self.alpha, self.bravo, modules=["client_portal"])
 
         Membership.objects.create(user=self.alpha_admin, organization=self.alpha, role=Membership.Role.OWNER)
         Membership.objects.create(user=self.alpha_client_user, organization=self.alpha, role=Membership.Role.VIEWER)

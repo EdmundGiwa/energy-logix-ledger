@@ -11,6 +11,7 @@ from epc_link.models import (
     PipeYardItem,
 )
 from organizations.models import Membership, Organization
+from organizations.testing import enable_modules
 
 User = get_user_model()
 
@@ -21,6 +22,7 @@ class EpcLinkAPITests(APITestCase):
         self.bravo_user = User.objects.create_user(username="epc-bravo@test.local", email="epc-bravo@test.local", password="password")
         self.alpha = Organization.objects.create(name="Alpha EPC Solutions Ltd", slug="alpha-epc")
         self.bravo = Organization.objects.create(name="Bravo Engineering Ltd", slug="bravo-epc")
+        enable_modules(self.alpha, self.bravo, modules=["epclink"])
         Membership.objects.create(user=self.alpha_user, organization=self.alpha, role=Membership.Role.OWNER)
         Membership.objects.create(user=self.bravo_user, organization=self.bravo, role=Membership.Role.OWNER)
         self.client.force_login(self.alpha_user)
