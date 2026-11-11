@@ -154,7 +154,7 @@ DEMO_BOOKING = {
     "DURATION_MINUTES": 45,
     "HORIZON_DAYS": 21,
     "MIN_NOTICE_HOURS": 12,
-    "NOTIFY_EMAILS": env_list("DEMO_REQUEST_NOTIFY_EMAILS", "support@ofshora.com"),
+    "NOTIFY_EMAILS": env_list("DEMO_REQUEST_NOTIFY_EMAILS", "support@ofshora.com,eddie@ofshora.com,chukwuka@ofshora.com"),
 }
 # Inbox for sales alerts (new module requests). Defaults to the demo-booking inbox.
 SALES_NOTIFY_EMAILS = DEMO_BOOKING["NOTIFY_EMAILS"]

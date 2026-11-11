@@ -120,7 +120,10 @@ class DemoRequestApiTests(TestCase):
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(mail.outbox[0].to, ["ada@example.com"])
         self.assertIn(demo.reference, mail.outbox[0].subject)
-        self.assertEqual(mail.outbox[1].to, ["support@ofshora.com"])
+        self.assertEqual(
+            mail.outbox[1].to,
+            ["support@ofshora.com", "eddie@ofshora.com", "chukwuka@ofshora.com"],
+        )
         self.assertEqual(mail.outbox[1].reply_to, ["ada@example.com"])
 
     def test_prospect_text_is_escaped_in_emails(self, _now):
