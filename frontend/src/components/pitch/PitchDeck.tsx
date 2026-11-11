@@ -145,7 +145,7 @@ export function PitchDeck() {
     stepSlide(1);
   }, [stepSlide]);
 
-  // Keyboard navigation & shortcuts
+  // Keyboard navigation & shortcuts.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (
