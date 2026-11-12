@@ -38,7 +38,7 @@ services:
       DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-api-staging.ofshora.com,167.172.188.248,localhost,backend}
       DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-https://www.ofshora.com,https://ofshora.com,https://staging.ofshora.com,https://api-staging.ofshora.com}
       DJANGO_CORS_ALLOWED_ORIGINS: ${DJANGO_CORS_ALLOWED_ORIGINS:-https://www.ofshora.com,https://ofshora.com,https://staging.ofshora.com}
-      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-https://staging.ofshora.com}
+      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-https://www.ofshora.com}
       DEMO_REQUEST_NOTIFY_EMAILS: ${DEMO_REQUEST_NOTIFY_EMAILS:-support@ofshora.com,eddie@ofshora.com,chukwuka@ofshora.com}
       RESEND_KEY: ${RESEND_KEY:-}
     depends_on:
