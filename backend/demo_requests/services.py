@@ -190,9 +190,9 @@ def google_calendar_link(demo: DemoRequest) -> str:
     fmt = "%Y%m%dT%H%M%SZ"
     params = {
         "action": "TEMPLATE",
-        "text": f"Offshora demo · {demo.company_name}",
+        "text": f"Ofshora demo · {demo.company_name}",
         "dates": f"{demo.scheduled_start.strftime(fmt)}/{end.strftime(fmt)}",
-        "details": f"Tailored Offshora walkthrough. Reference {demo.reference}.",
+        "details": f"Tailored Ofshora walkthrough. Reference {demo.reference}.",
     }
     return "https://calendar.google.com/calendar/render?" + urlencode(params)
 
@@ -224,7 +224,7 @@ def send_demo_request_emails(demo: DemoRequest) -> None:
       <h1 style="margin:0 0 16px;font-size:23px;font-weight:700;color:#0f172a;line-height:1.3;">Your demo is booked</h1>
       <p style="margin:0 0 20px;font-size:15px;line-height:24px;color:#475569;">Hi {escape(first_name)},</p>
       <p style="margin:0 0 24px;font-size:15px;line-height:24px;color:#475569;">
-        Thanks for booking a walkthrough of Offshora for {escape(demo.company_name)}. We will tailor the session
+        Thanks for booking a walkthrough of Ofshora for {escape(demo.company_name)}. We will tailor the session
         to the modules you picked, and send your meeting link within one business day.
       </p>
       <table role="presentation" width="100%" style="margin:0 0 24px;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;">
@@ -243,15 +243,15 @@ def send_demo_request_emails(demo: DemoRequest) -> None:
     """
     send_transactional_email(
         to=demo.work_email,
-        subject=f"Your Offshora demo is booked · {demo.reference}",
+        subject=f"Your Ofshora demo is booked · {demo.reference}",
         html_content=render_base_email(
-            title="Your Offshora demo is booked",
+            title="Your Ofshora demo is booked",
             preheader=escape(f"{prospect_time} · reference {demo.reference}"),
             body_html=prospect_body,
             recipient_email=escape(demo.work_email),
         ),
         text_content=(
-            f"Your Offshora demo is booked.\n\nReference: {demo.reference}\nWhen: {prospect_time}\n"
+            f"Your Ofshora demo is booked.\n\nReference: {demo.reference}\nWhen: {prospect_time}\n"
             f"Length: {demo.duration_minutes} minutes\nFormat: {meeting}\nModules: {modules}\n\n"
             "We will send your meeting link within one business day.\n"
         ),
@@ -288,7 +288,7 @@ def send_demo_request_emails(demo: DemoRequest) -> None:
         to=list(config.notify_emails),
         subject=f"New demo booked · {demo.company_name} · {demo.reference}",
         html_content=render_base_email(
-            title="New Offshora demo request",
+            title="New Ofshora demo request",
             preheader=escape(f"{demo.company_name} · {team_time}"),
             body_html=sales_body,
             recipient_email=escape(", ".join(config.notify_emails)),

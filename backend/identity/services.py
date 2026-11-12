@@ -253,7 +253,7 @@ def confirm_password_reset(*, token: str, new_password: str, request=None) -> Us
     if not is_invite:
         send_password_changed_alert_email(
             user=user,
-            action_description="Your Offshora account password was successfully reset.",
+            action_description="Your Ofshora account password was successfully reset.",
         )
 
     record_authentication_event(

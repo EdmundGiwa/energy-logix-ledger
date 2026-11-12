@@ -24,7 +24,7 @@ def ensure_module_enabled(request, organization):
         return
     if not organization.module_entitlements.filter(module=module).exists():
         raise ModuleNotEnabled(
-            f"{MODULES[module]} is not part of your Offshora plan. An owner or administrator can request it from the dashboard."
+            f"{MODULES[module]} is not part of your Ofshora plan. An owner or administrator can request it from the dashboard."
         )
 
 

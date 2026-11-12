@@ -57,7 +57,7 @@ class EmailLogTests(TestCase):
     def test_send_transactional_email_creates_email_log(self):
         success = send_transactional_email(
             to="recipient@example.com",
-            subject="Welcome to Offshora",
+            subject="Welcome to Ofshora",
             html_content="<p>Welcome</p>",
             text_content="Welcome",
             email_type="notification",
@@ -66,7 +66,7 @@ class EmailLogTests(TestCase):
 
         log = EmailLog.objects.filter(recipient_email="recipient@example.com").first()
         self.assertIsNotNone(log)
-        self.assertEqual(log.subject, "Welcome to Offshora")
+        self.assertEqual(log.subject, "Welcome to Ofshora")
         self.assertEqual(log.email_type, "notification")
         self.assertEqual(log.status, EmailLog.Status.SENT)
         self.assertEqual(log.provider, "django_test")

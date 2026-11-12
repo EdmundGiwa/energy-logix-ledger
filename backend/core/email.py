@@ -11,7 +11,7 @@ from django.utils import timezone
 
 logger = logging.getLogger("ofshora.email")
 
-DEFAULT_FROM = "Offshora <notifications@send.ofshora.com>"
+DEFAULT_FROM = "Ofshora <notifications@send.ofshora.com>"
 DEFAULT_REPLY_TO = "support@ofshora.com"
 
 
@@ -75,10 +75,10 @@ def render_base_email(
     recipient_email: str = "",
 ) -> str:
     """
-    Renders an email adhering strictly to the Offshora design system:
+    Renders an email adhering strictly to the Ofshora design system:
     - White & slate-50 palette (#ffffff card, #f8fafc backdrop, #e2e8f0 border)
     - Dark navy tile logo (#0b1523) with emerald accents
-    - Clear 'Offshora' typography (no 'Energy OS' in copy)
+    - Clear 'Ofshora' typography (no 'Energy OS' in copy)
     - Fully responsive table layout compatible with Gmail, Apple Mail, Outlook, etc.
     """
     return f"""<!DOCTYPE html>
@@ -119,7 +119,7 @@ def render_base_email(
         
         <table role="presentation" class="email-container" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 580px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05); overflow: hidden;">
           
-          <!-- Header Bar with Offshora Logo -->
+          <!-- Header Bar with Ofshora Logo -->
           <tr>
             <td style="padding: 32px 36px 24px; border-bottom: 1px solid #f1f5f9; background-color: #ffffff;">
               <table role="presentation" border="0" cellpadding="0" cellspacing="0">
@@ -131,7 +131,7 @@ def render_base_email(
                   <!-- Wordmark -->
                   <td valign="middle" style="padding-left: 12px;">
                     <span style="font-size: 19px; font-weight: 800; letter-spacing: 0.04em; color: #0f172a; text-transform: uppercase;">
-                      Off<span style="color: #059669;">shora</span>
+                      Of<span style="color: #059669;">shora</span>
                     </span>
                   </td>
                 </tr>
@@ -165,7 +165,7 @@ def render_base_email(
           <tr>
             <td style="padding: 24px 36px; background-color: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center;">
               <p style="margin: 0 0 6px; font-size: 12px; font-weight: 600; color: #64748b;">
-                © 2026 Offshora. All rights reserved.
+                © 2026 Ofshora. All rights reserved.
               </p>
               <p style="margin: 0; font-size: 11px; color: #94a3b8;">
                 Sent to {recipient_email} • Dedicated sender <span style="font-family: monospace;">send.ofshora.com</span>
@@ -280,7 +280,7 @@ def send_transactional_email(
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
-            "User-Agent": "Offshora-Backend/1.0",
+            "User-Agent": "Ofshora-Backend/1.0",
         },
         method="POST",
     )
@@ -345,8 +345,8 @@ def send_transactional_email(
 def send_verification_otp_email(*, user, code: str) -> bool:
     """Dispatches a 6-digit verification code to the user."""
     first_name = user.first_name or "there"
-    title = f"Your Offshora verification code: {code}"
-    preheader = f"Use verification code {code} to confirm your Offshora account."
+    title = f"Your Ofshora verification code: {code}"
+    preheader = f"Use verification code {code} to confirm your Ofshora account."
 
     body_html = f"""
       <h1 style="margin: 0 0 16px; font-size: 23px; font-weight: 700; color: #0f172a; line-height: 1.3;">
@@ -356,7 +356,7 @@ def send_verification_otp_email(*, user, code: str) -> bool:
         Hi {first_name},
       </p>
       <p style="margin: 0 0 28px; font-size: 15px; line-height: 24px; color: #475569;">
-        Welcome to Offshora. Please use the verification code below to verify your email address and activate your account:
+        Welcome to Ofshora. Please use the verification code below to verify your email address and activate your account:
       </p>
 
       <!-- OTP Box -->
@@ -374,7 +374,7 @@ def send_verification_otp_email(*, user, code: str) -> bool:
       </table>
 
       <p style="margin: 0; font-size: 14px; line-height: 22px; color: #64748b;">
-        Never share this code with anyone. Offshora representatives will never ask you for your verification code.
+        Never share this code with anyone. Ofshora representatives will never ask you for your verification code.
       </p>
     """
 
@@ -382,7 +382,7 @@ def send_verification_otp_email(*, user, code: str) -> bool:
 
 Hi {first_name},
 
-Welcome to Offshora. Your one-time verification code is:
+Welcome to Ofshora. Your one-time verification code is:
 
 {code}
 
@@ -412,8 +412,8 @@ If you did not request this, contact support@ofshora.com.
 def send_password_reset_email(*, user, reset_url: str) -> bool:
     """Dispatches a password reset link to the user."""
     first_name = user.first_name or "there"
-    title = "Reset your Offshora password"
-    preheader = "Click the link inside to set a new password for your Offshora account."
+    title = "Reset your Ofshora password"
+    preheader = "Click the link inside to set a new password for your Ofshora account."
 
     body_html = f"""
       <h1 style="margin: 0 0 16px; font-size: 23px; font-weight: 700; color: #0f172a; line-height: 1.3;">
@@ -423,7 +423,7 @@ def send_password_reset_email(*, user, reset_url: str) -> bool:
         Hi {first_name},
       </p>
       <p style="margin: 0 0 28px; font-size: 15px; line-height: 24px; color: #475569;">
-        We received a request to reset the password for your Offshora account. Click the button below to choose a new password:
+        We received a request to reset the password for your Ofshora account. Click the button below to choose a new password:
       </p>
 
       <!-- Action Button -->
@@ -450,7 +450,7 @@ def send_password_reset_email(*, user, reset_url: str) -> bool:
 
 Hi {first_name},
 
-We received a request to reset the password for your Offshora account.
+We received a request to reset the password for your Ofshora account.
 
 Reset link: {reset_url}
 
@@ -476,7 +476,7 @@ If you did not request this, no action is needed. Your account remains secure.
     )
 
 
-def send_password_changed_alert_email(*, user, action_description: str = "Your Offshora account password was successfully reset or changed.") -> bool:
+def send_password_changed_alert_email(*, user, action_description: str = "Your Ofshora account password was successfully reset or changed.") -> bool:
     """Dispatches a password change notification email."""
     return send_security_alert_email(
         user=user,
@@ -487,8 +487,8 @@ def send_password_changed_alert_email(*, user, action_description: str = "Your O
 def send_security_alert_email(*, user, action_description: str) -> bool:
     """Dispatches an account security notification (e.g. password changed)."""
     first_name = user.first_name or "there"
-    title = "Security Alert: Offshora account update"
-    preheader = f"Notice: {action_description} on your Offshora account."
+    title = "Security Alert: Ofshora account update"
+    preheader = f"Notice: {action_description} on your Ofshora account."
 
     body_html = f"""
       <h1 style="margin: 0 0 16px; font-size: 23px; font-weight: 700; color: #0f172a; line-height: 1.3;">
@@ -545,14 +545,14 @@ def send_account_invite_email(*, user, organization, invite_url: str, invited_by
     first_name = escape(user.first_name or "there")
     org_name = escape(organization.name)
     modules = ", ".join(escape(MODULES[m]) for m in sorted(enabled_modules(organization), key=lambda k: MODULES[k]))
-    title = f"Your Offshora workspace for {organization.name} is ready"
+    title = f"Your Ofshora workspace for {organization.name} is ready"
     body_html = f"""
       <h1 style="margin: 0 0 16px; font-size: 23px; font-weight: 700; color: #0f172a; line-height: 1.3;">
-        Welcome to Offshora
+        Welcome to Ofshora
       </h1>
       <p style="margin: 0 0 20px; font-size: 15px; line-height: 24px; color: #475569;">Hi {first_name},</p>
       <p style="margin: 0 0 20px; font-size: 15px; line-height: 24px; color: #475569;">
-        Your Offshora workspace for <strong style="color:#0f172a;">{org_name}</strong> is set up. You are its owner, so you can invite your team once you are in.
+        Your Ofshora workspace for <strong style="color:#0f172a;">{org_name}</strong> is set up. You are its owner, so you can invite your team once you are in.
       </p>
       <p style="margin: 0 0 24px; font-size: 14px; line-height: 22px; color: #475569;">
         <span style="color:#64748b;">Modules switched on:</span><br>
@@ -566,8 +566,8 @@ def send_account_invite_email(*, user, organization, invite_url: str, invited_by
       </p>
     """
     text_content = (
-        f"Welcome to Offshora\n\nHi {user.first_name or 'there'},\n\n"
-        f"Your Offshora workspace for {organization.name} is ready.\n\n"
+        f"Welcome to Ofshora\n\nHi {user.first_name or 'there'},\n\n"
+        f"Your Ofshora workspace for {organization.name} is ready.\n\n"
         f"Set your password (expires in {expires_in_days} days):\n{invite_url}\n"
     )
     return send_transactional_email(

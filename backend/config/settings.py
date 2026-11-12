@@ -143,7 +143,7 @@ REST_FRAMEWORK = {
 }
 
 RESEND_KEY = os.getenv("RESEND_KEY") or os.getenv("RESEND_API_KEY")
-DEFAULT_FROM_EMAIL = "Offshora <notifications@send.ofshora.com>"
+DEFAULT_FROM_EMAIL = "Ofshora <notifications@send.ofshora.com>"
 FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
 # Book-a-Demo calendar. Slot times are in TIMEZONE; WEEKDAYS uses Monday=0.
 # Public holidays are not excluded yet: cancel affected bookings in admin.
