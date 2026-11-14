@@ -1,5 +1,8 @@
 import { ModulePage } from "@/components/dashboard/ModulePage";
 
+// Sample records only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 export default function MarineGuardPage() {
   return (
     <ModulePage
@@ -13,7 +16,7 @@ export default function MarineGuardPage() {
         { label: "High-risk Routes", value: "3", sub: "Escort mandatory" },
         { label: "Open Incidents", value: "1", sub: "Suspicious approach" },
       ]}
-      initialRecords={[
+      initialRecords={!DEMO_DATA_ENABLED ? [] : [
         {
           id: "VRA-2026-0208",
           title: "Voyage Risk Assessment: Onne → Bonny Offshore Terminal",

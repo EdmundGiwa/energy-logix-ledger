@@ -1,5 +1,8 @@
 import { ModulePage } from "@/components/dashboard/ModulePage";
 
+// Sample records only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 export default function EquipTrackPage() {
   return (
     <ModulePage
@@ -13,7 +16,7 @@ export default function EquipTrackPage() {
         { label: "Certs Due", value: "38", sub: "Within 30 days" },
         { label: "Rental Exposure", value: "$61k", sub: "Idle equipment, 30 d" },
       ]}
-      initialRecords={[
+      initialRecords={!DEMO_DATA_ENABLED ? [] : [
         {
           id: "EQP-2026-1420",
           title: "Rental: Wireline Pressure Control Equipment",

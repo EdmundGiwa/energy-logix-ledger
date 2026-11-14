@@ -1,5 +1,8 @@
 import { ModulePage } from "@/components/dashboard/ModulePage";
 
+// Sample records only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 export default function VesselOpsPage() {
   return (
     <ModulePage
@@ -13,7 +16,7 @@ export default function VesselOpsPage() {
         { label: "Off-hire Days", value: "6.5", sub: "Breakdown & dry-dock" },
         { label: "Certs Expiring", value: "4", sub: "Within 60 days" },
       ]}
-      initialRecords={[
+      initialRecords={!DEMO_DATA_ENABLED ? [] : [
         {
           id: "DVR-2026-3310",
           title: "Daily Vessel Report: AHTS Niger Titan",

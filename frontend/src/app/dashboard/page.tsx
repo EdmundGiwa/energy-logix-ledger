@@ -9,19 +9,26 @@ import { useEntitlements } from "@/components/dashboard/Entitlements";
 import { moduleNav } from "@/components/dashboard/Sidebar";
 import { useAuth } from "@/components/auth/AuthProvider";
 import {
+  ApiError,
   ExecutiveExceptionAlert,
   ExecutiveKpiSnapshot,
   ownerDashboardApi,
 } from "@/lib/api";
 
+// Sample (dummy) data only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+// Read process.env directly in this module so live builds strip the sample data from the bundle.
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 type IconC = ComponentType<{ size?: number; className?: string }>;
 type Tone = "ok" | "warn" | "crit" | "info";
 type Currency = "NGN" | "USD";
+type Load<T> = { status: "loading" } | { status: "ready"; data: T } | { status: "error"; message: string };
 
-const FX = 1480; // ₦ per $1, today's rate snapshot (matches the status bar)
+const FX = 1480; // Sample-data only: ₦ per $1 used to convert the sample USD figures below.
 
 /* ------------------------------------------------------------------ */
-/* Mock data                                                           */
+/* Sample data: rendered only when NEXT_PUBLIC_DEMO_DATA=true          */
+/* Never used as a fallback for live data.                            */
 /* ------------------------------------------------------------------ */
 
 const receivablesUsd = 689_372;
@@ -119,27 +126,65 @@ function money(usd: number, cur: Currency) {
     : "₦" + Math.round(usd * FX).toLocaleString("en-US");
 }
 
+/** Formats integer minor units (kobo / cents; both currencies use two decimal places). */
+function minorMoney(minor: number, cur: Currency) {
+  return (minor / 100).toLocaleString("en-US", { style: "currency", currency: cur, currencyDisplay: "narrowSymbol" });
+}
+
+function loadErrorMessage(err: unknown) {
+  if (err instanceof ApiError && err.status === 403) return "You do not have access to this data.";
+  return "Live data could not be loaded.";
+}
+
+function EmptyState({ title, desc }: { title: string; desc?: string }) {
+  return (
+    <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-[#f6f7f9] px-4 py-8 text-center">
+      <p className="text-[13.5px] font-medium text-slate-700">{title}</p>
+      {desc && <p className="mt-1 text-[12px] text-slate-500">{desc}</p>}
+    </div>
+  );
+}
+
+/** Shared live KPI request for the receivables card and KPI grid. */
+function useLiveKpis(cur: Currency): Load<ExecutiveKpiSnapshot> {
+  const [state, setState] = useState<Load<ExecutiveKpiSnapshot>>({ status: "loading" });
+  useEffect(() => {
+    if (DEMO_DATA_ENABLED) return;
+    let active = true;
+    ownerDashboardApi.kpis(cur).then(
+      (data) => active && setState({ status: "ready", data }),
+      (err: unknown) => active && setState({ status: "error", message: loadErrorMessage(err) }),
+    );
+    return () => {
+      active = false;
+    };
+  }, [cur]);
+  return state;
+}
+
 /* ------------------------------------------------------------------ */
 /* Sections                                                            */
 /* ------------------------------------------------------------------ */
 
-function Receivables() {
-  const [cur, setCur] = useState<Currency>("USD");
-  const [liveKpis, setLiveKpis] = useState<ExecutiveKpiSnapshot | null>(null);
+function Receivables({ cur, setCur, kpis }: { cur: Currency; setCur: (c: Currency) => void; kpis: Load<ExecutiveKpiSnapshot> }) {
+  const live = kpis.status === "ready" ? kpis.data : null;
+  const displayReceivables = DEMO_DATA_ENABLED
+    ? money(receivablesUsd, cur)
+    : live
+      ? minorMoney(live.outstanding_receivables_minor, live.currency)
+      : kpis.status === "loading"
+        ? "…"
+        : "—";
 
-  useEffect(() => {
-    let active = true;
-    ownerDashboardApi.kpis(cur).then((data) => {
-      if (active) setLiveKpis(data);
-    }).catch(() => {});
-    return () => { active = false; };
-  }, [cur]);
-
-  const displayReceivables = liveKpis && liveKpis.outstanding_receivables_minor > 0
-    ? (cur === "USD"
-        ? (liveKpis.outstanding_receivables_minor / 100).toLocaleString("en-US", { style: "currency", currency: "USD" })
-        : "₦" + Math.round(liveKpis.outstanding_receivables_minor / 100).toLocaleString("en-US"))
-    : money(receivablesUsd, cur);
+  const ledgerTiles: { key: string; flag?: string; label: string; value: string; note: string; status: string; tone: Tone }[] = DEMO_DATA_ENABLED
+    ? ledgers.map((l) => ({ key: l.cur, flag: l.flag, label: l.cur, value: l.native, note: l.note, status: l.status, tone: l.tone }))
+    : live
+      ? [
+          { key: "billed", label: "Billed", value: minorMoney(live.gross_billed_minor, live.currency), note: "Excludes cancelled invoices", status: live.currency, tone: "info" },
+          { key: "collected", label: "Collected", value: minorMoney(live.collected_minor, live.currency), note: "Recorded payment receipts", status: live.currency, tone: "ok" },
+          { key: "retention", label: "IPC retention", value: minorMoney(live.ipc_retention_held_minor, live.currency), note: "Retention held on IPCs", status: "Held", tone: "warn" },
+        ]
+      : [];
 
   return (
     <Card>
@@ -150,7 +195,17 @@ function Receivables() {
             {displayReceivables}
           </p>
           <p className="mt-3 flex items-center gap-2 text-[13px] text-slate-500">
-            <Delta value="5%" good up /> than last month
+            {DEMO_DATA_ENABLED ? (
+              <>
+                <Delta value="5%" good up /> than last month
+              </>
+            ) : live ? (
+              <>Issued, partially paid and overdue invoices · as of {live.as_of_date}</>
+            ) : kpis.status === "error" ? (
+              kpis.message
+            ) : (
+              "Loading…"
+            )}
           </p>
         </div>
         <div className="flex rounded-full border border-slate-200 p-0.5" role="group" aria-label="Currency">
@@ -180,27 +235,80 @@ function Receivables() {
       <div className="mt-4 rounded-[22px] bg-[#f6f7f9] p-3">
         <p className="px-1 text-[13px] text-slate-700">
           Ledgers <span className="mx-1.5 text-slate-300">|</span>
-          <span className="text-slate-500">₦ / $ with rate snapshot · $1 = ₦{FX.toLocaleString()}</span>
+          <span className="text-slate-500">
+            {DEMO_DATA_ENABLED ? `₦ / $ with rate snapshot · $1 = ₦${FX.toLocaleString()}` : `${cur} invoices only · no currency conversion`}
+          </span>
         </p>
-        <div className="mt-3 grid gap-2 sm:grid-cols-3">
-          {ledgers.map((l) => (
-            <div key={l.cur} className="rounded-2xl bg-white p-3">
-              <p className="flex items-center gap-1.5 text-[13px] font-medium text-slate-800">
-                <span className="grid h-5 w-5 place-items-center rounded-full bg-slate-100 text-[11px] font-bold text-slate-700">{l.flag}</span>
-                {l.cur}
-              </p>
-              <p className="mt-2 truncate text-[14px] font-semibold text-slate-900">{l.native}</p>
-              <p className="mt-0.5 truncate text-[10.5px] text-slate-400">{l.note}</p>
-              <p className={`mt-2 text-[11.5px] font-medium ${toneText[l.tone]}`}>{l.status}</p>
-            </div>
-          ))}
-        </div>
+        {ledgerTiles.length === 0 ? (
+          <p className="px-1 py-6 text-center text-[12.5px] text-slate-500">{kpis.status === "loading" ? "Loading…" : "No ledger data available."}</p>
+        ) : (
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            {ledgerTiles.map((l) => (
+              <div key={l.key} className="rounded-2xl bg-white p-3">
+                <p className="flex items-center gap-1.5 text-[13px] font-medium text-slate-800">
+                  {l.flag && <span className="grid h-5 w-5 place-items-center rounded-full bg-slate-100 text-[11px] font-bold text-slate-700">{l.flag}</span>}
+                  {l.label}
+                </p>
+                <p className="mt-2 truncate text-[14px] font-semibold text-slate-900">{l.value}</p>
+                <p className="mt-0.5 truncate text-[10.5px] text-slate-400">{l.note}</p>
+                <p className={`mt-2 text-[11.5px] font-medium ${toneText[l.tone]}`}>{l.status}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </Card>
   );
 }
 
-function KpiGrid() {
+function KpiGrid({ snapshot }: { snapshot: Load<ExecutiveKpiSnapshot> }) {
+  if (DEMO_DATA_ENABLED) return <SampleKpiGrid />;
+  if (snapshot.status !== "ready") {
+    return (
+      <Card delay={0.05}>
+        <p className="text-[17px] font-semibold tracking-tight text-slate-900">Operations at a glance</p>
+        <EmptyState title={snapshot.status === "loading" ? "Loading…" : snapshot.message} />
+      </Card>
+    );
+  }
+  // Only fields the backend actually computes. Delivered tonnage, shrinkage, turnaround and
+  // reconciliation rate are not yet calculated server-side, so they are not shown in live mode.
+  const s = snapshot.data;
+  const tiles: { label: string; value: number; sub: string; icon: IconC; hero?: boolean }[] = [
+    { label: "Active field jobs", value: s.active_field_jobs_count, sub: "TankWorks and PipeIntegrity", icon: Icon.Wrench, hero: true },
+    { label: "Critical risk items", value: s.critical_risk_items_count, sub: "Expiring ≤ 7 d or major NCRs", icon: Icon.Shield },
+    { label: "Warning risk items", value: s.warning_risk_items_count, sub: "Expiring within 30 d", icon: Icon.Clock },
+  ];
+  return (
+    <Card delay={0.05} className="grid grid-cols-2 gap-3 p-3">
+      {tiles.map((k) => {
+        const I = k.icon;
+        return (
+          <div
+            key={k.label}
+            className={`relative flex flex-col justify-between overflow-hidden rounded-[22px] p-4 ${
+              k.hero ? "col-span-2 bg-gradient-to-br from-emerald-500 to-emerald-700 text-white shadow-[0_18px_40px_-18px_rgba(5,150,105,0.8)]" : "bg-[#f6f7f9]"
+            }`}
+          >
+            {k.hero && <CardContours className="opacity-[0.18]" seed={1.5} />}
+            <div className="relative flex items-center justify-between gap-2">
+              <p className={`text-[14px] ${k.hero ? "text-white/90" : "text-slate-700"}`}>{k.label}</p>
+              <span className={`grid h-9 w-9 place-items-center rounded-full ${k.hero ? "bg-white/20 text-white" : "bg-slate-200/70 text-slate-700"}`}>
+                <I size={16} />
+              </span>
+            </div>
+            <p className={`relative mt-6 text-[30px] font-semibold leading-none tracking-tight ${k.hero ? "text-white" : "text-slate-900"}`}>{k.value.toLocaleString("en-US")}</p>
+            <p className={`relative mt-3 text-[12.5px] ${k.hero ? "text-white/80" : "text-slate-500"}`}>
+              {k.sub} · as of {s.as_of_date}
+            </p>
+          </div>
+        );
+      })}
+    </Card>
+  );
+}
+
+function SampleKpiGrid() {
   return (
     <Card delay={0.05} className="grid grid-cols-2 gap-3 p-3">
       {kpis.map((k, i) => {
@@ -241,6 +349,15 @@ function KpiGrid() {
 function MarginChart() {
   const [hover, setHover] = useState<number | null>(null);
   const max = 50;
+  if (!DEMO_DATA_ENABLED) {
+    return (
+      <Card delay={0.1}>
+        <p className="text-[19px] font-semibold tracking-tight text-slate-900">Job margin</p>
+        <p className="mt-1 text-[13px] text-slate-500">Revenue split across all modules</p>
+        <EmptyState title="No margin data yet" desc="Job costing is not connected to the dashboard yet." />
+      </Card>
+    );
+  }
   return (
     <Card delay={0.1}>
       <p className="text-[19px] font-semibold tracking-tight text-slate-900">Job margin</p>
@@ -314,6 +431,19 @@ function Readiness() {
   const cleared = 197;
   const total = 214;
   const pct = (cleared / total) * 100;
+  if (!DEMO_DATA_ENABLED) {
+    return (
+      <Card delay={0.15}>
+        <div className="flex items-center justify-between">
+          <p className="text-[17px] font-semibold tracking-tight text-slate-900">Crew certificate readiness</p>
+          <Link href="/dashboard/safe-pass" className="text-[12.5px] font-medium text-emerald-700 hover:text-emerald-800">
+            View crew
+          </Link>
+        </div>
+        <EmptyState title="No readiness data yet" desc="Open SafePass to see workers and credentials." />
+      </Card>
+    );
+  }
   return (
     <Card delay={0.15}>
       <div className="flex items-center justify-between">
@@ -366,8 +496,9 @@ function Fleet() {
           + Add asset
         </Link>
       </div>
-      <div className="no-scrollbar -mx-5 mt-4 flex snap-x gap-3 overflow-x-auto px-5 pb-1">
-        {fleet.map((f) => {
+      {!DEMO_DATA_ENABLED && <EmptyState title="No assets to show yet" desc="Fleet and asset status is not connected to the dashboard yet." />}
+      <div className="no-scrollbar -mx-5 mt-4 flex snap-x gap-3 overflow-x-auto px-5 pb-1 empty:hidden">
+        {(DEMO_DATA_ENABLED ? fleet : []).map((f) => {
           const FI = f.icon;
           const light = f.theme === "light";
           return (
@@ -395,17 +526,20 @@ function Fleet() {
   );
 }
 
+// There is no cross-module records feed yet, so live mode starts empty.
+const recordSource: Row[] = DEMO_DATA_ENABLED ? rows : [];
+
 function Records() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("All");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set(["PIG-2026-0117"]));
+  const [selected, setSelected] = useState<Set<string>>(new Set(DEMO_DATA_ENABLED ? ["PIG-2026-0117"] : []));
   const [menu, setMenu] = useState<string | null>(null);
 
-  const statuses = ["All", ...Array.from(new Set(rows.map((r) => r.status)))];
+  const statuses = ["All", ...Array.from(new Set(recordSource.map((r) => r.status)))];
   const list = useMemo(
     () =>
-      rows.filter(
+      recordSource.filter(
         (r) =>
           (status === "All" || r.status === status) &&
           (q.trim() === "" || `${r.id} ${r.activity} ${r.module}`.toLowerCase().includes(q.trim().toLowerCase()))
@@ -517,7 +651,7 @@ function Records() {
             {list.length === 0 && (
               <tr>
                 <td colSpan={7} className="py-10 text-center text-slate-400">
-                  No records match.
+                  {recordSource.length === 0 ? "No records yet. Records created in your modules will appear here once a cross-module feed is available." : "No records match."}
                 </td>
               </tr>
             )}
@@ -580,27 +714,39 @@ function Records() {
 
 function ExceptionFeed() {
   const [liveExceptions, setLiveExceptions] = useState<ExecutiveExceptionAlert[]>([]);
+  const [loadState, setLoadState] = useState<"loading" | "ready" | "error">(DEMO_DATA_ENABLED ? "ready" : "loading");
+  const [loadError, setLoadError] = useState("");
+  const [ackError, setAckError] = useState("");
 
   useEffect(() => {
+    if (DEMO_DATA_ENABLED) return;
     let active = true;
-    ownerDashboardApi.exceptions("is_acknowledged=false").then((res) => {
-      if (active && res.results && res.results.length > 0) {
-        setLiveExceptions(res.results);
-      }
-    }).catch(() => {});
+    ownerDashboardApi.exceptions("is_acknowledged=false").then(
+      (res) => {
+        if (!active) return;
+        setLiveExceptions(res.results ?? []);
+        setLoadState("ready");
+      },
+      (err: unknown) => {
+        if (!active) return;
+        setLoadError(loadErrorMessage(err));
+        setLoadState("error");
+      },
+    );
     return () => { active = false; };
   }, []);
 
   const handleAcknowledge = async (id: string) => {
+    setAckError("");
     try {
       await ownerDashboardApi.acknowledgeException(id);
       setLiveExceptions((prev) => prev.filter((item) => item.public_id !== id));
-    } catch {
-      // Ignored
+    } catch (err) {
+      setAckError(err instanceof ApiError ? err.message : "The exception could not be acknowledged.");
     }
   };
 
-  const list = liveExceptions.length > 0
+  const list = !DEMO_DATA_ENABLED
     ? liveExceptions.map((ex) => ({
         id: ex.public_id,
         tone: (ex.severity === "crit" ? "crit" : ex.severity === "warn" ? "warn" : "info") as Tone,
@@ -616,10 +762,14 @@ function ExceptionFeed() {
       <div className="flex items-center justify-between">
         <p className="text-[17px] font-semibold tracking-tight text-slate-900">Exception feed</p>
         <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[12px] font-semibold text-rose-600">
-          {list.length} open
+          {loadState === "ready" ? `${list.length} open` : "—"}
         </span>
       </div>
-      <div className="mt-4 space-y-2">
+      {ackError && <p className="mt-3 rounded-xl bg-rose-50 px-3 py-2 text-[12px] text-rose-700">{ackError}</p>}
+      {loadState === "loading" && <EmptyState title="Loading…" />}
+      {loadState === "error" && <EmptyState title={loadError} />}
+      {loadState === "ready" && list.length === 0 && <EmptyState title="No open exceptions" desc="New alerts from your modules will appear here." />}
+      <div className="mt-4 space-y-2 empty:hidden">
         {list.map((e) => (
           <div key={e.id} className="flex items-start justify-between gap-3 rounded-2xl bg-[#f6f7f9] p-3 transition hover:bg-slate-100">
             <Link href={e.href} className="flex items-start gap-3 min-w-0 flex-1">
@@ -658,8 +808,9 @@ function Renewals() {
         </Link>
       </div>
       <p className="mt-1 text-[12.5px] text-slate-500">Alerts at 90, 60, 30 and 7 days</p>
-      <div className="mt-4 space-y-2">
-        {renewals.map((r) => {
+      {!DEMO_DATA_ENABLED && <EmptyState title="No renewals to show here yet" desc="Open Compliance Shield to see your certificates and expiry dates." />}
+      <div className="mt-4 space-y-2 empty:hidden">
+        {(DEMO_DATA_ENABLED ? renewals : []).map((r) => {
           const tone: Tone = r.days <= 7 ? "crit" : r.days <= 30 ? "warn" : "ok";
           const pct = Math.max(0.06, 1 - r.days / 90);
           return (
@@ -694,6 +845,15 @@ function Renewals() {
 
 function Devices() {
   const queued = 12;
+  if (!DEMO_DATA_ENABLED) {
+    return (
+      <Card delay={0.35}>
+        <p className="text-[17px] font-semibold tracking-tight text-slate-900">Field devices</p>
+        <p className="mt-1 text-[12.5px] text-slate-500">Offline-first · delta sync on reconnect</p>
+        <EmptyState title="No field devices registered" desc="Device registration and offline sync are not available yet." />
+      </Card>
+    );
+  }
   return (
     <Card delay={0.35}>
       <div className="flex items-center justify-between">
@@ -735,6 +895,8 @@ export default function DashboardPage() {
   const { enabled } = useEntitlements();
   const mine = moduleNav.filter((m) => m.module && enabled.has(m.module));
   const primary = mine.find((m) => !["compliance_shield", "billing", "owner_dashboard"].includes(m.module ?? ""));
+  const [cur, setCur] = useState<Currency>("USD");
+  const liveKpis = useLiveKpis(cur);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -766,8 +928,12 @@ export default function DashboardPage() {
               try {
                 const job = await ownerDashboardApi.createExport({ report_type: "executive_brief", file_format: "pdf" });
                 alert(`Board Operations Briefing generated successfully!\nSHA-256 Seal: ${job.download_checksum.slice(0, 32)}...\nSize: ${(job.file_size_bytes / (1024 * 1024)).toFixed(1)} MB`);
-              } catch {
-                alert("Packaging signed Executive Board Brief with SHA-256 audit seal...");
+              } catch (err) {
+                alert(
+                  DEMO_DATA_ENABLED
+                    ? "Packaging signed Executive Board Brief with SHA-256 audit seal..."
+                    : `The board brief could not be generated. ${err instanceof ApiError ? err.message : "Please try again."}`,
+                );
               }
             }}
             className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[14px] text-[#0a0f14] transition hover:border-slate-300"
@@ -802,8 +968,8 @@ export default function DashboardPage() {
       </nav>
 
       <div className="grid gap-4 xl:grid-cols-[0.95fr_1fr_1fr]">
-        <Receivables />
-        <KpiGrid />
+        <Receivables cur={cur} setCur={setCur} kpis={liveKpis} />
+        <KpiGrid snapshot={liveKpis} />
         <MarginChart />
       </div>
 

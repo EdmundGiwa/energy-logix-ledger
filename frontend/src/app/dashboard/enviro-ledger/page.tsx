@@ -1,5 +1,8 @@
 import { ModulePage } from "@/components/dashboard/ModulePage";
 
+// Sample records only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 export default function EnviroLedgerPage() {
   return (
     <ModulePage
@@ -13,7 +16,7 @@ export default function EnviroLedgerPage() {
         { label: "CO₂ from Fleet Fuel", value: "4,210 t", sub: "Year to date" },
         { label: "Spill Reports", value: "0", sub: "Open with regulator" },
       ]}
-      initialRecords={[
+      initialRecords={!DEMO_DATA_ENABLED ? [] : [
         {
           id: "WTN-2026-0644",
           title: "Waste Transfer Note: Drill Cuttings",

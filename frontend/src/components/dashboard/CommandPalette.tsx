@@ -6,6 +6,10 @@ import { moduleNav } from "./Sidebar";
 import { NewBadge } from "@/components/ui/NewBadge";
 import { BRAND_FULL } from "@/lib/brand";
 
+// Sample (dummy) data only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+// Read process.env directly in this module so live builds strip the sample data from the bundle.
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 export function CommandPalette({
   open,
   onClose,
@@ -39,7 +43,9 @@ export function CommandPalette({
     m.label.toLowerCase().includes(query.toLowerCase())
   );
 
-  const mockRecords = [
+  // Sample records, searchable only when NEXT_PUBLIC_DEMO_DATA=true. There is no record search
+  // API yet, so live mode searches module navigation only.
+  const sampleRecords = !DEMO_DATA_ENABLED ? [] : [
     { title: "PSV Voyage VOY-2026-0611 (Onne → Bonga FPSO)", href: "/dashboard/offshore-link", tag: "OffshoreLink" },
     { title: "MGO Transfer BLK-2026-0731 (Rig Okoro-2)", href: "/dashboard/rig-supply", tag: "RigSupply" },
     { title: "Heli Manifest FLT-2026-1184 (PHC → Bonga)", href: "/dashboard/crew-transit", tag: "CrewTransit" },
@@ -138,13 +144,13 @@ export function CommandPalette({
           </div>
 
           {/* Operational Records */}
-          {mockRecords.length > 0 && (
+          {sampleRecords.length > 0 && (
             <div>
               <p className="px-3 py-1 text-[10.5px] font-bold uppercase tracking-wider text-slate-400">
                 Operational Records
               </p>
               <div className="space-y-0.5">
-                {mockRecords.map((r, i) => (
+                {sampleRecords.map((r, i) => (
                   <button
                     key={i}
                     type="button"

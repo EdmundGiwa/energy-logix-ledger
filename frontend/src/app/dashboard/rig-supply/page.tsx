@@ -1,5 +1,8 @@
 import { ModulePage } from "@/components/dashboard/ModulePage";
 
+// Sample records only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 export default function RigSupplyPage() {
   return (
     <ModulePage
@@ -13,7 +16,7 @@ export default function RigSupplyPage() {
         { label: "Low Stock Alerts", value: "2", sub: "Below 3 days of supply" },
         { label: "Transfer Variance", value: "0.21%", sub: "Vessel vs. rig meter" },
       ]}
-      initialRecords={[
+      initialRecords={!DEMO_DATA_ENABLED ? [] : [
         {
           id: "BLK-2026-0731",
           title: "Diesel (MGO) Transfer to Jack-up Rig Okoro-2",

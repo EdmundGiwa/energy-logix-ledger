@@ -48,6 +48,16 @@ docker compose down
 
 Copy `.env.example` to `.env` only when overriding the safe local-development defaults. Never commit `.env`.
 
+### Live data vs sample data
+
+The dashboard shows live API data only by default. To show the built-in sample (dummy) data for demos and screenshots, set:
+
+```bash
+NEXT_PUBLIC_DEMO_DATA=true
+```
+
+Any other value, or leaving it unset, means live mode: cards without a live data source show an empty state, and sample data is never used as a fallback when a request fails. The value is inlined at build time, so restart `next dev` (or rebuild) after changing it. Demo mode shows a "Sample data" badge in the status bar.
+
 ## Checks
 
 ```bash

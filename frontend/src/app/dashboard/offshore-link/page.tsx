@@ -1,5 +1,8 @@
 import { ModulePage } from "@/components/dashboard/ModulePage";
 
+// Sample records only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 export default function OffshoreLinkPage() {
   return (
     <ModulePage
@@ -13,7 +16,7 @@ export default function OffshoreLinkPage() {
         { label: "CCUs Offshore", value: "312", sub: "41 overdue for backload" },
         { label: "Deck Utilisation", value: "84%", sub: "Avg. across PSV fleet" },
       ]}
-      initialRecords={[
+      initialRecords={!DEMO_DATA_ENABLED ? [] : [
         {
           id: "VOY-2026-0611",
           title: "PSV Voyage: Onne → Bonga FPSO → Agbami",

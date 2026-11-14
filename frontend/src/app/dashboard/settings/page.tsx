@@ -1,6 +1,11 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { useAuth } from "@/components/auth/AuthProvider";
+
+// Sample (dummy) data only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+// Read process.env directly in this module so live builds strip the sample data from the bundle.
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
 
 const sections = [
   { id: "roles", label: "Roles & access" },
@@ -10,7 +15,9 @@ const sections = [
   { id: "audit", label: "Audit log" },
 ];
 
-const roles = [
+// Sample settings data below is rendered only when NEXT_PUBLIC_DEMO_DATA=true. None of these
+// settings are backed by an API yet, so live mode shows empty states and read-only controls.
+const sampleRoles = [
   { role: "Managing Director", users: 2, scope: "All modules · read, approve, export" },
   { role: "General Manager", users: 3, scope: "Operations modules · approve" },
   { role: "Dispatcher", users: 6, scope: "HaulTrac, RefineryLink" },
@@ -20,14 +27,14 @@ const roles = [
   { role: "Compliance officer", users: 2, scope: "SafePass, Compliance Shield, EPC-Link" },
 ];
 
-const devices = [
+const sampleDevices = [
   { name: "Barge PB-04 tablet", user: "T. Nwosu", os: "Android 14 · Zebra ET45", online: true, sync: "2 min ago", queued: 0 },
   { name: "Driver phone · LSD 482 XY", user: "M. Oduya", os: "Android 13", online: false, sync: "1 h ago", queued: 12 },
   { name: "Platform A HSE tablet", user: "K. Ibrahim", os: "iPadOS 18", online: true, sync: "40 s ago", queued: 0 },
   { name: "Weighbridge PC · Lekki", user: "J. Afolabi", os: "Windows 11", online: true, sync: "5 min ago", queued: 0 },
 ];
 
-const integrations = [
+const sampleIntegrations = [
   { name: "Paystack · Flutterwave", status: "Connected", tone: "ok" },
   { name: "WhatsApp Business API", status: "Connected", tone: "ok" },
   { name: "SAP Business One", status: "Connector pack", tone: "info" },
@@ -36,13 +43,22 @@ const integrations = [
   { name: "Dangote gantry", status: "Needs agreement", tone: "warn" },
 ] as const;
 
-const audit = [
+const sampleAudit = [
   { t: "11 Oct 10:42", who: "T. Nwosu", what: "Signed e-BDN BDN-2026-0419", sig: "3fa9c2e1" },
   { t: "11 Oct 10:24", who: "K. Ibrahim", what: "Blocked PTW-2026-0412 · LEL 12%", sig: "7c02e9b3" },
   { t: "11 Oct 09:58", who: "System", what: "Pig PG-17 passed KP-46 (late)", sig: "e45b1a90" },
   { t: "10 Oct 16:20", who: "A. Okafor", what: "Issued invoice INV-2026-0418 · rate ₦1,480/$", sig: "19fd7a62" },
   { t: "10 Oct 14:05", who: "C. Eze", what: "Uploaded NCDF remittance evidence", sig: "c6e0b7d4" },
 ];
+
+const roles = DEMO_DATA_ENABLED ? sampleRoles : [];
+const devices = DEMO_DATA_ENABLED ? sampleDevices : [];
+const integrations = DEMO_DATA_ENABLED ? sampleIntegrations : [];
+const audit = DEMO_DATA_ENABLED ? sampleAudit : [];
+
+function Empty({ text }: { text: string }) {
+  return <p className="rounded-2xl border border-dashed border-slate-200 bg-[#f6f7f9] px-4 py-6 text-center text-[13px] text-slate-500">{text}</p>;
+}
 
 const toneCls = { ok: "bg-emerald-50 text-emerald-700", info: "bg-sky-50 text-sky-700", warn: "bg-amber-50 text-amber-700" };
 
@@ -57,7 +73,9 @@ function Block({ id, title, sub, children }: { id: string; title: string; sub: s
 }
 
 function Toggle({ label, desc, initial }: { label: string; desc: string; initial: boolean }) {
-  const [on, setOn] = useState(initial);
+  // These preferences are not saved anywhere yet, so live mode shows them disabled rather than
+  // implying a setting is active.
+  const [on, setOn] = useState(DEMO_DATA_ENABLED && initial);
   return (
     <div className="flex items-center justify-between gap-4 rounded-2xl bg-[#f6f7f9] p-4">
       <div>
@@ -70,7 +88,9 @@ function Toggle({ label, desc, initial }: { label: string; desc: string; initial
         aria-checked={on}
         aria-label={label}
         onClick={() => setOn((v) => !v)}
-        className={`relative h-7 w-12 shrink-0 rounded-full transition ${on ? "bg-emerald-500" : "bg-slate-300"}`}
+        disabled={!DEMO_DATA_ENABLED}
+        title={DEMO_DATA_ENABLED ? undefined : "Not configurable yet"}
+        className={`relative h-7 w-12 shrink-0 rounded-full transition disabled:cursor-not-allowed disabled:opacity-50 ${on ? "bg-emerald-500" : "bg-slate-300"}`}
       >
         <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${on ? "left-6" : "left-1"}`} />
       </button>
@@ -79,11 +99,18 @@ function Toggle({ label, desc, initial }: { label: string; desc: string; initial
 }
 
 export default function SettingsPage() {
+  const { user } = useAuth();
+  const org = user.memberships[0]?.organization;
+  const workspace = DEMO_DATA_ENABLED
+    ? "Edflo Energy · Enterprise tier · single-tenant workspace"
+    : org
+      ? `${org.name} · ${org.requested_plan.charAt(0).toUpperCase()}${org.requested_plan.slice(1)} plan`
+      : "Workspace";
   return (
     <div className="mx-auto max-w-[1200px]">
       <header className="px-1 pb-5 pt-3">
         <h1 className="text-[2rem] font-semibold tracking-tight text-slate-900">Settings</h1>
-        <p className="mt-1 text-[15px] text-slate-500">Edflo Energy · Enterprise tier · single-tenant workspace</p>
+        <p className="mt-1 text-[15px] text-slate-500">{workspace}</p>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
@@ -97,7 +124,8 @@ export default function SettingsPage() {
 
         <div className="space-y-4">
           <Block id="roles" title="Roles & access" sub="Each person sees only what their role needs. Changes are written to the audit log.">
-            <div className="overflow-hidden rounded-[22px] bg-[#f6f7f9]">
+            {roles.length === 0 && <Empty text="Role management is not available yet." />}
+            <div className="overflow-hidden rounded-[22px] bg-[#f6f7f9] empty:hidden">
               {roles.map((r, i) => (
                 <div key={r.role} className={`flex items-center justify-between gap-4 bg-white px-4 py-3.5 ${i ? "border-t border-slate-100" : ""}`}>
                   <div className="min-w-0">
@@ -115,7 +143,8 @@ export default function SettingsPage() {
           </Block>
 
           <Block id="devices" title="Field devices" sub="Offline-first apps keep a local SQLite cache and delta-sync when the link returns.">
-            <div className="grid gap-2 md:grid-cols-2">
+            {devices.length === 0 && <Empty text="No field devices registered." />}
+            <div className="grid gap-2 md:grid-cols-2 empty:hidden">
               {devices.map((d) => (
                 <div key={d.name} className="rounded-2xl bg-[#f6f7f9] p-4">
                   <div className="flex items-center justify-between gap-3">
@@ -150,7 +179,8 @@ export default function SettingsPage() {
           </Block>
 
           <Block id="integrations" title="Integrations" sub="Every connection shows its real status.">
-            <div className="grid gap-2 sm:grid-cols-2">
+            {integrations.length === 0 && <Empty text="No integrations connected." />}
+            <div className="grid gap-2 sm:grid-cols-2 empty:hidden">
               {integrations.map((it) => (
                 <div key={it.name} className="flex items-center justify-between gap-3 rounded-2xl bg-[#f6f7f9] px-4 py-3.5">
                   <p className="text-[14px] font-medium text-slate-900">{it.name}</p>
@@ -161,7 +191,8 @@ export default function SettingsPage() {
           </Block>
 
           <Block id="audit" title="Audit log" sub="Append-only. Every edit, sign-off and deletion is timestamped, attributed and signed.">
-            <div className="overflow-x-auto rounded-[22px] bg-[#f6f7f9]">
+            {audit.length === 0 && <Empty text="No audit events to show here yet." />}
+            <div className={`overflow-x-auto rounded-[22px] bg-[#f6f7f9] ${audit.length === 0 ? "hidden" : ""}`}>
               <table className="w-full min-w-[620px] text-left text-[13px]">
                 <thead>
                   <tr className="text-slate-500">

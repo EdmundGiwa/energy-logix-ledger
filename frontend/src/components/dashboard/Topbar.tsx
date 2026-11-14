@@ -8,12 +8,18 @@ import { SignOutButton } from "@/components/auth/SignOutButton";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { navItemFor } from "./Sidebar";
 
-// Prototype notifications until the notifications service exists.
-const notifications = [
+// Sample (dummy) data only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+// Read process.env directly in this module so live builds strip the sample data from the bundle.
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
+// Sample notifications, shown only when NEXT_PUBLIC_DEMO_DATA=true. There is no notifications
+// service yet, so live mode always shows an empty list.
+const sampleNotifications = [
   { id: 1, title: "Certificate expiry alert", desc: "3 crew BOSIET certificates expire within 30 days", time: "12 min ago", tone: "crit" as const },
   { id: 2, title: "Reconciliation complete", desc: "Depot BK-04 discharge reconciled at 0.12% variance", time: "1 hr ago", tone: "ok" as const },
   { id: 3, title: "PTW pending approval", desc: "Hot work permit HW-2026-0412 awaiting sign-off", time: "2 hr ago", tone: "warn" as const },
 ];
+const notifications = DEMO_DATA_ENABLED ? sampleNotifications : [];
 
 const iconBtn = "grid h-10 w-10 place-items-center rounded-lg text-slate-600 transition hover:bg-white hover:text-[#0a0f14] hover:shadow-sm";
 
@@ -86,6 +92,7 @@ export function Topbar({
                     </button>
                   </div>
                   <div className="max-h-[320px] divide-y divide-slate-100 overflow-y-auto">
+                    {notifications.length === 0 && <p className="px-5 py-8 text-center text-[13px] text-slate-500">You have no notifications.</p>}
                     {notifications.map((n) => (
                       <div key={n.id} className="flex items-start gap-3 px-5 py-3.5 transition hover:bg-slate-50">
                         <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${n.tone === "ok" ? "bg-emerald-500" : n.tone === "crit" ? "bg-rose-500" : "bg-amber-500"}`} />

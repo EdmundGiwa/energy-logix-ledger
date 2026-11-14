@@ -10,9 +10,14 @@ import {
   clientPortalApi,
 } from "@/lib/api";
 
+// Sample (dummy) data only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+// Read process.env directly in this module so live builds strip the sample data from the bundle.
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 type ActiveTab = "deliverables" | "audit_trail" | "profiles";
 
-const FALLBACK_PACKAGES: SharedDeliverablePackage[] = [
+// Sample packages, shown only when NEXT_PUBLIC_DEMO_DATA=true. Never a fallback for live data.
+const SAMPLE_PACKAGES: SharedDeliverablePackage[] = [
   {
     public_id: "pkg-1",
     client_name: "Shell Petroleum Dev. Co. (SPDC)",
@@ -79,7 +84,7 @@ const label = (val: string) => val.replaceAll("_", " ").replace(/\b\w/g, (c) => 
 
 export function ClientPortalDashboard() {
   const [summary, setSummary] = useState<ClientPortalSummary | null>(null);
-  const [packages, setPackages] = useState<SharedDeliverablePackage[]>(FALLBACK_PACKAGES);
+  const [packages, setPackages] = useState<SharedDeliverablePackage[]>(DEMO_DATA_ENABLED ? SAMPLE_PACKAGES : []);
   const [profiles, setProfiles] = useState<ClientPortalProfile[]>([]);
   const [auditLogs, setAuditLogs] = useState<ClientPortalAccessLog[]>([]);
   const [activeTab, setActiveTab] = useState<ActiveTab>("deliverables");
@@ -90,7 +95,8 @@ export function ClientPortalDashboard() {
 
   // Modals
   const [selectedPackage, setSelectedPackage] = useState<SharedDeliverablePackage | null>(null);
-  const [verificationResult, setVerificationResult] = useState<{ is_valid: boolean; seal: string } | null>(null);
+  // null = verification in progress. "error" = the check could not be performed (never treated as valid).
+  const [verificationResult, setVerificationResult] = useState<{ is_valid: boolean; seal: string } | "error" | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
   const [copiedHash, setCopiedHash] = useState(false);
 
@@ -113,12 +119,12 @@ export function ClientPortalDashboard() {
       ]);
 
       if (sum) setSummary(sum);
-      if (pkgData && pkgData.results?.length > 0) {
-        setPackages(pkgData.results);
+      if (pkgData && (!DEMO_DATA_ENABLED || pkgData.results?.length > 0)) {
+        setPackages(pkgData.results ?? []);
       }
       if (profData) setProfiles(profData);
       if (logData && logData.results) setAuditLogs(logData.results);
-      setError(null);
+      setError(!DEMO_DATA_ENABLED && !pkgData ? "Shared deliverables could not be loaded." : null);
     } catch {
       // Keep fallback
     } finally {
@@ -137,8 +143,10 @@ export function ClientPortalDashboard() {
       const res = await clientPortalApi.verifyPackage(pkg.public_id);
       setVerificationResult({ is_valid: res.is_valid, seal: res.verification_seal });
     } catch {
-      // Fallback local check
-      setVerificationResult({ is_valid: true, seal: pkg.verification_seal });
+      // Sample packages do not exist on the server, so demo mode shows them as intact. A real
+      // package whose verification request fails is never reported as valid.
+      const isSample = DEMO_DATA_ENABLED && SAMPLE_PACKAGES.some((p) => p.public_id === pkg.public_id);
+      setVerificationResult(isSample ? { is_valid: true, seal: pkg.verification_seal } : "error");
     }
   };
 
@@ -377,6 +385,13 @@ export function ClientPortalDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {filteredPackages.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="py-6 text-center text-slate-400">
+                        {error ?? (packages.length === 0 ? "No deliverables have been shared yet." : "No deliverables match your filters.")}
+                      </td>
+                    </tr>
+                  )}
                   {filteredPackages.map((pkg) => (
                     <tr
                       key={pkg.public_id}
@@ -603,7 +618,7 @@ export function ClientPortalDashboard() {
                   SHA-256 Merkle Verification Seal
                 </span>
                 <div className="mt-1.5 rounded-xl bg-slate-900 text-emerald-400 p-3 font-mono text-[11px] break-all leading-relaxed border border-slate-800">
-                  {verificationResult?.seal || selectedPackage.verification_seal}
+                  {(verificationResult && verificationResult !== "error" ? verificationResult.seal : selectedPackage.verification_seal)}
                 </div>
               </div>
 
@@ -621,21 +636,43 @@ export function ClientPortalDashboard() {
                 </div>
               )}
 
-              <div className="rounded-xl bg-emerald-50 border border-emerald-200/90 p-3.5 text-emerald-900 text-[12.5px] flex items-start gap-2.5">
-                <span className="mt-0.5 h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
-                <div>
-                  <p className="font-bold">Cryptographically Intact</p>
-                  <p className="text-emerald-700 mt-0.5">
-                    Hash matches published ledger state. Complies with NUPRC, NMDPRA, and MARPOL Annex VI regulations.
-                  </p>
+              {verificationResult === null ? (
+                <div className="rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-slate-700 text-[12.5px]">
+                  Verifying seal…
                 </div>
-              </div>
+              ) : verificationResult === "error" ? (
+                <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-amber-900 text-[12.5px] flex items-start gap-2.5">
+                  <span className="mt-0.5 h-2 w-2 rounded-full bg-amber-500 shrink-0" />
+                  <div>
+                    <p className="font-bold">Verification unavailable</p>
+                    <p className="text-amber-800 mt-0.5">The seal could not be checked. Do not rely on this package until verification succeeds.</p>
+                  </div>
+                </div>
+              ) : verificationResult.is_valid ? (
+                <div className="rounded-xl bg-emerald-50 border border-emerald-200/90 p-3.5 text-emerald-900 text-[12.5px] flex items-start gap-2.5">
+                  <span className="mt-0.5 h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                  <div>
+                    <p className="font-bold">Cryptographically Intact</p>
+                    <p className="text-emerald-700 mt-0.5">
+                      Hash matches published ledger state. Complies with NUPRC, NMDPRA, and MARPOL Annex VI regulations.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-xl bg-rose-50 border border-rose-200 p-3.5 text-rose-900 text-[12.5px] flex items-start gap-2.5">
+                  <span className="mt-0.5 h-2 w-2 rounded-full bg-rose-500 shrink-0" />
+                  <div>
+                    <p className="font-bold">Seal mismatch</p>
+                    <p className="text-rose-700 mt-0.5">The package contents do not match the published seal.</p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-6 flex items-center justify-between gap-3 pt-3 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => handleCopyHash(verificationResult?.seal || selectedPackage.verification_seal)}
+                onClick={() => handleCopyHash((verificationResult && verificationResult !== "error" ? verificationResult.seal : selectedPackage.verification_seal))}
                 className="flex items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-[12.5px] font-semibold text-slate-700 hover:bg-slate-50 transition"
               >
                 {copiedHash ? "Hash copied!" : "Copy SHA-256 seal"}

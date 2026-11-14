@@ -1,5 +1,8 @@
 import { ModulePage } from "@/components/dashboard/ModulePage";
 
+// Sample records only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 export default function CrewTransitPage() {
   return (
     <ModulePage
@@ -13,7 +16,7 @@ export default function CrewTransitPage() {
         { label: "Crew Boat Runs", value: "14", sub: "Shallow water & swamp" },
         { label: "Bed Utilisation", value: "91%", sub: "POB vs. lifeboat capacity" },
       ]}
-      initialRecords={[
+      initialRecords={!DEMO_DATA_ENABLED ? [] : [
         {
           id: "FLT-2026-1184",
           title: "Helicopter Manifest: PHC → Bonga FPSO",

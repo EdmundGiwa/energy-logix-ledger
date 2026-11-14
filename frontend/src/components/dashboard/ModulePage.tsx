@@ -6,6 +6,10 @@ import { SeismicBand } from "./Patterns";
 import { isNewModule } from "./Sidebar";
 import { NewBadge } from "@/components/ui/NewBadge";
 
+// Sample (dummy) data only when NEXT_PUBLIC_DEMO_DATA is exactly "true"; see README "Live data vs sample data".
+// Read process.env directly in this module so live builds strip the sample data from the bundle.
+const DEMO_DATA_ENABLED = process.env.NEXT_PUBLIC_DEMO_DATA === "true";
+
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
 /* ------------------------------------------------------------------ */
@@ -49,39 +53,11 @@ export function ModulePage({
   quickActions: QuickAction[];
   initialRecords?: OperationalRecord[];
 }) {
-  // Default fallback records if module page doesn't supply them
-  const defaultRecords: OperationalRecord[] = initialRecords || [
-    {
-      id: `${name.substring(0, 3).toUpperCase()}-2026-001`,
-      title: `${name} Standard Operation #1`,
-      subtitle: "Verified against standard operating procedures",
-      metric: "100% Validated",
-      status: "Verified",
-      date: "Today, 11:20 WAT",
-      tag: "Standard",
-      detail: "Full audit trail captured with GPS coordinate timestamp and digital supervisor sign-off.",
-    },
-    {
-      id: `${name.substring(0, 3).toUpperCase()}-2026-002`,
-      title: `${name} Operational Dispatch #2`,
-      subtitle: "Offshore/Onshore active deployment",
-      metric: "In Progress",
-      status: "Active",
-      date: "Today, 09:45 WAT",
-      tag: "Active Field",
-      detail: "Telematics telemetry and pressure hold telemetry actively streaming to edge node.",
-    },
-    {
-      id: `${name.substring(0, 3).toUpperCase()}-2026-003`,
-      title: `${name} Review Batch #3`,
-      subtitle: "Awaiting QA/QC approval",
-      metric: "Pending Sign-off",
-      status: "Pending",
-      date: "Yesterday, 17:10 WAT",
-      tag: "QA Hold",
-      detail: "Submitted for second-tier managerial review before export to regulatory pack.",
-    },
-  ];
+  // Sample records and stats are passed in by the module pages and rendered only when
+  // NEXT_PUBLIC_DEMO_DATA=true. These modules have no backend yet, so live mode shows no records,
+  // no figures, and does not offer record creation (it would not be saved anywhere).
+  const defaultRecords: OperationalRecord[] = DEMO_DATA_ENABLED ? initialRecords ?? [] : [];
+  const shownStats: Stat[] = DEMO_DATA_ENABLED ? stats : stats.map((s) => ({ ...s, value: "—", sub: "No data yet" }));
 
   const pathname = usePathname();
   const [records, setRecords] = useState<OperationalRecord[]>(defaultRecords);
@@ -158,7 +134,9 @@ export function ModulePage({
         <button
           type="button"
           onClick={() => setNewModalOpen(true)}
-          className="relative inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-[#0b1523] px-5 text-[13.5px] font-medium text-white transition hover:bg-slate-800"
+          disabled={!DEMO_DATA_ENABLED}
+          title={DEMO_DATA_ENABLED ? undefined : "Record capture for this module is not available yet"}
+          className="relative inline-flex h-11 shrink-0 items-center gap-2 rounded-full bg-[#0b1523] px-5 text-[13.5px] font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#0b1523]"
         >
           <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round">
             <path d="M12 5v14M5 12h14" />
@@ -169,7 +147,7 @@ export function ModulePage({
 
       {/* Stats row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {stats.map((s) => (
+        {shownStats.map((s) => (
           <div
             key={s.label}
             className="rounded-[28px] bg-white p-5 transition-shadow duration-300 hover:shadow-[0_8px_30px_-12px_rgba(15,23,42,0.12)]"
@@ -200,7 +178,9 @@ export function ModulePage({
                 setNewSubtitle(`${qa.desc}`);
                 setNewModalOpen(true);
               }}
-              className="group flex items-start gap-3 rounded-2xl bg-[#f6f7f9] px-4 py-3.5 text-left transition-all duration-200 hover:bg-slate-100"
+              disabled={!DEMO_DATA_ENABLED}
+              title={DEMO_DATA_ENABLED ? undefined : "Not available yet"}
+              className="group flex items-start gap-3 rounded-2xl bg-[#f6f7f9] px-4 py-3.5 text-left transition-all duration-200 hover:bg-slate-100 disabled:cursor-default disabled:hover:bg-[#f6f7f9]"
             >
               <span
                 className="mt-1 h-2.5 w-2.5 rounded-full shrink-0 transition-transform group-hover:scale-125"
@@ -224,7 +204,9 @@ export function ModulePage({
               Operational Ledger: {name}
             </h2>
             <p className="text-[12.5px] text-slate-500 mt-0.5">
-              Showing {filteredRecords.length} synchronized field and dispatch records.
+              {DEMO_DATA_ENABLED
+                ? `Showing ${filteredRecords.length} synchronized field and dispatch records.`
+                : "No records yet. This module is not connected to live data."}
             </p>
           </div>
 
